@@ -10,6 +10,7 @@ import { NavController } from 'ionic-angular';
 @Component({
   templateUrl: 'build/pages/auth-login/auth-login.html',
 })
+
 export class AuthLoginPage {
 
   constructor(private navCtrl: NavController) {

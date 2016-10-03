@@ -8,4 +8,9 @@ export class Page1 {
 
   constructor(public navCtrl: NavController) {
   }
+
+  //Function to test ng-click, aka (click)
+  testFunc() {
+      console.log("Hello, test!");
+  }
 }
