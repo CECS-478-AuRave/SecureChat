@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
+//Import our providers (services)
+import { AppAuth } from '../../providers/app-auth/app-auth';
+
 /*
   Generated class for the AuthLoginPage page.
 
@@ -13,8 +16,8 @@ import { NavController } from 'ionic-angular';
 
 export class AuthLoginPage {
 
-  constructor(private navCtrl: NavController) {
-
+  constructor(private navCtrl: NavController, authProvider: AppAuth) {
+      console.log(authProvider.testing);
   }
 
 }
