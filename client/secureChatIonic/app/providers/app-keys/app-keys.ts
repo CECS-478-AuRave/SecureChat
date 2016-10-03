@@ -2,25 +2,23 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import 'rxjs/add/operator/map';
 
-//Import our providers (services)
-import { AppKeys } from '../../providers/app-keys/app-keys';
-
 /*
-  Generated class for the AppAuth provider.
+  Generated class for the AppKeys provider.
 
   See https://angular.io/docs/ts/latest/guide/dependency-injection.html
   for more info on providers and Angular 2 DI.
 */
 @Injectable()
-export class AppAuth {
+export class AppKeys {
 
-    //Class constructor
+    //How to ignore changes on this file: http://stackoverflow.com/a/17410119
+    //DO NOT UPLOAD ACTUAL KEYS TO GITHUB
+
+    //Declare our keys
+    static testing = 'testing test';
+    static facebookApiKey = 'FACEBOOK KEY HERE';
+
   constructor(private http: Http) {
-  }
-
-  //Login
-  static login = function() {
-      return AppKeys.facebookApiKey;
   }
 
 }

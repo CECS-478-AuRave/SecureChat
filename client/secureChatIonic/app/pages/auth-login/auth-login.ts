@@ -16,8 +16,11 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 export class AuthLoginPage {
 
-  constructor(private navCtrl: NavController, authProvider: AppAuth) {
-      console.log(authProvider.testing);
+  constructor(private navCtrl: NavController) {
+  }
+
+  login()  {
+      console.log(AppAuth.login());
   }
 
 }

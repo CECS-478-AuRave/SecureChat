@@ -8,11 +8,12 @@ import { Page2 } from './pages/page2/page2';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 
 //Import our providers (services)
+import { AppKeys } from './providers/app-keys/app-keys';
 import { AppAuth } from './providers/app-auth/app-auth';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppAuth]
+  providers: [AppKeys, AppAuth]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;
