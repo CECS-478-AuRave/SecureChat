@@ -73,9 +73,11 @@ var credentials = {
 	ca: CACertificate
 };
 
+var httpServer = https.createServer(credentials);
 var httpsServer = https.createServer(credentials, app);
 
-httpsServer.listen(4780);
+httpServer.listen(4780);
+httpsServer.listen(4781);
 
 
 module.exports = app;
