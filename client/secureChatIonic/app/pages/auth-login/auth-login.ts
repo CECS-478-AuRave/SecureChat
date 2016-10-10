@@ -16,17 +16,17 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 export class AuthLoginPage {
 
-    //Declare our service we shall be injecting
-    private authProvider: AppAuth;
+  //Declare our service we shall be injecting
+  private authProvider: AppAuth;
 
   constructor(private navCtrl: NavController, private injectedAuth: AppAuth) {
 
-      //Set our service to our variable
-      this.authProvider = injectedAuth;
+    //Set our service to our variable
+    this.authProvider = injectedAuth;
   }
 
-  login()  {
-      console.log(this.authProvider.login());
+  login() {
+    console.log(this.authProvider.login());
   }
 
 }

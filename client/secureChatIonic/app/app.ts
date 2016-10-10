@@ -2,9 +2,6 @@ import { Component, ViewChild } from '@angular/core';
 import { ionicBootstrap, Platform, Nav } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 
-//Import NPM Modules
-import { FacebookService, FacebookLoginResponse } from 'ng2-facebook-sdk/dist';
-
 //Import our pages
 import { Page1 } from './pages/page1/page1';
 import { Page2 } from './pages/page2/page2';
@@ -14,9 +11,10 @@ import { AuthLoginPage } from './pages/auth-login/auth-login';
 import { AppKeys } from './providers/app-keys/app-keys';
 import { AppAuth } from './providers/app-auth/app-auth';
 
+
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppKeys, AppAuth, FacebookService]
+  providers: [AppKeys, AppAuth]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;

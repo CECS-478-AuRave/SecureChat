@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import { FacebookService, FacebookLoginResponse } from 'ng2-facebook-sdk/dist';
 import 'rxjs/add/operator/map';
 
 //Import our providers (services)
@@ -15,28 +14,34 @@ import { AppKeys } from '../../providers/app-keys/app-keys';
 @Injectable()
 export class AppAuth {
 
-  //Declare our injected Services
-  fbService: FacebookService;
-
   //Class constructor
-  constructor(private http: Http, private fb: FacebookService) {
+  constructor(private http: Http) {
 
-    //Set our services
-    this.fbService = fb;
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId: '{your-app-id}',
+        status: true,
+        cookie: true,
+        version: 'v2.6'
+      });
+    };
 
-    //Initialize our facebook service
-    this.fbService.init({
-      appId: AppKeys.facebookApiKey,
-      version: 'v2.4'
-    });
+    // //Set our services
+    // this.fbService = fb;
+    //
+    // //Initialize our facebook service
+    // let fbParams: FacebookInitParams = {
+    //   appId: AppKeys.facebookApiKey,
+    //   version: 'v2.4'
+    // };
+    // this.fbService.init(fbParams);
   }
 
   //Login
   login() {
-    this.fbService.login().then(
-      (response: FacebookLoginResponse) => console.log(response),
-      (error: any) => console.error(error)
-    );
+    FB.login(function(response) {
+      //Response from facebook on function call
+    });
     return AppKeys.facebookApiKey;
   }
 
