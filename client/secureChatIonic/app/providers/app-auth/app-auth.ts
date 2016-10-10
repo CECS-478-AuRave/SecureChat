@@ -17,32 +17,23 @@ export class AppAuth {
   //Class constructor
   constructor(private http: Http) {
 
+    //Init the facebook sdk
+    //Key must be in the same format, or ese everything is untestable
     window.fbAsyncInit = function() {
       FB.init({
-        appId: '{your-app-id}',
-        status: true,
-        cookie: true,
+        appId: AppKeys.facebookApiKey,
         version: 'v2.6'
       });
     };
-
-    // //Set our services
-    // this.fbService = fb;
-    //
-    // //Initialize our facebook service
-    // let fbParams: FacebookInitParams = {
-    //   appId: AppKeys.facebookApiKey,
-    //   version: 'v2.4'
-    // };
-    // this.fbService.init(fbParams);
+    window.fbAsyncInit();
   }
 
   //Login
   login() {
     FB.login(function(response) {
       //Response from facebook on function call
+      console.log(response);
     });
-    return AppKeys.facebookApiKey;
   }
 
 }

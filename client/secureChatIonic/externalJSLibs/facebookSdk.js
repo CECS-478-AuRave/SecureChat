@@ -1,4 +1,4 @@
-/*1475536541,,JIT Construction: v2600544,en_US*/
+/*1476092628,,JIT Construction: v2612831,en_US*/
 
 /**
  * Copyright Facebook Inc.
@@ -1032,7 +1032,7 @@ try {
 				__d("JSSDKRuntimeConfig", [], {
 					"locale": "en_US",
 					"rtl": false,
-					"revision": "2600544"
+					"revision": "2612831"
 				});
 				__d("JSSDKConfig", [], {
 					"bustCache": true,
@@ -2041,7 +2041,7 @@ try {
 				}, null);
 				__d('URISchemes', ['createObjectFrom'], function a(b, c, d, e, f, g, h) {
 					if (c.__markCompiled) c.__markCompiled();
-					var i = h(['blob', 'cmms', 'fb', 'fbatwork', 'fb-ama', 'fb-messenger', 'fb-page-messages', 'fbcf', 'fbconnect', 'fbmobilehome', 'fbrpc', 'file', 'ftp', 'http', 'https', 'mailto', 'ms-app', 'intent', 'itms', 'itms-apps', 'itms-services', 'market', 'svn+ssh', 'fbstaging', 'tel', 'sms', 'pebblejs', 'sftp', 'whatsapp', 'moments', 'fblite', 'chrome-extension', 'webcal', 'fb124024574287414']),
+					var i = h(['blob', 'cmms', 'fb', 'fbatwork', 'fb-ama', 'fb-messenger', 'fb-page-messages', 'fbcf', 'fbconnect', 'fbmobilehome', 'fbrpc', 'file', 'ftp', 'http', 'https', 'mailto', 'ms-app', 'intent', 'itms', 'itms-apps', 'itms-services', 'market', 'svn+ssh', 'fbstaging', 'tel', 'sms', 'pebblejs', 'sftp', 'whatsapp', 'moments', 'fblite', 'chrome-extension', 'webcal', 'fb124024574287414', 'fb124024574287414rc', 'fb124024574287414master']),
 						j = {
 							isAllowed: function k(l) {
 								if (!l) return true;
@@ -6909,7 +6909,8 @@ try {
 								allow_login: 'bool',
 								size: 'string',
 								origin: 'string',
-								user_ref: 'string'
+								user_ref: 'string',
+								identity_match: 'string'
 							},
 							messengerpreconfirmation: {
 								messenger_app_id: 'string',
@@ -8364,5 +8365,5 @@ try {
 		}).call(global);
 	})(window.inDapIF ? parent.window : window, window);
 } catch (e) {
-	new Image().src = "https:\/\/www.facebook.com\/" + 'common/scribe_endpoint.php?c=jssdk_error&m=' + encodeURIComponent('{"error":"LOAD", "extra": {"name":"' + e.name + '","line":"' + (e.lineNumber || e.line) + '","script":"' + (e.fileName || e.sourceURL || e.script) + '","stack":"' + (e.stackTrace || e.stack) + '","revision":"2600544","namespace":"FB","message":"' + e.message + '"}}');
+	new Image().src = "https:\/\/www.facebook.com\/" + 'common/scribe_endpoint.php?c=jssdk_error&m=' + encodeURIComponent('{"error":"LOAD", "extra": {"name":"' + e.name + '","line":"' + (e.lineNumber || e.line) + '","script":"' + (e.fileName || e.sourceURL || e.script) + '","stack":"' + (e.stackTrace || e.stack) + '","revision":"2612831","namespace":"FB","message":"' + e.message + '"}}');
 }
