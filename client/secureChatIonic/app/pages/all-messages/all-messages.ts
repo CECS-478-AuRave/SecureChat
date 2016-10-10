@@ -12,8 +12,37 @@ import { NavController } from 'ionic-angular';
 })
 export class AllMessagesPage {
 
-  constructor(private navCtrl: NavController) {
+  //Our recent conversations
+  recentMessages: Array<any>;
 
+  constructor(private navCtrl: NavController) {
+    this.recentMessages = [
+      {
+        user: "Kumin In",
+        text: "Sup dude!"
+      },
+      {
+        user: "Bob Smith",
+        text: "What's the homework?"
+      }
+    ];
+  }
+
+  //Get shortened text with elipses
+  shortenText(text: string) {
+    //First check if the text is already short
+    if (text.length < 21) return text;
+    else {
+      //Get a substring of text
+      text = text.substring(0, 20);
+      text = text + '...';
+      return text;
+    }
+  }
+
+  //Fucntion to run when an item is clicked
+  convoClick() {
+    console.log("clicked!");
   }
 
 }
