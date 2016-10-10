@@ -6,7 +6,8 @@ export class AppKeys {
 
   //Declare our keys
   static testing = 'testing test';
+
   //Fake key for now, to get the dialog working
-  static facebookApiKey = '517016788503937';
+  static facebookApiKey = '436798248604839';
 
 }
