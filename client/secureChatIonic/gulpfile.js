@@ -1,5 +1,6 @@
 var gulp = require('gulp'),
 	gulpWatch = require('gulp-watch'),
+	imagemin = require('gulp-imagemin'),
 	del = require('del'),
 	runSequence = require('run-sequence'),
 	argv = process.argv;
@@ -38,13 +39,16 @@ var isRelease = argv.indexOf('--release') > -1;
 
 gulp.task('watch', ['clean'], function(done) {
 	runSequence(
-		['sass', 'html', 'fonts', 'scripts'],
+		['sass', 'html', 'fonts', 'images', 'scripts'],
 		function() {
 			gulpWatch('app/**/*.scss', function() {
 				gulp.start('sass');
 			});
 			gulpWatch('app/**/*.html', function() {
 				gulp.start('html');
+			});
+			gulpWatch('app/images/*', function() {
+				gulp.start('images');
 			});
 			buildBrowserify({
 				watch: true
@@ -55,7 +59,7 @@ gulp.task('watch', ['clean'], function(done) {
 
 gulp.task('build', ['clean'], function(done) {
 	runSequence(
-		['sass', 'html', 'fonts', 'scripts'],
+		['sass', 'html', 'fonts', 'images', 'scripts'],
 		function() {
 			buildBrowserify({
 				minify: isRelease,
@@ -85,6 +89,13 @@ gulp.task('scripts', function() {
 			'node_modules/reflect-metadata/Reflect.js.map'
 		]
 	});
+});
+
+//Copy/minimize images
+gulp.task('images', function() {
+	return gulp.src(['app/images/*'])
+		.pipe(imagemin())
+		.pipe(gulp.dest('www/build/images'));
 });
 
 
