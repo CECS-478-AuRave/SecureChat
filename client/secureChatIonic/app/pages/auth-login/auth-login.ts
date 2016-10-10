@@ -25,8 +25,9 @@ export class AuthLoginPage {
     this.authProvider = injectedAuth;
   }
 
+  //Call our log in function from our auth service
   login() {
-    console.log(this.authProvider.login());
+    this.authProvider.login();
   }
 
 }
