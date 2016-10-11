@@ -1,29 +1,30 @@
 "use strict";
-var mongoose = require('mongoose');
+var mongoose = require('mongoose'),
+    Schema = mongoose.Schema,
+    ObjectId = Schema.ObjectId;
 
-var userSchema = new mongoose.Schema({
-    facebookID: {
-        Type: String,
-        required: true
-    },
+var userSchema = new Schema({
     name: {
-        first_name: {
-            Type: String,
-            required: true
-        },
-        last_name: {
-            Type: String,
-            required: true
-        }
-    },
-    userName: {
         Type: String,
         required: true
     },
     email: {
         Type: String,
         required: true
+    },
+    username: {
+        Type: String,
+        required: true
+    },
+    DateAccessed: {
+        Type: Date,
+        default: Date.now
+    },
+    CoverPhotoURL: {
+        Type: String,
+        required: true
     }
+    facebook: Object
 });
 
 mongoose.model('User', userSchema);

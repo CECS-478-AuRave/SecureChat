@@ -2,11 +2,12 @@ var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
+var passport = require('passport');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
-var routes = require('./routes/index');
-var users = require('./routes/users');
+var session = require('express-session');
+var routes = require('./app/api/routes/index');
+var users = require('./app/api/routes/users');
 
 var app = express();
 
@@ -27,6 +28,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 
+// required for passport sessions
+app.use(session({
+    secret: process.env.SESSION_SECRET
+}));
+app.use(passport.initalize());
+// used for persistent login sessions.
+app.use(passport.session());
+
+require('./app/api/routes/index.js')(app, passport);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
