@@ -16,15 +16,19 @@ var userSchema = new Schema({
         Type: String,
         required: true
     },
-    DateAccessed: {
+    dateAccessed: {
         Type: Date,
         default: Date.now
     },
-    CoverPhotoURL: {
+    coverPhotoURL: {
         Type: String,
         required: true
     }
-    facebook: Object
+    facebook: Object,
+    publicKey: {
+        Type: String,
+        required: true
+    }
 });
 
 mongoose.model('User', userSchema);
