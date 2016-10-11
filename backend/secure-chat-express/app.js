@@ -5,6 +5,7 @@ var logger = require('morgan');
 var passport = require('passport');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var flash = require('connect-flash');
 var session = require('express-session');
 var routes = require('./app/api/routes/index');
 var users = require('./app/api/routes/users');
@@ -28,6 +29,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 
+// Configuration file for using passport
+// require('./app/routes/Facebook/passport.js')(passport);
 // required for passport sessions
 app.use(session({
     secret: process.env.SESSION_SECRET
@@ -35,6 +38,7 @@ app.use(session({
 app.use(passport.initalize());
 // used for persistent login sessions.
 app.use(passport.session());
+app.use(flash());
 
 require('./app/api/routes/index.js')(app, passport);
 // catch 404 and forward to error handler
