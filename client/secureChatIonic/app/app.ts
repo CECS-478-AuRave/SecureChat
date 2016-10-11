@@ -3,14 +3,13 @@ import { ionicBootstrap, Platform, Nav } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 
 //Import our pages
-import { Page1 } from './pages/page1/page1';
-import { Page2 } from './pages/page2/page2';
+import { Home } from './pages/home/home';
+import { AllMessagesPage } from './pages/all-messages/all-messages';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 
 //Import our providers (services)
 import { AppKeys } from './providers/app-keys/app-keys';
 import { AppAuth } from './providers/app-auth/app-auth';
-
 
 @Component({
   templateUrl: 'build/app.html',
@@ -19,7 +18,7 @@ import { AppAuth } from './providers/app-auth/app-auth';
 class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = Page1;
+  rootPage: any = Home;
 
   pages: Array<{ title: string, component: any }>;
 
@@ -28,8 +27,8 @@ class MyApp {
 
     // used for an example of ngFor and navigation
     this.pages = [
-      { title: 'Page One', component: Page1 },
-      { title: 'Page Two', component: Page2 },
+      { title: 'Home', component: Home },
+      { title: 'Messages', component: AllMessagesPage },
       { title: 'Login', component: AuthLoginPage }
     ];
 
