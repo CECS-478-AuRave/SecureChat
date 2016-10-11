@@ -26,8 +26,10 @@ var userSchema = new Schema({
     }
     facebook: Object,
     publicKey: {
-        Type: String,
-        required: true
+        Type: String
+    },
+    token: {
+        Type String
     }
 });
 
