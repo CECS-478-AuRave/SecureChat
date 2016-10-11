@@ -2,11 +2,18 @@ import { Component, ViewChild } from '@angular/core';
 import { ionicBootstrap, Platform, Nav } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 
+//Import our pages
 import { Home } from './pages/home/home';
 import { AllMessagesPage } from './pages/all-messages/all-messages';
+import { AuthLoginPage } from './pages/auth-login/auth-login';
+
+//Import our providers (services)
+import { AppKeys } from './providers/app-keys/app-keys';
+import { AppAuth } from './providers/app-auth/app-auth';
 
 @Component({
-  templateUrl: 'build/app.html'
+  templateUrl: 'build/app.html',
+  providers: [AppKeys, AppAuth]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;
@@ -22,6 +29,7 @@ class MyApp {
     this.pages = [
       { title: 'Home', component: Home },
       { title: 'Messages', component: AllMessagesPage },
+      { title: 'Login', component: AuthLoginPage }
     ];
 
   }
