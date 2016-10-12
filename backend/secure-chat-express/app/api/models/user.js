@@ -9,27 +9,19 @@ var userSchema = new Schema({
         required: true
     },
     email: {
-        Type: String,
-        required: true
-    },
-    username: {
-        Type: String,
-        required: true
-    },
-    dateAccessed: {
-        Type: Date,
-        default: Date.now
+        Type: String
     },
     coverPhotoURL: {
         Type: String,
         required: true
-    }
+    },
     facebook: Object,
     publicKey: {
         Type: String
     },
     token: {
-        Type String
+        Type String,
+        require: true
     }
 });
 
