@@ -41,6 +41,37 @@ export class ConversationPage {
         message: "sup dude! Cool to work with you!"
       }
     ];
+
+    //Get the conversation title, function being called, but not returning?
+    this.convoTitle = this.getConvoTitle();
+  }
+
+  getConvoTitle() {
+
+    //Return if no senders
+    if (this.conversation.length < 1) return 'Conversation';
+
+    //Initialize our variables
+    var convoTitle = '';
+    var convoMembers = [];
+
+    //Find all unique senders in the conversation
+    for (let i = 0; i < this.conversation.length; i++) {
+      if (convoMembers.indexOf(this.conversation[i].sender) > 0) {
+        convoMembers.push(this.conversation[i].sender);
+      }
+    }
+
+    //Add all the senders to the conversation title
+    for (let i = 0; i < convoMembers.length; i++) {
+      convoTitle = convoTitle + convoMembers[i];
+    }
+
+    //Shorten the conversation title to 30 characters
+    if (convoTitle.length > 29) convoTitle = convoTitle.substring(0, 27) + '...';
+
+    //Return the conversation title
+    return convoTitle;
   }
 
 }
