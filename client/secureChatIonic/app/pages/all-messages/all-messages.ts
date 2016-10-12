@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
+//Import to conversation view
+import { ConversationPage } from '../../pages/conversation/conversation';
+
 /*
   Generated class for the AllMessagesPage page.
 
@@ -12,18 +15,28 @@ import { NavController } from 'ionic-angular';
 })
 export class AllMessagesPage {
 
+  //Our NavController
+  location: NavController;
+
   //Our recent conversations
   recentMessages: Array<any>;
 
   constructor(private navCtrl: NavController) {
+
+    //Set our nav controller
+    this.location = navCtrl;
+
+    //Recent messages from all conversations (template for now)
     this.recentMessages = [
       {
         user: "Kumin In",
-        text: "Sup dude!"
+        text: "Sup dude!",
+        conversationId: "1457"
       },
       {
         user: "Bob Smith",
-        text: "What's the homework?"
+        text: "What's the homework?",
+        conversationId: "1243"
       }
     ];
   }
@@ -41,8 +54,11 @@ export class AllMessagesPage {
   }
 
   //Fucntion to run when an item is clicked
-  convoClick() {
-    console.log("clicked!");
+  convoClick(id) {
+    //Go to the conversation page, and pass the conversation id
+    this.navCtrl.push(ConversationPage, {
+      conversationId: id
+    });
   }
 
 }

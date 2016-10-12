@@ -19,10 +19,13 @@
 
 </ion-content>
 
-<!-- The message reply box -->
-<textarea class="replyBox" rows="2" cols="50">
-</textarea>
+<!-- Fixed to the bottom of the page -->
+<div class="convoFooter">
+  <!-- The message reply box -->
+  <textarea class="replyBox">
+    </textarea>
 
-<button>
-    <ion-icon name="send" isActive="{{sendActive}}"></ion-icon>
-</button>
+  <button class="replyButton">
+        <ion-icon name="send" isActive="{{sendActive}}"></ion-icon>
+    </button>
+</div>
