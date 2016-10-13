@@ -46,13 +46,17 @@ export class ConversationPage {
     ];
 
     //Get the conversation title, function being called, but not returning?
-    this.convoTitle = this.getConvoTitle();
+    this.convoTitle = this.getConvoTitle(this.conversation);
+
+    //Tag which messages were sent by the user
+    this.conversation = this.findUserMessages(this.conversation);
   }
 
-  getConvoTitle() {
+  //Function to get the title of the conversationId
+  getConvoTitle(messages: Array<any>) {
 
     //Return if no senders
-    if (this.conversation.length < 1) return 'Conversation';
+    if (messages.length < 1) return 'Conversation';
 
     //Initialize our variables
     var convoTitle = '';
@@ -76,8 +80,21 @@ export class ConversationPage {
     if (convoTitle.length > 29) convoTitle = convoTitle.substring(0, 27) + '...';
 
     //Return the conversation title
-    console.log(convoMembers);
     return convoTitle;
+  }
+
+  //Function to tag the messages that were sent by this user
+  findUserMessages(messages: Array<any>) {
+
+    //Get out user settings from localStorage
+    var userToken = localStorage.getItem("shushUser");
+
+    //Simply iterate through the array
+    for (let i = 0; i < messages.length; ++i) {
+      if (messages[i].senderId = userToken.id) messages[i].isUser = true;
+    }
+
+    return messages;
   }
 
 }

@@ -16,7 +16,7 @@
 <ion-content padding>
 
   <!-- Ngfor our messages -->
-  <ion-card *ngFor="let convoMessage of conversation; let i = index;">
+  <ion-card *ngFor="let convoMessage of conversation; let i = index;" [ngClass]="{'sender': !convoMessage.isUser, 'user': convoMessage.isUser}">
     <!--
         For media messages if supported
         <img src="img/nin-live.png" />
