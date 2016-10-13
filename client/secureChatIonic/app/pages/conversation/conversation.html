@@ -16,6 +16,29 @@
 <ion-content padding>
 
   <!-- Ngfor our messages -->
+  <ion-card *ngFor="let convoMessage of conversation; let i = index;">
+    <!--
+        For media messages if supported
+        <img src="img/nin-live.png" />
+    -->
+    <ion-card-content>
+      <!-- User who sent the item -->
+      <ion-card-title>
+        {{convoMessage.sender}}
+      </ion-card-title>
+
+      <!-- The actual message contents -->
+      <p class="convoMessage">
+        {{convoMessage.message}}
+      </p>
+
+      <!-- Time stamp of the message -->
+      <p class="messageTime">
+        12:2{{index}}PM
+      </p>
+
+    </ion-card-content>
+  </ion-card>
 
 </ion-content>
 

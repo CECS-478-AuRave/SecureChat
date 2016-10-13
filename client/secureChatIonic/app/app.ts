@@ -32,6 +32,13 @@ class MyApp {
       { title: 'Login', component: AuthLoginPage }
     ];
 
+    //TODO: Temporary! A fake user settings json
+    localStorage.setItem("shushUser", {
+      id: "2424",
+      name: "test",
+      session: "token"
+    })
+
   }
 
   initializeApp() {

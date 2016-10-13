@@ -29,14 +29,17 @@ export class ConversationPage {
     //Get our conversation (Template for now)
     this.conversation = [
       {
+        senderId: "1034",
         sender: "kumin",
         message: "hey there!"
       },
       {
+        senderId: "1034",
         sender: "kumin",
         message: "dude?"
       },
       {
+        senderId: "2424",
         sender: "aaron",
         message: "sup dude! Cool to work with you!"
       }
@@ -57,20 +60,23 @@ export class ConversationPage {
 
     //Find all unique senders in the conversation
     for (let i = 0; i < this.conversation.length; i++) {
-      if (convoMembers.indexOf(this.conversation[i].sender) > 0) {
+      if (convoMembers.indexOf(this.conversation[i].sender) < 0) {
         convoMembers.push(this.conversation[i].sender);
       }
     }
 
     //Add all the senders to the conversation title
     for (let i = 0; i < convoMembers.length; i++) {
-      convoTitle = convoTitle + convoMembers[i];
+      //Also, add the needed commas
+      if (i >= convoMembers.length - 1) convoTitle = convoTitle + convoMembers[i];
+      else convoTitle = convoTitle + convoMembers[i] + ", ";
     }
 
     //Shorten the conversation title to 30 characters
     if (convoTitle.length > 29) convoTitle = convoTitle.substring(0, 27) + '...';
 
     //Return the conversation title
+    console.log(convoMembers);
     return convoTitle;
   }
 
