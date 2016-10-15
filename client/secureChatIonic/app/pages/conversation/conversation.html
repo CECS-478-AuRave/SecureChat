@@ -45,10 +45,10 @@
 <!-- Fixed to the bottom of the page -->
 <div class="convoFooter">
   <!-- The message reply box -->
-  <textarea class="replyBox">
-    </textarea>
+  <textarea class="replyBox" (keypress)="sendReply($event.keyCode)" placeholer="Type your reply here" [(ngModel)]="replyMessage">
+  </textarea>
 
-  <button class="replyButton">
+  <button class="replyButton" (click)="sendReply()">
         <ion-icon name="send" isActive="{{sendActive}}"></ion-icon>
     </button>
 </div>
