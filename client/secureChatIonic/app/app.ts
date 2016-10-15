@@ -33,11 +33,11 @@ class MyApp {
     ];
 
     //TODO: Temporary! A fake user settings json
-    localStorage.setItem("shushUser", {
+    localStorage.setItem("shushUser", JSON.stringify({
       id: "2424",
       name: "test",
       session: "token"
-    })
+    }));
 
   }
 

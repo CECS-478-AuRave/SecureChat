@@ -13,7 +13,7 @@
 </ion-header>
 
 
-<ion-content padding>
+<ion-content class="messageList" padding>
 
   <!-- Ngfor our messages -->
   <ion-card *ngFor="let convoMessage of conversation; let i = index;" [ngClass]="{'sender': !convoMessage.isUser, 'user': convoMessage.isUser}">

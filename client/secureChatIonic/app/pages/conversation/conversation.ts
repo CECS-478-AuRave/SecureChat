@@ -42,6 +42,31 @@ export class ConversationPage {
         senderId: "2424",
         sender: "aaron",
         message: "sup dude! Cool to work with you!"
+      },
+      {
+        senderId: "2424",
+        sender: "aaron",
+        message: "sup dude! Cool to work with you!"
+      },
+      {
+        senderId: "2424",
+        sender: "aaron",
+        message: "sup dude! Cool to work with you!"
+      },
+      {
+        senderId: "2424",
+        sender: "aaron",
+        message: "sup dude! Cool to work with you!"
+      },
+      {
+        senderId: "2424",
+        sender: "aaron",
+        message: "sup dude! Cool to work with you!"
+      },
+      {
+        senderId: "2424",
+        sender: "aaron",
+        message: "sup dude! Cool to work with you!"
       }
     ];
 
@@ -87,7 +112,7 @@ export class ConversationPage {
   findUserMessages(messages: Array<any>) {
 
     //Get out user settings from localStorage
-    var userToken = localStorage.getItem("shushUser");
+    var userToken = JSON.parse(localStorage.getItem("shushUser"));
 
     //Simply iterate through the array
     for (let i = 0; i < messages.length; ++i) {
