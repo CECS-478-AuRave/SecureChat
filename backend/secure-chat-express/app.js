@@ -7,8 +7,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var flash = require('connect-flash');
 var session = require('express-session');
-var routes = require('./app/api/routes/index');
-var users = require('./app/api/routes/users');
+// var routes = require('./app/api/routes/index');
+// var login = require('./app/api/routes/login');
 
 var app = express();
 
@@ -26,21 +26,27 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+// app.use('/', routes);
+// app.use('/login', login);
 
 // Configuration file for using passport
-// require('./app/routes/Facebook/passport.js')(passport);
+require('./app/routes/Facebook/passport.js')(passport);
+
 // required for passport sessions
 app.use(session({
     secret: process.env.SESSION_SECRET
 }));
+
+// initalize passport authentication
 app.use(passport.initalize());
+
 // used for persistent login sessions.
 app.use(passport.session());
 app.use(flash());
 
+// use the routes specified
 require('./app/api/routes/login.js')(app, passport);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
