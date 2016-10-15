@@ -8,12 +8,11 @@ import { AllMessagesPage } from './pages/all-messages/all-messages';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 
 //Import our providers (services)
-import { AppKeys } from './providers/app-keys/app-keys';
 import { AppAuth } from './providers/app-auth/app-auth';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppKeys, AppAuth]
+  providers: [AppAuth]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;
