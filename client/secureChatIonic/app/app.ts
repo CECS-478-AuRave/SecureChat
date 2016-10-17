@@ -13,7 +13,7 @@ import { AppAuth } from './providers/app-auth/app-auth';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppKeys, AppAuth]
+  providers: [AppAuth, AppKeys]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;
@@ -31,6 +31,13 @@ class MyApp {
       { title: 'Messages', component: AllMessagesPage },
       { title: 'Login', component: AuthLoginPage }
     ];
+
+    //TODO: Temporary! A fake user settings json
+    localStorage.setItem("shushUser", JSON.stringify({
+      id: "2424",
+      name: "test",
+      session: "token"
+    }));
 
   }
 

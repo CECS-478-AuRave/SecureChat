@@ -1,0 +1,42 @@
+//The footer height
+$footerHeight: 75px;
+$footerPadding: 10px;
+
+//The Actual messages view
+.messageList {
+    //The height - the height of the footer - the margin
+    height: calc(100% - #{$footerHeight} - #{$footerPadding});
+}
+
+//Footer of the message page, meant for replying
+.convoFooter {
+
+    z-index: 3;
+    position: absolute;
+    border-top: 1px solid map-get($colors, borderDivider);
+    padding-top: $footerPadding;
+    text-align: center;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    margin-bottom: 10px;
+    height: $footerHeight;
+
+    //The editable replybox
+    .replyBox {
+        width: 82.5%;
+        height: 65px;
+        display: inline-block;
+        vertical-align: middle;
+        padding-top: 7px;
+        padding-bottom: 0px;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    //The send/reply button
+    .replyButton {
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+}

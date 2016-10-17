@@ -8,6 +8,7 @@ export class AppKeys {
   static testing = 'testing test';
 
   //Fake key for now, to get the dialog working
+  //Can be stored on the client: http://stackoverflow.com/questions/6709883/facebook-app-security-what-if-someone-uses-my-appid
   static facebookApiKey = '436798248604839';
 
 }

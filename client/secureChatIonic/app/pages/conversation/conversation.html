@@ -1,0 +1,54 @@
+<!--
+  Generated template for the ConversationPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>{{convoTitle}}</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content class="messageList" padding>
+
+  <!-- Ngfor our messages -->
+  <ion-card *ngFor="let convoMessage of conversation; let i = index;" [ngClass]="{'sender': !convoMessage.isUser, 'user': convoMessage.isUser}">
+    <!--
+        For media messages if supported
+        <img src="img/nin-live.png" />
+    -->
+    <ion-card-content>
+      <!-- User who sent the item -->
+      <ion-card-title>
+        {{convoMessage.sender}}
+      </ion-card-title>
+
+      <!-- The actual message contents -->
+      <p class="convoMessage">
+        {{convoMessage.message}}
+      </p>
+
+      <!-- Time stamp of the message -->
+      <p class="messageTime">
+        12:2{{index}}PM
+      </p>
+
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>
+
+<!-- Fixed to the bottom of the page -->
+<div class="convoFooter">
+  <!-- The message reply box -->
+  <textarea class="replyBox" (keypress)="sendReply($event.keyCode)" placeholer="Type your reply here" [(ngModel)]="replyMessage">
+  </textarea>
+
+  <button class="replyButton" (click)="sendReply()">
+        <ion-icon name="send" isActive="{{sendActive}}"></ion-icon>
+    </button>
+</div>
