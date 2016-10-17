@@ -81,6 +81,7 @@ gulp.task('fonts', copyFonts);
 gulp.task('scripts', function() {
 	return copyScripts({
 		src: [
+			'externalJSLibs/facebookSdk.js',
 			'node_modules/es6-shim/es6-shim.min.js',
 			'node_modules/es6-shim/es6-shim.map',
 			'node_modules/zone.js/dist/zone.js',
