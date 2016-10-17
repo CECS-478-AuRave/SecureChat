@@ -49,7 +49,7 @@ app.use(passport.session());
 app.use(flash());
 
 // use the routes specified
-require('./app/api/routes/login.js')(app, passport);
+require('./app/api/routes/routes')(app, passport);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
