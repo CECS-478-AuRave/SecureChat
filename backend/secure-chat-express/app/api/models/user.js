@@ -5,23 +5,21 @@ var mongoose = require('mongoose'),
 
 var userSchema = new Schema({
     name: {
-        Type: String,
+        type: String,
         required: true
     },
     email: {
-        Type: String
+        type: String
     },
-    coverPhotoURL: {
-        Type: String,
+    profilePhotoURL: {
+        type: String,
         required: true
     },
-    facebook: Object,
-    publicKey: {
-        Type: String
+    facebook: {
+        id: String
     },
-    token: {
-        Type String,
-        require: true
+    publicKey: {
+        type: String
     }
 });
 

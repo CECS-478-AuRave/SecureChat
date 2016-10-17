@@ -1,16 +1,22 @@
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
+// var favicon = require('serve-favicon');
 var logger = require('morgan');
 var passport = require('passport');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var flash = require('connect-flash');
 var session = require('express-session');
+var app = express();
+
+// Require Database for connection and schema initalization.
+require('./app/api/models/db');
+
+// Configuration file for using passport
+require('./app/api/routes/Facebook/passport.js')(passport);
+
 // var routes = require('./app/api/routes/index');
 // var login = require('./app/api/routes/login');
-
-var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -29,8 +35,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // app.use('/', routes);
 // app.use('/login', login);
 
-// Configuration file for using passport
-require('./app/routes/Facebook/passport.js')(passport);
 
 // required for passport sessions
 app.use(session({
@@ -38,7 +42,7 @@ app.use(session({
 }));
 
 // initalize passport authentication
-app.use(passport.initalize());
+app.use(passport.initialize());
 
 // used for persistent login sessions.
 app.use(passport.session());
