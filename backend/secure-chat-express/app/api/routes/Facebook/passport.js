@@ -1,10 +1,10 @@
 "use strict";
 // required
-var FacebookStrategy = require('passport-facebook').Strategy;
-
+// var FacebookStrategy = require('passport-facebook').Strategy;
+var FacebookTokenStrategy = require('passport-facebook-token');
 // load User model using mongoose.
-var mongoose = require('mongoose'),
-    User = mongoose.model('User');
+var mongoose = require('mongoose');
+var User = mongoose.model('User');
 
 // load the configuration auth file.
 var configAuth = require('./auth');
@@ -15,19 +15,18 @@ module.exports = function(passport) {
         done(null, user.id);
     });
     passport.deserializeUser(function(id, done) {
-        User.findById({facebook.id : id}, function(err, user) {
+        User.findById(id, function(err, user) {
             done(err, user);
         });
     });
 
-    passport.use(new FacebookStrategy({
+    passport.use(new FacebookTokenStrategy({
         clientID: configAuth.facebookAuth.clientID,
-        clientSecret: configAuth.facebookAuth.clientSecret,
-        callbackURl: configAuth.facebookAuth.callbackURL
+        clientSecret: configAuth.facebookAuth.clientSecret
     },
     // Verify callback for facebook authentication
     function(accessToken, refreshToken, profile, done) {
-        User.findOne({facebook.id : profile.id}, function(err, user) {
+        User.findOne({'facebook.id' : profile.id}, function(err, user) {
             var newUser;
             // Error occurred making query.
             if (err) {
@@ -38,13 +37,13 @@ module.exports = function(passport) {
                 return done(null, user); // returning the user.
             } else {
                 // Creating new user since it doesn't exist in database.
+                console.log(profile);
                 newUser = new User({
-                    name: profile.name,
+                    name: profile.name.givenName + ' ' + profile.name.familyName,
                     email: profile.email,
-                    coverPhotoURL: profile.cover.source,
-                    facebook.id: profile.id,
-                    token: accessToken
+                    profilePhotoURL: 'graph.facebook.com/' + profile.id + '/picture'
                 });
+                newUser.facebook.id = profile.id;
                 // Saving the User to the database
                 newUser.save(function(err) {
                     if (err) {
