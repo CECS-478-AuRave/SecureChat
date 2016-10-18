@@ -9,6 +9,19 @@ module.exports = function(app, passport) {
     //     res.end('{login:success}');
     // });
 
+    app.post('/api/v1/login',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            if (req.user) {
+                res.status(200).json({'login': 'yes',
+                                      'user': req.user});
+            } else {
+                res.status(401).json({'login': 'no',
+                                      'user': 'Hello Darkness My Old Friend'});
+            }
+        });
+
+
     /// Route for login page where respond with status 401.
     // app.get('/login', function(req, res) {
     //     res.writeHead(401, {'Content-Type': 'application/json'});
@@ -33,7 +46,7 @@ module.exports = function(app, passport) {
     // });
 
     // Route for getting user information based on their facebook id.
-    app.get('/api/v1/:access_token/user/:id',
+    app.get('/api/v1/user/id/:id',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             if (req.user) {
@@ -47,24 +60,44 @@ module.exports = function(app, passport) {
 
                 // Find the user based on their facebookID and return the data
                 // stored in the database.
-                User.findOne({'facebook.id' : facebookID}, function(err, user) {
-                    if (!user) {
-                        // if the user wasn't found.
-                        res.status(404).json({'error': 'User was not found.'});
-                    } else if (err) {
-                        // if there was an error.
-                        res.status(404).json(err);
-                    } else {
-                        // if there wasn't an error and the user was found.
-                        res.status(200).json(user);
-                    }
-                });
+                User.findOne({'facebook.id' : facebookID}, findUser);
             } else {
                 res.status(401).json({'error': 'Access Not Authorized.'})
             }
         });
+
+    // Route for getting user information based on their email.
+    app.get('/api/v1/user/email/:email',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            if (req.user) {
+                var email = req.params.email;
+
+                // Check if the email was passed in the parameter.
+                if (!email) {
+                    res.status(404).json({'error': 'email is required to find user'});
+                    return;
+                }
+
+                User.findOne({'email' : email}, findUser);
+            } else {
+                res.status(401).json({'error': 'Access Not Authorized.'});
+            }
+        });
 };
 
+var findUser = function(err, user) {
+    if (!user) {
+        // if the user wasn't found.
+        res.status(404).json({'error': 'User was not found.'});
+    } else if (err) {
+        // if there was an error.
+        res.status(404).json(err);
+    } else {
+        // if there wasn't an error and the user was found.
+        res.status(200).json(user);
+    }
+};
 // var isLoggedIn = function(req, res, next) {
 //
 //     // If the user is already authenticated then continue.

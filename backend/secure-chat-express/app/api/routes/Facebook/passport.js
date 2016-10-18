@@ -26,6 +26,7 @@ module.exports = function(passport) {
     },
     // Verify callback for facebook authentication
     function(accessToken, refreshToken, profile, done) {
+        console.log(accessToken);
         User.findOne({'facebook.id' : profile.id}, function(err, user) {
             var newUser;
             // Error occurred making query.
@@ -40,7 +41,7 @@ module.exports = function(passport) {
                 console.log(profile);
                 newUser = new User({
                     name: profile.name.givenName + ' ' + profile.name.familyName,
-                    email: profile.email,
+                    email: profile.emails[0].value,
                     profilePhotoURL: 'graph.facebook.com/' + profile.id + '/picture'
                 });
                 newUser.facebook.id = profile.id;
