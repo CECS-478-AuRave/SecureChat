@@ -3,7 +3,7 @@ import { Http } from '@angular/http';
 import 'rxjs/add/operator/map';
 
 //Import our providers (services)
-import { AppKeys } from '../../providers/app-keys/app-keys';
+import { AppSettings } from '../../providers/app-settings/app-settings';
 
 /*
   Generated class for the AppAuth provider.
@@ -25,11 +25,18 @@ export class AppAuth {
     setTimeout(this.initFb(), 1000)
   }
 
+  //Private functions for server requests
+  private serverLogin() {
+    // return this.http.post(this.heroesUrl, body, options)
+    //   .map(this.extractData)
+    //   .catch(this.handleError);
+  }
+
   //Init facebook function
   initFb() {
     //Key must be in the same FB format, or ese everything is untestable
     FB.init({
-      appId: AppKeys.facebookApiKey,
+      appId: AppSettings.facebookAppId,
       cookie: true,
       version: 'v2.6'
     });
