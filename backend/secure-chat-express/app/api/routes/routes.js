@@ -21,15 +21,13 @@ module.exports = function(app, passport) {
             // Check if the user was authenticated
             if (req.user) {
                 // Respond with status 200 and JSON
-                res.status(200).json({'login': 'yes',
+                res.status(200).json({'login': 'Successful',
                                       'user': req.user});
             } else {
                 // Respond with Unauthorized access.
-                res.status(401).json({'login': 'no',
-                                      'user': 'Hello Darkness My Old Friend'});
+                res.status(401).json({'error': 'Access Not Authorized.'});
             }
         });
-
 
     /// Route for login page where respond with status 401.
     // app.get('/login', function(req, res) {
@@ -50,9 +48,37 @@ module.exports = function(app, passport) {
     //     ));
 
     // Route for logging out, if the user is already logged in.
-    app.get('/logout', isLoggedIn, function(req, res) {
-        req.logout();
-    });
+    app.get('/api/v1/logout', isLoggedIn,
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            req.logout();
+        });
+
+    // Route for getting a user's publicKey
+    app.get('/api/v1/user/id/:id/publicKey',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            //  Check if the user was authenticated
+            if (req.user) {
+                res.status(200).json({'Auth': 'Successful'});
+            } else {
+                // Respond with Unauthorized access.
+                res.status(401).json({'error': 'Access Not Authorized.'});
+            }
+        });
+
+    // Route for posting publicKey
+    app.post('/api/v1/user/id/:id/publicKey',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            // Check if the user was authenticated
+            if (req.user) {
+                res.status(200).json({'Auth': 'Successful'});
+            } else {
+                // Respond with Unauthorized access.
+                res.status(401).json({'error': 'Access Not Authorized.'});
+            }
+        });
 
     // Route for getting user information based on their facebook id.
     app.get('/api/v1/user/id/:id',
@@ -93,6 +119,7 @@ module.exports = function(app, passport) {
                 // Find a user based on their email and return that user.
                 User.findOne({'email' : email}, findUser);
             } else {
+                // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
             }
         });
@@ -121,6 +148,6 @@ var isLoggedIn = function(req, res, next) {
         return next();
     }
 
-    // Redirect to login page if the user isn't logged in
-    res.status(401).json({'error' : 'login required'});
+    // Respond with Unauthorized access.
+    res.status(401).json({'error': 'Access Not Authorized.'});
 }
