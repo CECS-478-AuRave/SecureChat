@@ -20,7 +20,10 @@ var userSchema = new Schema({
     },
     publicKey: {
         type: String
-    }
+    },
+    friends: [{
+        id: {type: String}
+    }]
 });
 
 mongoose.model('User', userSchema);
