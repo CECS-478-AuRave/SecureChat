@@ -50,11 +50,14 @@ export class AppAuth {
   }
 
   //Login
+  //Scope asks for permissions that we need to create/identify users
   login() {
     FB.login(function(response) {
       //Response from facebook on function call
       console.log(response);
-    });
+    }, {
+        scope: 'email'
+      });
   }
 
   //Logout
