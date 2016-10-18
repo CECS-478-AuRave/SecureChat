@@ -68,7 +68,7 @@ module.exports = function(app, passport) {
         });
 
     // Route for posting publicKey
-    app.post('/api/v1/user/id/:id/publicKey',
+    app.put('/api/v1/user/id/:id/publicKey',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -118,6 +118,58 @@ module.exports = function(app, passport) {
 
                 // Find a user based on their email and return that user.
                 User.findOne({'email' : email}, findUser);
+            } else {
+                // Respond with Unauthorized access.
+                res.status(401).json({'error': 'Access Not Authorized.'});
+            }
+        });
+
+    app.put('/api/v1/user/add',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            // Check if the user was authenticated
+            if (req.user) {
+                // get the friendID from the body.
+                var friendID = req.body.friendID;
+                // Check if the authenticated user's facebook id is equal to
+                // the given friend's id.
+                if (req.user.facebook.id == friendID) {
+                    // Respond with bad request status code.
+                    res.status(400).json('error': 'Cannot add yourself to the friends list.');
+                    return;
+                }
+                // Check if the friend's facebook id was passed in the parameter
+                if (!friendID) {
+                    // Respond with bad request status code.
+                    res.status(400).json({'error': 'id is required to add friends'});
+                    return;
+                }
+                // Find user by checking for friendID and facebook id.
+                User.findOne({'facebook.id':friendID}, function(err, user) {
+                    if (!user) {
+                        // if the user wasn't found respond with status 404
+                        // and the information stating User was not found...
+                        res.status(404).json({'error': 'User was not found.'});
+                    } else if (err) {
+                        // if there was an error respond with status 404
+                        // and the err information.
+                        res.status(404).json(err);
+                    } else {
+                        // Push the authenticated freind's id to the facebook id.
+                        user.pendingFriends.push(req.user.facebook.id);
+                        // save the user schema that was found.
+                        user.save(function(err, user) {
+                            if (err) {
+                                // if there was an error respond with status 404
+                                // and the err information.
+                                res.status(500).json(err);
+                            } else {
+
+                                res.status(201).json('Message': 'Successfuly Added to pending friends list');
+                            }
+                        });
+                    }
+                });
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
