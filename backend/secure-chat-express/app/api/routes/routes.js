@@ -196,7 +196,7 @@ module.exports = function(app, passport) {
 
 
     // Route for declining a pending friend request.
-    app.delete('/api/v1/user/friend/decline',
+    app.put('/api/v1/user/friend/decline',
         isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
@@ -303,13 +303,69 @@ module.exports = function(app, passport) {
             passport.authenticate(['facebook-token'])
             function(req, res) {
                 if (req.user) {
-
+                    var thisUserID = req.user.facebook.id;
+                    Conversation.find({members: {$in: [thisUserID]}}, function(err, conversation) {
+                        if (err) {
+                            res.status(404).json(err);
+                        } else if (!conversation) {
+                            res.status(404).json('error': 'No messages found for user');
+                        } else {
+                            res.status(200).json(conversation);
+                        }
+                    });
                 } else {
                     // Respond with Unauthorized access.
                     res.status(401).json({'error': 'Access Not Authorized.'});
                 }
             });
-        // Routes for posting messages
+
+        //     else {
+        //        conversation.date = currentTime;
+        //        conversation.message.push({
+        //            'message': message,
+        //            from: thisUser.facebook.id,
+        //            date: currentTime
+        //        });
+        //        conversation.save(saveConversation);
+        //    }
+        // Routes for posting in existing conversation
+        app.put('/api/v1/conversation',
+            isLoggedIn,
+            passport.authenticate(['facebook-token']),
+            function(req, res) {
+                if (req.user) {
+                    var _id = req.body.conversationID;
+                    var message = req.body.message;
+                    if (!_id) {
+                        res.status(400).json({'error': '_id required in body'});
+                        return;
+                    }
+                    if (!message) {
+                        res.status(400).json({'error': 'message required in body'});
+                    }
+                    Conversation.findOne({_id: groupID}, function(err, conversation) {
+                        if (err) {
+                            res.status(404).json(err);
+                        } else if (!conversation) {
+                            res.status(404).json({'error': 'Conversation Not Found'});
+                        } else {
+                            var currentTime = Date.now;
+                            conversation.date = currentTime;
+                            conversation.message.push({
+                                'message': message,
+                                from: req.user.name,
+                                date: currentTime
+                            });
+                            conversation.save(saveConversation);
+                        }
+                    });
+                } else {
+                    // Respond with Unauthorized access.
+                    res.status(401).json({'error': 'Access Not Authorized.'});
+                }
+            });
+
+        // Routes for creating new conversation
         app.post('/api/v1/conversation',
             isLoggedIn,
             passport.authenticate(['facebook-token']),
@@ -341,18 +397,12 @@ module.exports = function(app, passport) {
                             });
                             newConversation.message.push({
                                 'message': message,
-                                from: thisUser.facebook.id,
+                                from: thisUser.name,
                                 date: currentTime
                             });
                             newConversation.save(saveConversation);
                         } else {
-                            conversation.date = currentTime;
-                            conversation.message.push({
-                                'message': message,
-                                from: thisUser.facebook.id,
-                                date: currentTime
-                            });
-                            conversation.save(saveConversation);
+                            res.status(400).json({'error': 'Conversation Already Exists'});
                         }
                     });
                 } else {
