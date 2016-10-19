@@ -9,7 +9,7 @@ var messageSchema = new Schema({
 });
 
 var conversationSchema = new Schema({
-    _id: {type: String, required},
+    _id: {type: String, required: true},
     members: [{type: String, required: true}],
     message: [messageSchema],
     date: {type: Date}
