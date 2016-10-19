@@ -60,7 +60,7 @@ module.exports = function(app, passport) {
         function(req, res) {
             //  Check if the user was authenticated
             if (req.user) {
-                res.status(200).json({'Auth': 'Successful'});
+                res.status(200).json({'auth': 'Successful'});
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
@@ -73,7 +73,7 @@ module.exports = function(app, passport) {
         function(req, res) {
             // Check if the user was authenticated
             if (req.user) {
-                res.status(200).json({'Auth': 'Successful'});
+                res.status(200).json({'auth': 'Successful'});
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
@@ -112,7 +112,7 @@ module.exports = function(app, passport) {
 
                 // Check if the email was passed in the parameter.
                 if (!email) {
-                    res.status(404).json({'error': 'email is required to find user'});
+                    res.status(404).json({'error': 'Email is required to find user'});
                     return;
                 }
 
@@ -124,28 +124,80 @@ module.exports = function(app, passport) {
             }
         });
 
-    app.put('/api/v1/user/add',
+    app.put('/api/v1/user/friend/accept',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
             if (req.user) {
-                // get the friendID from the body.
-                var friendID = req.body.friendID;
+                var thisUser = req.user;
+                var otherUserID = req.body.otherUserID;
+
+            }
+        });
+
+    app.delete('/api/v1/user/friend/decline',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            // Check if the user was authenticated.
+            if (req.user) {
+                // Get the current user profile.
+                var thisUser = req.user;
+                // Get the friend's user id passed from the body.
+                var otherUserID = req.body.OtherUserID;
+                // Check if otherUserID was put in the body.
+                if (!otherUserID) {
+                    res.status(400).json({'error': 'OtherUserID required in body'});
+                    return;
+                }
+                // Check if the current User has any pending friends.
+                if (!thisUser.pendingFriends || thisUser.pendingFriends.length == 0) {
+                    res.status(400).json({'error': 'User does not have any pending requests'});
+                    return;
+                }
+                // get the index of the friend based on their id.
+                var idIndex = thisUser.pendingFriends.indexOf(otherUserID);
+                // remove that friend's id from the pending list.
+                thisUser.pendingFriends.slice(idIndex, 1);
+                // Save the current user schema.
+                thisUser.save(function(err, user) {
+                    if (err) {
+                        // error with save respond with status 500 and
+                        // error information.
+                        res.status(500).json(err);
+                    } else {
+                        // deleting from the user was succesful and respond with
+                        // status code 201.
+                        res.status(201).json({'message': 'Sucessfully removed pending friend.'});
+                    }
+                });
+            } else {
+                // Respond with Unauthorized access.
+                res.status(401).json({'error': 'Access Not Authorized.'});
+            }
+        });
+
+    app.put('/api/v1/user/friend/add',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            // Check if the user was authenticated
+            if (req.user) {
+                // get the otherUserID from the body.
+                var otherUserID = req.body.otherUserID;
                 // Check if the authenticated user's facebook id is equal to
                 // the given friend's id.
-                if (req.user.facebook.id == friendID) {
+                if (req.user.facebook.id == otherUserID) {
                     // Respond with bad request status code.
                     res.status(400).json('error': 'Cannot add yourself to the friends list.');
                     return;
                 }
                 // Check if the friend's facebook id was passed in the parameter
-                if (!friendID) {
+                if (!otherUserID) {
                     // Respond with bad request status code.
                     res.status(400).json({'error': 'id is required to add friends'});
                     return;
                 }
-                // Find user by checking for friendID and facebook id.
-                User.findOne({'facebook.id':friendID}, function(err, user) {
+                // Find user by checking for otherUserID and facebook id.
+                User.findOne({'facebook.id':otherUserID}, function(err, user) {
                     if (!user) {
                         // if the user wasn't found respond with status 404
                         // and the information stating User was not found...
@@ -160,12 +212,13 @@ module.exports = function(app, passport) {
                         // save the user schema that was found.
                         user.save(function(err, user) {
                             if (err) {
-                                // if there was an error respond with status 404
-                                // and the err information.
+                                // error with save respond with status 500 and
+                                // error information.
                                 res.status(500).json(err);
                             } else {
-
-                                res.status(201).json('Message': 'Successfuly Added to pending friends list');
+                                // saving was successful and respond with status
+                                // 201.
+                                res.status(201).json('message': 'Successfully added to pending list');
                             }
                         });
                     }
