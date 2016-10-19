@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
-import 'rxjs/add/operator/map';
+import { LoadingController } from 'ionic-angular';
+
 
 /*
   Generated class for the AppLoading provider.
@@ -13,6 +13,6 @@ import 'rxjs/add/operator/map';
 @Injectable()
 export class AppLoading {
 
-  constructor(private http: Http) { }
+  constructor(public loadingCtrl: LoadingController) { }
 
 }

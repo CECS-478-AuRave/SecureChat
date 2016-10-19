@@ -12,7 +12,7 @@ import { ToastController } from 'ionic-angular';
 @Injectable()
 export class AppNotification {
 
-  constructor(public toastCtrl: ToastController) { }
+  constructor(private toastCtrl: ToastController) { }
 
   //Show a Static toast
   showToast(toastContent) {

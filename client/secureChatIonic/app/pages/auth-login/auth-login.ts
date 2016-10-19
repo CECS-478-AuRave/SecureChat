@@ -18,14 +18,7 @@ export class AuthLoginPage {
   //Get reference to our ion-content
   @ViewChild(Content) content: Content;
 
-  //Declare our service we shall be injecting
-  private authProvider: AppAuth;
-
-  constructor(private navCtrl: NavController, private injectedAuth: AppAuth) {
-
-    //Set our service to our variable
-    this.authProvider = injectedAuth;
-  }
+  constructor(private navCtrl: NavController, private authProvider: AppAuth) { }
 
   //Function called once the view is full loaded
   ionViewDidEnter() {

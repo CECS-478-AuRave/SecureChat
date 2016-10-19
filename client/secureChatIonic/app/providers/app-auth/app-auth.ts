@@ -38,7 +38,7 @@ export class AppAuth {
   user: any;
 
   //Class constructor
-  constructor(private http: Http, public appNotification: AppNotification, public app: App) {
+  constructor(private http: Http, private appNotification: AppNotification, private app: App) {
 
     //Grab our user from localstorage
     if (localStorage.getItem('shushUser')) {
