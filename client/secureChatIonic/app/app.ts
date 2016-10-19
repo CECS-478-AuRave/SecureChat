@@ -21,7 +21,7 @@ class MyApp {
   @ViewChild(Nav) nav: Nav;
 
   //Our Home Page
-  rootPage: any = Home;
+  rootPage: any;
 
   //Our Array of pages depending on state
   alwaysPages: Array<{ title: string, component: any }>;
@@ -42,6 +42,10 @@ class MyApp {
       { title: 'Messages', component: AllMessagesPage }
     ];
 
+    //Set our root page
+    if (this.isLoggedIn()) this.rootPage = AllMessagesPage;
+    else this.rootPage = Home;
+
   }
 
   initializeApp() {
@@ -49,6 +53,9 @@ class MyApp {
       // Okay, so the platform is ready and our plugins are available.
       // Here you can do any higher level native things you might need.
       StatusBar.styleDefault();
+
+      //Initialize facebook
+      this.authProvider.initFacebook();
     });
   }
 
@@ -61,6 +68,11 @@ class MyApp {
   //Check if we are logged in
   isLoggedIn() {
     return this.authProvider.authStatus();
+  }
+
+  //Logout the user
+  logout() {
+    this.authProvider.logout();
   }
 }
 

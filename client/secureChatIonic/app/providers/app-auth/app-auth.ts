@@ -4,6 +4,7 @@ import { App } from 'ionic-angular';
 import 'rxjs/add/operator/map';
 
 //Import Pages we navigate to
+import { Home } from '../../pages/home/home';
 import { AllMessagesPage } from '../../pages/all-messages/all-messages';
 
 //Import our providers (services)
@@ -40,14 +41,10 @@ export class AppAuth {
 
   //Class constructor
   constructor(private app: App, private http: Http, private appNotification: AppNotification, private appLoading: AppLoading) {
-
+    //Initialize the user
     //Grab our user from localstorage
-    if (localStorage.getItem('shushUser')) {
-      this.user = JSON.parse(localStorage.getItem('shushUser'));
-      //TEMP
-      this.user = {
-        access_token: false
-      };
+    if (localStorage.getItem(AppSettings.shushItemName)) {
+      this.user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
     } else {
       this.user = {
         access_token: false
@@ -70,7 +67,6 @@ export class AppAuth {
       version: 'v2.6'
     });
   }
-
 
   //Login
   //Scope asks for permissions that we need to create/identify users
@@ -96,15 +92,10 @@ export class AppAuth {
 
   //Logout
   logout() {
-    FB.logout(function(response) {
-
-      // Person is now logged out
-      console.log(response);
-
-      //No work is needed by the server, since the token will invalidate itself in OAuth
-      //Simply redirect to home
-
-    });
+    let token = {
+      access_token: this.user.access_token
+    }
+    this.serverLogout(token);
   }
 
   //Private functions for server requests
@@ -134,7 +125,7 @@ export class AppAuth {
       self.user.keys = {};
 
       //Save the user info
-      localStorage.setItem('shushUser', JSON.stringify(self.user));
+      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(self.user));
 
       //Stop Loading
       self.appLoading.stopLoading().then(function() {
@@ -142,7 +133,7 @@ export class AppAuth {
         //In a timeout to avoid colliding with loading
         setTimeout(function() {
           self.appNotification.showToast('Login Successful!');
-        }, 500)
+        }, 250)
       });
 
       //Redirect to messages page
@@ -154,16 +145,63 @@ export class AppAuth {
       //Stop Loading
       self.appLoading.stopLoading().then(function() {
         //Pass to Error Handler
-        self.appNotification.handleError(error);
-      })
-    });
+        self.appLoading.handleError(error);
+      });
+    }, function() {
+      //Subscription has completed
+    })
 
-    //Toast the user or something
-    console.log(error);
-  }, function() {
-    //Subscription has completed
-  })
+  }
 
-}
+  private serverLogout(payload) {
+
+    //Start Loading
+    this.appLoading.startLoading('Logging out...');
+
+    //Save a reference to this
+    let self = this;
+
+    //Convert the payload to a string
+    JSON.stringify(payload);
+
+    //Send the request with the payload to the server
+    var response = this.http.post(AppSettings.serverUrl + 'logout', payload).map(res => res.json());
+
+    //Respond to the callback
+    response.subscribe(function(success) {
+      //Success!
+
+      //Set the user to false
+      self.user.access_token = false;
+      self.user.user = {};
+      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(this.user));
+
+      //No work is needed by the server, since the token will invalidate itself in OAuth
+
+      //Stop Loading
+      self.appLoading.stopLoading().then(function() {
+        //Toast What Happened
+        //In a timeout to avoid colliding with loading
+        setTimeout(function() {
+          self.appNotification.showToast('Logout Successful!');
+        }, 250)
+      });
+
+      //Redirect to messages page
+      let nav = self.app.getRootNav();
+      nav.setRoot(Home);
+    }, function(error) {
+
+      //Error
+      //Stop Loading
+      self.appLoading.stopLoading().then(function() {
+        //Pass to Error Handler
+        self.appLoading.handleError(error);
+      });
+    }, function() {
+      //Subscription has completed
+    })
+
+  }
 
 }

@@ -16,6 +16,9 @@ export class AppNotification {
 
   //Show a Static toast
   showToast(toastContent) {
+    //Ensure we aren't toasting nothing
+    if (!toastContent) return;
+
     let toast = this.toastCtrl.create({
       message: toastContent,
       showCloseButton: true,

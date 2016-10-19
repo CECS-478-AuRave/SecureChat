@@ -1,5 +1,5 @@
-import { Component, ViewChild } from '@angular/core';
-import { Content, NavController } from 'ionic-angular';
+import { Component } from '@angular/core';
+import { NavController } from 'ionic-angular';
 
 //Import our providers (services)
 import { AppAuth } from '../../providers/app-auth/app-auth';
@@ -15,16 +15,8 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 })
 
 export class AuthLoginPage {
-  //Get reference to our ion-content
-  @ViewChild(Content) content: Content;
 
   constructor(private navCtrl: NavController, private authProvider: AppAuth) { }
-
-  //Function called once the view is full loaded
-  ionViewDidEnter() {
-    //Initialize facebook
-    this.authProvider.initFacebook();
-  }
 
   //Call our log in function from our auth service
   login() {

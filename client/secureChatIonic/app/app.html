@@ -22,6 +22,10 @@
             {{p.title}}
           </button>
       </div>
+      <!-- Logout Button -->
+      <button menuClose ion-item *ngIf="isLoggedIn()" (click)="logout()">
+          Logout
+      </button>
     </ion-list>
   </ion-content>
 
