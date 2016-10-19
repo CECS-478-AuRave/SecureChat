@@ -22,46 +22,32 @@ export class AppAuth {
 
     //Init the facebook sdk
     //Also, placing in a timeout, to allow animations before making request
-    setTimeout(this.initFb(), 1000)
-  }
-
-  //Private functions for server requests
-  private serverLogin() {
-    // return this.http.post(this.heroesUrl, body, options)
-    //   .map(this.extractData)
-    //   .catch(this.handleError);
-  }
-
-  //Init facebook function
-  initFb() {
-    //Key must be in the same FB format, or ese everything is untestable
-    FB.init({
-      appId: AppSettings.facebookAppId,
-      cookie: true,
-      version: 'v2.6'
-    });
-
-    //Next, get the current log in status
-    FB.getLoginStatus(function(response) {
-      //We have our response on our user
-      console.log(response);
-      if (response.status === 'connected') {
-        // Logged into your app and Facebook.
-      } else if (response.status === 'not_authorized') {
-        // The person is logged into Facebook, but not your app.
-      } else {
-        // The person is not logged into Facebook, so we're not sure if
-        // they are logged into this app or not.
-      }
-    });
+    setTimeout(function() {
+      FB.init({
+        appId: AppSettings.facebookAppId,
+        cookie: true,
+        version: 'v2.6'
+      });
+    }, 1000)
   }
 
   //Login
   //Scope asks for permissions that we need to create/identify users
   login() {
+
+    //Make a reference to 'this' to avoid scoping this issue
+    let self = this;
     FB.login(function(response) {
+
       //Response from facebook on function call
-      console.log(response);
+      let jsonResponse = response.authResponse;
+
+      //Pass the access token to our server login
+      let payload = {
+        access_token: jsonResponse.accessToken
+      }
+      self.serverLogin(payload);
+
     }, {
         scope: 'email'
       });
@@ -70,9 +56,38 @@ export class AppAuth {
   //Logout
   logout() {
     FB.logout(function(response) {
+
       // Person is now logged out
       console.log(response);
+
+      //No work is needed by the server, since the token will invalidate itself in OAuth
+      //Simply redirect to home
+
     });
+  }
+
+  //Private functions for server requests
+  //How to make REST requests in Angular 2: http://stackoverflow.com/questions/34671715/angular2-http-get-map-subscribe-and-observable-pattern-basic-understan/34672550
+  private serverLogin(payload) {
+
+    //Convert the payload to a string
+    JSON.stringify(payload);
+
+    //Send the request with the payload to the server
+    var response = this.http.post(AppSettings.serverUrl, payload).map(res => res.json());
+    //Respond to the callback
+    response.subscribe(function(success) {
+      //Success!
+      //Redirect the user to the messages screen
+      console.log("YAY!");
+      console.log(success);
+    }, function(error) {
+      //error
+      //Toast the user or something
+      console.log("BOO!");
+      console.log(error);
+    })
+
   }
 
 }
