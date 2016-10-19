@@ -10,10 +10,12 @@ import { AuthLoginPage } from './pages/auth-login/auth-login';
 //Import our providers (services)
 import { AppSettings } from './providers/app-settings/app-settings';
 import { AppAuth } from './providers/app-auth/app-auth';
+import { AppNotification } from './providers/app-notification/app-notification';
+import { AppLoading } from './providers/app-loading/app-loading';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppAuth, AppSettings]
+  providers: [AppAuth, AppSettings, AppNotification, AppLoading]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;
@@ -26,10 +28,7 @@ class MyApp {
   noAuthPages: Array<{ title: string, component: any }>;
   authPages: Array<{ title: string, component: any }>;
 
-  //Our Auth Provider
-  authProvider: AppAuth;
-
-  constructor(public platform: Platform, private injectedAuth: AppAuth) {
+  constructor(public platform: Platform, public authProvider: AppAuth) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -42,9 +41,6 @@ class MyApp {
     this.authPages = [
       { title: 'Messages', component: AllMessagesPage }
     ];
-
-    //Set our auth provider
-    this.authProvider = injectedAuth;
 
   }
 
@@ -64,7 +60,7 @@ class MyApp {
 
   //Check if we are logged in
   isLoggedIn() {
-    this.authProvider.authStatus();
+    return this.authProvider.authStatus();
   }
 }
 

@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
+import { App } from 'ionic-angular';
 import 'rxjs/add/operator/map';
+
+//Import Pages we navigate to
+import { AllMessagesPage } from '../../pages/all-messages/all-messages';
 
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppNotification } from '../../providers/app-notification/app-notification';
 
 /*
   Generated class for the AppAuth provider.
@@ -15,14 +20,33 @@ import { AppSettings } from '../../providers/app-settings/app-settings';
 export class AppAuth {
 
   //Our user accesToken
+  /*
+  User schema
+  {
+        user: {
+            name:""
+            email:""
+            etc....
+        }
+        keys: {
+            public: 'sdjlaksjda'
+            private: 'askjdklsjd'
+        },
+        access_token: 'token'
+    }
+  */
   user: any;
 
   //Class constructor
-  constructor(private http: Http) {
+  constructor(private http: Http, public appNotification: AppNotification, public app: App) {
 
     //Grab our user from localstorage
     if (localStorage.getItem('shushUser')) {
       this.user = JSON.parse(localStorage.getItem('shushUser'));
+      //TEMP
+      //   this.user = {
+      //     access_token: false
+      //   };
     } else {
       this.user = {
         access_token: false
@@ -86,6 +110,9 @@ export class AppAuth {
   //How to make REST requests in Angular 2: http://stackoverflow.com/questions/34671715/angular2-http-get-map-subscribe-and-observable-pattern-basic-understan/34672550
   private serverLogin(payload) {
 
+    //Save a reference to this
+    let self = this;
+
     //Convert the payload to a string
     JSON.stringify(payload);
 
@@ -94,13 +121,32 @@ export class AppAuth {
     //Respond to the callback
     response.subscribe(function(success) {
       //Success!
+
+      //Get the neccesary info from the user object
+      self.user.user = success.user
+      self.user.access_token = payload.access_token;
+      //TODO: Generate Encryption keys for the user if none
+      self.user.keys = {};
+
+      //Save the user info
+      localStorage.setItem('shushUser', JSON.stringify(self.user));
+
+      //Show a notification
+      self.appNotification.showToast('Login Successful!');
+
+      //Redirect to messages page
+      let nav = self.app.getRootNav();
+      nav.setRoot(AllMessagesPage);
+
       //Redirect the user to the messages screen
-      console.log("YAY!");
       console.log(success);
     }, function(error) {
-      //error
+
+      //Error
+      //TODO: Pass to error Handler
+      self.appNotification.showToast('Login Failed');
+
       //Toast the user or something
-      console.log("BOO!");
       console.log(error);
     })
 
