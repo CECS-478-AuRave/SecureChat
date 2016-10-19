@@ -28,8 +28,9 @@ export class AppAuth {
         cookie: true,
         version: 'v2.6'
       });
-    }, 1000)
+    }, 100)
   }
+
 
   //Login
   //Scope asks for permissions that we need to create/identify users
