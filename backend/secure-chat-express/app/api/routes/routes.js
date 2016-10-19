@@ -129,9 +129,59 @@ module.exports = function(app, passport) {
         function(req, res) {
             // Check if the user was authenticated
             if (req.user) {
+                // Get the current user profile.
                 var thisUser = req.user;
-                var otherUserID = req.body.otherUserID;
-
+                // Get the friend's user id passed from the body.
+                var otherUserID = req.body.OtherUserID;
+                // Check if otherUserID was put in the body.
+                if (!otherUserID) {
+                    res.status(400).json({'error': 'OtherUserID required in body'});
+                    return;
+                }
+                // Check if the current User has any pending friends.
+                if (!thisUser.pendingFriends || thisUser.pendingFriends.length == 0) {
+                    res.status(400).json({'error': 'User does not have any pending requests'});
+                    return;
+                }
+                // get the index of the friend based on their id.
+                var idIndex = thisUser.pendingFriends.indexOf(otherUserID);
+                // remove that friend's id from the pending list.
+                thisUser.pendingFriends.slice(idIndex, 1);
+                User.findOne({'facebook.id':otherUserID}, function(err, otherUser) {
+                    if (!user) {
+                        // if the user wasn't found respond with status 404
+                        // and the information stating User was not found...
+                        res.status(404).json({'error': 'Other User was not found.'});
+                    } else if (err) {
+                        // if there was an error respond with status 404
+                        // and the err information.
+                        res.status(404).json(err);
+                    } else {
+                        // Add each users as friends.
+                        otherUser.friends.push(thisUser.facebook.id);
+                        thisUser.friends.push(otherUserID);
+                        // Save other user
+                        otherUser.save(function(err, user) {
+                            if (err) {
+                                // error with save respond with status 500 and
+                                // error information.
+                                res.status(500).json(err);
+                            }
+                        });
+                        // Save this user
+                        thisUser.save(function(err, user) {
+                            if (err) {
+                                // error with save respond with status 500 and
+                                // error information.
+                                res.status(500).json(err);
+                            } else {
+                                // adding friend was successful. resond with
+                                // status 201.
+                                res.status(201).json('message': 'Successfully added friends');
+                            }
+                        });
+                    }
+                });
             }
         });
 
@@ -255,4 +305,4 @@ var isLoggedIn = function(req, res, next) {
 
     // Respond with Unauthorized access.
     res.status(401).json({'error': 'Access Not Authorized.'});
-}
+};
