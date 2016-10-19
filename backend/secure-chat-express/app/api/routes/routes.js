@@ -296,6 +296,27 @@ module.exports = function(app, passport) {
                 res.status(401).json({'error': 'Access Not Authorized.'});
             }
         });
+
+        // Routes for posting messages
+        app.post('/api/v1/messages',
+            isLoggedIn,
+            passport.authenticate(['facebook-token']),
+            function(req, res) {
+                if (!req.user) {
+                    var thisUser = req.user;
+                    var members = req.body.members.list;
+                    // Check if otherUserID was put in the body.
+                    if (!members) {
+                        res.status(400).json({'error': 'OtherUserID required in body'});
+                        return;
+                    }
+                    members.push(thisUser.facebook.id);
+
+                } else {
+                    // Respond with Unauthorized access.
+                    res.status(401).json({'error': 'Access Not Authorized.'});
+                }
+            });
 };
 
 var findUser = function(err, user) {
