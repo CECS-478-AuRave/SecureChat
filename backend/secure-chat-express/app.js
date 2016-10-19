@@ -39,11 +39,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // required for passport sessions
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    savedUninitalized: true,
+    savedUninitialized: true,
     resave: true
 }));
 
-// initalize passport authentication
+// initialize passport authentication
 app.use(passport.initialize());
 
 // used for persistent login sessions.
