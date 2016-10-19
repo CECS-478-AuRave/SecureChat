@@ -35,3 +35,4 @@ process.on('SIGINT', function() {
 });
 
 require('./user');
+require('./conversation');
