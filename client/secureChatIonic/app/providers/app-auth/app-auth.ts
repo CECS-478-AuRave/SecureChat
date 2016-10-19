@@ -74,7 +74,7 @@ export class AppAuth {
     JSON.stringify(payload);
 
     //Send the request with the payload to the server
-    var response = this.http.post(AppSettings.serverUrl, payload).map(res => res.json());
+    var response = this.http.post(AppSettings.serverUrl + 'login', payload).map(res => res.json());
     //Respond to the callback
     response.subscribe(function(success) {
       //Success!
