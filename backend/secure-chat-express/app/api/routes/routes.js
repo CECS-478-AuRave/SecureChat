@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
+var Conversation = mongoose.model('Conversation');
 
 module.exports = function(app, passport) {
 
@@ -19,10 +20,11 @@ module.exports = function(app, passport) {
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
-            if (req.user) {
+            if (req.user || req.newUser) {
+                var user = req.user ? req.user : req.newUser;
                 // Respond with status 200 and JSON
                 res.status(200).json({'login': 'Successful',
-                                      'user': req.user});
+                                      'user': user});
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
@@ -48,7 +50,8 @@ module.exports = function(app, passport) {
     //     ));
 
     // Route for logging out, if the user is already logged in.
-    app.get('/api/v1/logout', isLoggedIn,
+    app.get('/api/v1/logout',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             req.logout();
@@ -56,6 +59,7 @@ module.exports = function(app, passport) {
 
     // Route for getting a user's publicKey
     app.get('/api/v1/user/id/:id/publicKey',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             //  Check if the user was authenticated
@@ -69,6 +73,7 @@ module.exports = function(app, passport) {
 
     // Route for posting publicKey
     app.put('/api/v1/user/id/:id/publicKey',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -82,6 +87,7 @@ module.exports = function(app, passport) {
 
     // Route for getting user information based on their facebook id.
     app.get('/api/v1/user/id/:id',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -104,6 +110,7 @@ module.exports = function(app, passport) {
 
     // Route for getting user information based on their email.
     app.get('/api/v1/user/email/:email',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -124,7 +131,9 @@ module.exports = function(app, passport) {
             }
         });
 
+    // Route for accepting a pending friend request.
     app.put('/api/v1/user/friend/accept',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -185,7 +194,10 @@ module.exports = function(app, passport) {
             }
         });
 
+
+    // Route for declining a pending friend request.
     app.delete('/api/v1/user/friend/decline',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated.
@@ -226,7 +238,9 @@ module.exports = function(app, passport) {
             }
         });
 
+    // Route for creating a friend request.
     app.put('/api/v1/user/friend/add',
+        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -256,7 +270,11 @@ module.exports = function(app, passport) {
                         // if there was an error respond with status 404
                         // and the err information.
                         res.status(404).json(err);
-                    } else {
+                    } else if (user.pendingFriends.indexOf(req.user.facebook.id) == -1) {
+                        res.status(400).json({'error': 'Already pending friend request'});
+                    } else if (user.friends.indexOf(req.user.facebook.id) == -1) {
+                        res.status(400).json({'error': 'User is already a friend.'})
+                    }else {
                         // Push the authenticated freind's id to the facebook id.
                         user.pendingFriends.push(req.user.facebook.id);
                         // save the user schema that was found.
