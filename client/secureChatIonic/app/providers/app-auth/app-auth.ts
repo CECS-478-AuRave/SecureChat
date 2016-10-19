@@ -15,20 +15,35 @@ import { AppSettings } from '../../providers/app-settings/app-settings';
 export class AppAuth {
 
   //Our user accesToken
-  accesToken: string;
+  user: any;
 
   //Class constructor
   constructor(private http: Http) {
 
+    //Grab our user from localstorage
+    if (localStorage.getItem('shushUser')) {
+      this.user = JSON.parse(localStorage.getItem('shushUser'));
+    } else {
+      this.user = {
+        access_token: false
+      };
+    }
+  }
+
+  //Return our Login Status
+  authStatus() {
+    if (this.user.access_token) return true;
+    return false;
+  }
+
+  //Initialize facebook
+  initFacebook() {
     //Init the facebook sdk
-    //Also, placing in a timeout, to allow animations before making request
-    setTimeout(function() {
-      FB.init({
-        appId: AppSettings.facebookAppId,
-        cookie: true,
-        version: 'v2.6'
-      });
-    }, 100)
+    FB.init({
+      appId: AppSettings.facebookAppId,
+      cookie: true,
+      version: 'v2.6'
+    });
   }
 
 

@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { Content, NavController } from 'ionic-angular';
 
 //Import our providers (services)
 import { AppAuth } from '../../providers/app-auth/app-auth';
@@ -15,6 +15,8 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 })
 
 export class AuthLoginPage {
+  //Get reference to our ion-content
+  @ViewChild(Content) content: Content;
 
   //Declare our service we shall be injecting
   private authProvider: AppAuth;
@@ -23,6 +25,12 @@ export class AuthLoginPage {
 
     //Set our service to our variable
     this.authProvider = injectedAuth;
+  }
+
+  //Function called once the view is full loaded
+  ionViewDidEnter() {
+    //Initialize facebook
+    this.authProvider.initFacebook();
   }
 
   //Call our log in function from our auth service
