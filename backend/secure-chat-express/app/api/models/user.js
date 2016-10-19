@@ -21,8 +21,8 @@ var userSchema = new Schema({
     publicKey: {
         type: String
     },
-    friends: [id: {type: String}],
-    pendingFriends: [id: {type: String}]
+    friends: [String],
+    pendingFriends: [String]
 });
 
 mongoose.model('User', userSchema);
