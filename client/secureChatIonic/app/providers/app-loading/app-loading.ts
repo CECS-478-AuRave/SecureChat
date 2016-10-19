@@ -13,6 +13,37 @@ import { LoadingController } from 'ionic-angular';
 @Injectable()
 export class AppLoading {
 
-  constructor(public loadingCtrl: LoadingController) { }
+  //Our Loader
+  loader: any;
+
+  //Our default loading string
+  defaultMessage: 'Loading, please wait...';
+
+  constructor(private loadingCtrl: LoadingController) {
+  }
+
+  //Function to start loading
+  startLoading(loadingString) {
+    //First make sure we stop loading
+    if (!loadingString) loadingString = this.defaultMessage;
+    this.loader = this.loadingCtrl.create({
+      content: loadingString
+    });
+    return this.loader.present();
+  }
+
+  //Function to stop Loading
+  stopLoading() {
+    return this.loader.dismiss();
+  }
+
+  //Function to handle Errors
+  handleError(error) {
+
+    //TODO: Allow for overiding error codes, and using custom callbacks
+
+    //
+
+  }
 
 }

@@ -9,6 +9,7 @@ import { AllMessagesPage } from '../../pages/all-messages/all-messages';
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotification } from '../../providers/app-notification/app-notification';
+import { AppLoading } from '../../providers/app-loading/app-loading';
 
 /*
   Generated class for the AppAuth provider.
@@ -38,15 +39,15 @@ export class AppAuth {
   user: any;
 
   //Class constructor
-  constructor(private http: Http, private appNotification: AppNotification, private app: App) {
+  constructor(private app: App, private http: Http, private appNotification: AppNotification, private appLoading: AppLoading) {
 
     //Grab our user from localstorage
     if (localStorage.getItem('shushUser')) {
       this.user = JSON.parse(localStorage.getItem('shushUser'));
       //TEMP
-      //   this.user = {
-      //     access_token: false
-      //   };
+      this.user = {
+        access_token: false
+      };
     } else {
       this.user = {
         access_token: false
@@ -110,6 +111,9 @@ export class AppAuth {
   //How to make REST requests in Angular 2: http://stackoverflow.com/questions/34671715/angular2-http-get-map-subscribe-and-observable-pattern-basic-understan/34672550
   private serverLogin(payload) {
 
+    //Start Loading
+    this.appLoading.startLoading('Logging in...');
+
     //Save a reference to this
     let self = this;
 
@@ -118,6 +122,7 @@ export class AppAuth {
 
     //Send the request with the payload to the server
     var response = this.http.post(AppSettings.serverUrl + 'login', payload).map(res => res.json());
+
     //Respond to the callback
     response.subscribe(function(success) {
       //Success!
@@ -131,25 +136,34 @@ export class AppAuth {
       //Save the user info
       localStorage.setItem('shushUser', JSON.stringify(self.user));
 
-      //Show a notification
-      self.appNotification.showToast('Login Successful!');
+      //Stop Loading
+      self.appLoading.stopLoading().then(function() {
+        //Toast What Happened
+        //In a timeout to avoid colliding with loading
+        setTimeout(function() {
+          self.appNotification.showToast('Login Successful!');
+        }, 500)
+      });
 
       //Redirect to messages page
       let nav = self.app.getRootNav();
       nav.setRoot(AllMessagesPage);
-
-      //Redirect the user to the messages screen
-      console.log(success);
     }, function(error) {
 
       //Error
-      //TODO: Pass to error Handler
-      self.appNotification.showToast('Login Failed');
+      //Stop Loading
+      self.appLoading.stopLoading().then(function() {
+        //Pass to Error Handler
+        self.appNotification.handleError(error);
+      })
+    });
 
-      //Toast the user or something
-      console.log(error);
-    })
+    //Toast the user or something
+    console.log(error);
+  }, function() {
+    //Subscription has completed
+  })
 
-  }
+}
 
 }
