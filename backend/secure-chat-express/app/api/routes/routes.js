@@ -297,26 +297,77 @@ module.exports = function(app, passport) {
             }
         });
 
-        // Routes for posting messages
-        app.post('/api/v1/messages',
+        // Routes for getting all messages for a user.
+        app.get('/api/v1/conversation',
             isLoggedIn,
-            passport.authenticate(['facebook-token']),
+            passport.authenticate(['facebook-token'])
             function(req, res) {
-                if (!req.user) {
-                    var thisUser = req.user;
-                    var members = req.body.members.list;
-                    // Check if otherUserID was put in the body.
-                    if (!members) {
-                        res.status(400).json({'error': 'OtherUserID required in body'});
-                        return;
-                    }
-                    members.push(thisUser.facebook.id);
+                if (req.user) {
 
                 } else {
                     // Respond with Unauthorized access.
                     res.status(401).json({'error': 'Access Not Authorized.'});
                 }
             });
+        // Routes for posting messages
+        app.post('/api/v1/conversation',
+            isLoggedIn,
+            passport.authenticate(['facebook-token']),
+            function(req, res) {
+                if (req.user) {
+                    var thisUser = req.user;
+                    var members = req.body.members.list;
+                    var message = req.body.message;
+                    // Check if otherUserID was put in the body.
+                    if (!members) {
+                        res.status(400).json({'error': 'OtherUserID required in body'});
+                        return;
+                    }
+                    if (!message) {
+                        res.status(400).json({'error': 'Message required in body'});
+                        return;
+                    }
+                    members.push(thisUser.facebook.id);
+                    var groupID = members.sort().join('');
+                    var currentTime = Date.now;
+                    Conversation.findOne({_id: groupID}, function(err, conversation) {
+                        if (err) {
+                            res.status(404).json(err);
+                        } else if (!conversation) {
+                            var newConversation = new Conversation({
+                                _id: groupID,
+                                'members': members,
+                                date: currentTime
+                            });
+                            newConversation.message.push({
+                                'message': message,
+                                from: thisUser.facebook.id,
+                                date: currentTime
+                            });
+                            newConversation.save(saveConversation);
+                        } else {
+                            conversation.date = currentTime;
+                            conversation.message.push({
+                                'message': message,
+                                from: thisUser.facebook.id,
+                                date: currentTime
+                            });
+                            conversation.save(saveConversation);
+                        }
+                    });
+                } else {
+                    // Respond with Unauthorized access.
+                    res.status(401).json({'error': 'Access Not Authorized.'});
+                }
+            });
+};
+
+var saveConversation = function(err, conversation) {
+    if (err) {
+        res.status(500).json(err);
+    } else {
+        res.status(201).json(conversation);
+    }
 };
 
 var findUser = function(err, user) {
