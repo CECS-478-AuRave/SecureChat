@@ -9,10 +9,6 @@ var flash = require('connect-flash');
 var session = require('express-session');
 var app = express();
 
-//Cors (Cross origin requests)
-var cors = require('cors')
-app.use(cors());
-
 // Require Database for connection and schema initalization.
 require('./app/api/models/db');
 
