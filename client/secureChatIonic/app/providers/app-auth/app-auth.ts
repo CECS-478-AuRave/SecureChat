@@ -155,46 +155,28 @@ export class AppAuth {
     //Start Loading
     this.appLoading.startLoading('Logging out...');
 
-    //Save a reference to this
+    //No work is needed by the server, since the token will invalidate itself in OAuth
+
+    //Set the user to false
+    this.user.access_token = false;
+    this.user.user = {};
+    localStorage.setItem(AppSettings.shushItemName, JSON.stringify(this.user));
+
+    //Store reference to this for timeout
     let self = this;
 
-    //Send the request with the payload to the server
-    var response = this.http.post(AppSettings.serverUrl + 'logout', payload).map(res => res.json());
+    //Stop Loading
+    this.appLoading.stopLoading().then(function() {
+      //Toast What Happened
+      //In a timeout to avoid colliding with loading
+      setTimeout(function() {
+        self.appNotification.showToast('Logout Successful!');
+      }, 250)
+    });
 
-    //Respond to the callback
-    response.subscribe(function(success) {
-      //Success!
-
-      //Set the user to false
-      self.user.access_token = false;
-      self.user.user = {};
-      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(this.user));
-
-      //No work is needed by the server, since the token will invalidate itself in OAuth
-
-      //Stop Loading
-      self.appLoading.stopLoading().then(function() {
-        //Toast What Happened
-        //In a timeout to avoid colliding with loading
-        setTimeout(function() {
-          self.appNotification.showToast('Logout Successful!');
-        }, 250)
-      });
-
-      //Redirect to messages page
-      let nav = self.app.getRootNav();
-      nav.setRoot(Home);
-    }, function(error) {
-
-      //Error
-      //Stop Loading
-      self.appLoading.stopLoading().then(function() {
-        //Pass to Error Handler
-        self.appLoading.handleError(error);
-      });
-    }, function() {
-      //Subscription has completed
-    })
+    //Redirect to messages page
+    let nav = this.app.getRootNav();
+    nav.setRoot(Home);
 
   }
 
