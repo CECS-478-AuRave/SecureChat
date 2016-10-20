@@ -11,7 +11,11 @@ export class AppSettings {
   //Can be stored on the client: http://stackoverflow.com/questions/6709883/facebook-app-security-what-if-someone-uses-my-appid
   static facebookAppId = '2867455650741445';
 
-  //Add our server URL
-  static serverUrl = 'http://localhost:4780';
+  static shushItemName = 'shushUser';
+
+
+
+  //Add our server URL (Local testing not actual)
+  static serverUrl = 'http://192.168.86.43:4780/api/v1';
 
 }
