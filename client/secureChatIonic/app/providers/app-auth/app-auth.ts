@@ -92,10 +92,10 @@ export class AppAuth {
 
   //Logout
   logout() {
-    let token = {
+    let payload = {
       access_token: this.user.access_token
     }
-    this.serverLogout(token);
+    this.serverLogout(payload);
   }
 
   //Private functions for server requests
@@ -107,9 +107,6 @@ export class AppAuth {
 
     //Save a reference to this
     let self = this;
-
-    //Convert the payload to a string
-    JSON.stringify(payload);
 
     //Send the request with the payload to the server
     var response = this.http.post(AppSettings.serverUrl + 'login', payload).map(res => res.json());
@@ -160,9 +157,6 @@ export class AppAuth {
 
     //Save a reference to this
     let self = this;
-
-    //Convert the payload to a string
-    JSON.stringify(payload);
 
     //Send the request with the payload to the server
     var response = this.http.post(AppSettings.serverUrl + 'logout', payload).map(res => res.json());
