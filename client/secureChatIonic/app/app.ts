@@ -8,36 +8,43 @@ import { AllMessagesPage } from './pages/all-messages/all-messages';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 
 //Import our providers (services)
-import { AppKeys } from './providers/app-keys/app-keys';
+import { AppSettings } from './providers/app-settings/app-settings';
 import { AppAuth } from './providers/app-auth/app-auth';
+import { AppNotification } from './providers/app-notification/app-notification';
+import { AppLoading } from './providers/app-loading/app-loading';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppAuth, AppKeys]
+  providers: [AppAuth, AppSettings, AppNotification, AppLoading]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = Home;
+  //Our Home Page
+  rootPage: any;
 
-  pages: Array<{ title: string, component: any }>;
+  //Our Array of pages depending on state
+  alwaysPages: Array<{ title: string, component: any }>;
+  noAuthPages: Array<{ title: string, component: any }>;
+  authPages: Array<{ title: string, component: any }>;
 
-  constructor(public platform: Platform) {
+  constructor(public platform: Platform, public authProvider: AppAuth) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
-    this.pages = [
-      { title: 'Home', component: Home },
-      { title: 'Messages', component: AllMessagesPage },
+    this.alwaysPages = [
+      { title: 'Home', component: Home }
+    ];
+    this.noAuthPages = [
       { title: 'Login', component: AuthLoginPage }
     ];
+    this.authPages = [
+      { title: 'Messages', component: AllMessagesPage }
+    ];
 
-    //TODO: Temporary! A fake user settings json
-    localStorage.setItem("shushUser", JSON.stringify({
-      id: "2424",
-      name: "test",
-      session: "token"
-    }));
+    //Set our root page
+    if (this.isLoggedIn()) this.rootPage = AllMessagesPage;
+    else this.rootPage = Home;
 
   }
 
@@ -46,6 +53,9 @@ class MyApp {
       // Okay, so the platform is ready and our plugins are available.
       // Here you can do any higher level native things you might need.
       StatusBar.styleDefault();
+
+      //Initialize facebook
+      this.authProvider.initFacebook();
     });
   }
 
@@ -53,6 +63,16 @@ class MyApp {
     // Reset the content nav to have just this page
     // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component);
+  }
+
+  //Check if we are logged in
+  isLoggedIn() {
+    return this.authProvider.authStatus();
+  }
+
+  //Logout the user
+  logout() {
+    this.authProvider.logout();
   }
 }
 

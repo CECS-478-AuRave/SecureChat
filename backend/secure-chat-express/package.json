@@ -22,5 +22,8 @@
     "passport-facebook": "~2.1.1",
     "passport-facebook-token": "^3.3.0",
     "serve-favicon": "~2.3.0"
+  },
+  "devDependencies": {
+    "cors": "^2.8.1"
   }
 }

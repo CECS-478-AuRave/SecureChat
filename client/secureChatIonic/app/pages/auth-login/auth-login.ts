@@ -16,14 +16,7 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 export class AuthLoginPage {
 
-  //Declare our service we shall be injecting
-  private authProvider: AppAuth;
-
-  constructor(private navCtrl: NavController, private injectedAuth: AppAuth) {
-
-    //Set our service to our variable
-    this.authProvider = injectedAuth;
-  }
+  constructor(private navCtrl: NavController, private authProvider: AppAuth) { }
 
   //Call our log in function from our auth service
   login() {
