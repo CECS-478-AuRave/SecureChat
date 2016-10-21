@@ -19,11 +19,11 @@
 
   <!-- ngFor through all of our messages -->
   <ion-list class="recentMessagesList">
-    <button ion-item class="messageItem" (click)="convoClick(message.conversationId)" *ngFor="let message of recentMessages; let i = index;">
+    <button ion-item class="messageItem" (click)="convoClick(conversation.conversationId)" *ngFor="let conversation of allConversations; let i = index;">
       <!-- Our user name -->
-      <h3 class="messageUser">{{message.user}}</h3>
+      <h3 class="messageUser">{{conversation.message[conversation.message.length - 1].from}}</h3>
       <!-- Our message text -->
-      <div class="messageText">{{shortenText(message.text)}}</div>
+      <div class="messageText">{{shortenText(conversation.message[conversation.message.length - 1].message)}}</div>
   </button>
   </ion-list>
 </ion-content>
