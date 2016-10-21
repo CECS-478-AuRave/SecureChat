@@ -1,12 +1,13 @@
 //Class to simply store app keys
 export class AppSettings {
 
-  //How to ignore changes on this file: http://stackoverflow.com/a/17410119
-  //DO NOT UPLOAD ACTUAL KEYS TO GITHUB
+  //How to ignore changes on this file: http://stackoverflow.com/a/17410119 (If desired)
 
-  //Fake key for now, to get the dialog working
   //Can be stored on the client: http://stackoverflow.com/questions/6709883/facebook-app-security-what-if-someone-uses-my-appid
-  static facebookAppId = '2345671234542689';
+  static facebookAppId = '1867451080142485';
+
+  //Poll interval for things like settings
+  static pollInterval = 30000;
 
   //The name of the json object stored on the device
   /*
@@ -28,6 +29,6 @@ export class AppSettings {
 
   //Add our server URL (Local testing not actual)
   //Must end with a slash
-  static serverUrl = 'http://192.168.43.86:4780/api/v1/';
+  static serverUrl = 'http://localhost:4780/api/v1/';
 
 }

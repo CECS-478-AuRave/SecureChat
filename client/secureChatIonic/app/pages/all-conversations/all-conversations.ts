@@ -25,7 +25,34 @@ export class AllConversationsPage {
     //Start Loading
     this.appNotify.startLoading('Getting Messages...');
 
-    //Will be finished once the view enters, ionViewDidEnter
+    //Get the messages now, and then poll later once the view is opened
+
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+
+    //Start polling to get messages
+    let request = this.appMessaging.conversationRequest(user.access_token);
+
+    //Get a reference to this
+    let self = this;
+
+    //Get our current conversation
+    request.subscribe(function(success) {
+      //Success!
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+        self.messageGetSuccess(success);
+      });
+    }, function(error) {
+      //Error!
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+        self.messageGetError(error);
+      });
+
+    }, function() {
+      //Completed
+    })
   }
 
   //Function called once the view is full loaded
@@ -35,45 +62,48 @@ export class AllConversationsPage {
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
     //Start polling to get messages
-    let poll = this.appMessaging.conversationRequest(user.access_token);
+    let poll = this.appMessaging.conversationRequestPoll(user.access_token);
 
     //Get a reference to this
     let self = this;
 
     this.pollingRequest = poll.subscribe(function(success) {
       //Success!
+      self.messageGetSuccess(success);
+    }, function(error) {
+      //Error!
+      self.messageGetError(error);
+    }, function() {
+      //Completed
+    });
+  }
 
-      //Stop loading
-      self.appNotify.stopLoading().then(function() {
+  //Functions to handle observable responses
+  messageGetSuccess(success) {
+    //Add our messages
+    this.appMessaging.conversations = success
+    this.convoList = this.appMessaging.conversations;
 
-        //Add our messages
-        self.appMessaging.conversations = success
-        self.convoList = self.appMessaging.conversations;
+    //Update the UI
+    this.changeDetector.detectChanges();
+  }
+
+  messageGetError(error) {
+
+    //reference to this
+    let self = this;
+
+    //Pass to Error Handler
+    this.appNotify.handleError(error, [{
+      status: 404,
+      callback: function() {
+        //Simply set all conversations to an empty array
+        self.convoList = [];
 
         //Update the UI
         self.changeDetector.detectChanges();
-      });
-    }, function(error) {
-      //Error!
-
-      //Stop Loading
-      self.appNotify.stopLoading().then(function() {
-        //Pass to Error Handler
-        self.appNotify.handleError(error, [{
-          status: 404,
-          callback: function() {
-            //Simply set all conversations to an empty array
-            self.convoList = [];
-
-            //Update the UI
-            self.changeDetector.detectChanges();
-          }
-        }]);
-      });
-
-    }, function() {
-      //Completed
-    })
+      }
+    }]);
   }
 
   //Function to return if we have conversations
