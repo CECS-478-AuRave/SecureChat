@@ -19,7 +19,7 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 @Component({
   templateUrl: 'build/pages/all-messages/all-messages.html',
 })
-export class AllMessagesPage {
+export class AllConversationsPage {
 
   //Our NavController
   location: NavController;
@@ -70,11 +70,12 @@ export class AllMessagesPage {
 
   //Get shortened text with elipses
   shortenText(text: string) {
+    let textMax = 35;
     //First check if the text is already short
-    if (text.length < 21) return text;
+    if (text.length < textMax) return text;
     else {
       //Get a substring of text
-      text = text.substring(0, 20);
+      text = text.substring(0, (textMax - 1));
       text = text + '...';
       return text;
     }

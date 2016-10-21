@@ -10,7 +10,7 @@ import { AppMessaging } from './providers/app-messaging/app-messaging';
 
 //Import our pages
 import { Home } from './pages/home/home';
-import { AllMessagesPage } from './pages/all-messages/all-messages';
+import { AllConversationsPage } from './pages/all-conversations/all-conversations';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 import { ConversationPage } from './pages/conversation/conversation';
 
@@ -40,11 +40,11 @@ class MyApp {
       { title: 'Login', component: AuthLoginPage }
     ];
     this.authPages = [
-      { title: 'Messages', component: AllMessagesPage }
+      { title: 'Messages', component: AllConversationsPage }
     ];
 
     //Set our root page
-    if (this.isLoggedIn()) this.rootPage = AllMessagesPage;
+    if (this.isLoggedIn()) this.rootPage = AllConversationsPage;
     else this.rootPage = Home;
 
   }

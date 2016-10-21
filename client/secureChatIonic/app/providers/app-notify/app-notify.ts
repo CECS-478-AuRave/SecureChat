@@ -4,14 +4,6 @@ import { App, LoadingController, ToastController  } from 'ionic-angular';
 //Our Providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
 
-
-/*
-  Generated class for the AppLoading provider.
-
-  See https://angular.io/docs/ts/latest/guide/dependency-injection.html
-  for more info on providers and Angular 2 DI.
-*/
-
 //Handle Async requests, loading spinners, Toasts, and general errors
 @Injectable()
 export class AppNotify {

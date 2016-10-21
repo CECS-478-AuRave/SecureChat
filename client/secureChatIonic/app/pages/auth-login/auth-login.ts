@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
 //Import our providers (services)
+import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppAuth } from '../../providers/app-auth/app-auth';
 
 /*
@@ -16,11 +18,61 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 export class AuthLoginPage {
 
-  constructor(private navCtrl: NavController, private authProvider: AppAuth) { }
+  constructor(private navCtrl: NavController, private appNotify: AppNotify, private authProvider: AppAuth) { }
 
   //Call our log in function from our auth service
   login() {
-    this.authProvider.login();
+
+    //Start Loading
+    this.appNotify.startLoading('Logging in...');
+
+    //Save a reference to this
+    let self = this;
+
+    let response = this.authProvider.login();
+
+    //Respond to the callback
+    response.subscribe(function(success: any) {
+      //Success!
+
+      //Create our new user
+      let userJson = {
+        user: {},
+        access_token: '',
+        keys: {}
+      };
+      //Get the neccesary info from the user object
+      userJson.user = success.user;
+      userJson.access_token = success.access_token;
+      //TODO: Generate Encryption keys for the user if none
+      userJson.keys = {};
+
+      //Save the user info
+      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
+
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+        //Toast What Happened
+        //In a timeout to avoid colliding with loading
+        setTimeout(function() {
+          self.appNotify.showToast('Login Successful!');
+        }, 250)
+      });
+
+      //Redirect to messages page
+      //   let nav = self.app.getRootNav();
+      //   nav.setRoot(AllMessagesPage);
+    }, function(error) {
+
+      //Error
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+        //Pass to Error Handler
+        self.appNotify.handleError(error);
+      });
+    }, function() {
+      //Subscription has completed
+    })
   }
 
 }
