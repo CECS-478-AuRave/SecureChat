@@ -23,7 +23,7 @@
       <!-- Our user name -->
       <h3 class="messageUser">{{conversation.message[conversation.message.length - 1].from}}</h3>
       <!-- Our message text -->
-      <div class="messageText">{{shortenText(conversation.message[conversation.message.length - 1].message)}}</div>
+      <div class="messageText">{{shortenText(conversation.message[conversation.message.length - 1].from + ':  ' + conversation.message[conversation.message.length - 1].message)}}</div>
   </button>
   </ion-list>
 </ion-content>
