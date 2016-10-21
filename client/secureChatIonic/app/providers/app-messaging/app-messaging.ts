@@ -4,9 +4,7 @@ import 'rxjs/add/operator/map';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
-import { AppAuth } from '../../providers/app-auth/app-auth';
-import { AppNotification } from '../../providers/app-notification/app-notification';
-import { AppLoading } from '../../providers/app-loading/app-loading';
+import { AppNotify } from '../../providers/app-notify/app-notify';
 
 /*
   Generated class for the AppMessaging provider.
@@ -17,17 +15,17 @@ import { AppLoading } from '../../providers/app-loading/app-loading';
 @Injectable()
 export class AppMessaging {
 
-  constructor(private http: Http, private appSettings: AppSettings, private appAuth: AppAuth, private appNotification: AppNotification, private appLoading: AppLoading) { }
+  constructor(private http: Http, private appSettings: AppSettings, private appNotify: AppNotify) { }
 
   //Return all the conversations for a user
-  public getConversations() {
+  public getConversations(token) {
 
     //Start Loading
-    this.appLoading.startLoading('Getting Messages...');
+    this.appNotify.startLoading('Getting Messages...');
 
     //Our access_token header
     let headers = {
-      access_token: this.appAuth.user.access_token
+      access_token: token
     };
 
     //Send the request with the payload to the server
@@ -41,16 +39,16 @@ export class AppMessaging {
       console.log(success);
 
       //Stop loading
-      return self.appLoading.stopLoading().then(function() {
+      return self.appNotify.stopLoading().then(function() {
         return success;
       });
     }, function(error) {
       //Error!
 
       //Stop Loading
-      self.appLoading.stopLoading().then(function() {
+      self.appNotify.stopLoading().then(function() {
         //Pass to Error Handler
-        self.appLoading.handleError(error);
+        self.appNotify.handleError(error);
       });
 
     }, function() {

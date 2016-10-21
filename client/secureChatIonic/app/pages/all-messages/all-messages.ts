@@ -6,6 +6,7 @@ import { ConversationPage } from '../../pages/conversation/conversation';
 
 //Import our providers
 import { AppMessaging } from '../../providers/app-messaging/app-messaging'
+import { AppAuth } from '../../providers/app-auth/app-auth';
 
 /*
   Generated class for the AllMessagesPage page.
@@ -24,13 +25,13 @@ export class AllMessagesPage {
   //Our recent conversations
   recentMessages: any;
 
-  constructor(private navCtrl: NavController, private appMessaging: AppMessaging) {
+  constructor(private navCtrl: NavController, private appMessaging: AppMessaging, private appAuth: AppAuth) {
 
     //Set our nav controller
     this.location = navCtrl;
 
     //Make a request to get the messages
-    this.recentMessages = this.appMessaging.getConversations();
+    this.recentMessages = this.appMessaging.getConversations(this.appAuth.user.access_token);
   }
 
   //Get shortened text with elipses
