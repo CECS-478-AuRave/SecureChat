@@ -1,5 +1,10 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Content, NavController, NavParams } from 'ionic-angular';
+
+//Import our providers
+import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppNotify } from '../../providers/app-notify/app-notify';
+import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 
 /*
   Generated class for the ConversationPage page.
@@ -14,14 +19,14 @@ export class ConversationPage {
   //Get reference to our ion-content
   @ViewChild(Content) content: Content;
 
-  //The id of the conversation
-  convoId: string;
+  //Our Current Conversation
+  convo: any;
 
-  //The title of the conversation
-  convoTitle: string;
+  //The Id of our conversation
+  convoId: any;
 
-  //Our array of messages of the conversation
-  conversation: Array<any>;
+  //Our conversation title
+  convoTitle: any;
 
   //Our reply ng-model data
   replyMessage: string;
@@ -29,96 +34,127 @@ export class ConversationPage {
   //Our scroll duration for auto-scrolling through the messages
   scrollDuration: number;
 
-  constructor(private navCtrl: NavController, private navParams: NavParams) {
+  //Our message Polling
+  pollingRequest: any;
 
-    //Get the conversation ID passed from the last page
-    this.convoId = this.navParams.get('conversationId');
-
-    //Get our conversation (Template for now)
-    this.conversation = [
-      {
-        senderId: "1034",
-        sender: "kumin",
-        message: "hey there!"
-      },
-      {
-        senderId: "1034",
-        sender: "kumin",
-        message: "dude?"
-      },
-      {
-        senderId: "2424",
-        sender: "aaron",
-        message: "sup dude! Cool to work with you!"
-      },
-      {
-        senderId: "2424",
-        sender: "aaron",
-        message: "sup dude! Cool to work with you!"
-      },
-      {
-        senderId: "2424",
-        sender: "aaron",
-        message: "sup dude! Cool to work with you!"
-      },
-      {
-        senderId: "2424",
-        sender: "aaron",
-        message: "sup dude! Cool to work with you!"
-      },
-      {
-        senderId: "2424",
-        sender: "aaron",
-        message: "sup dude! Cool to work with you!"
-      },
-      {
-        senderId: "2424",
-        sender: "aaron",
-        message: "sup dude! Cool to work with you!"
-      }
-    ];
-
-    //Get the conversation title, function being called, but not returning?
-    this.convoTitle = this.getConvoTitle(this.conversation);
-
-    //Tag which messages were sent by the user
-    this.conversation = this.findUserMessages(this.conversation);
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appMessaging: AppMessaging) {
 
     //Initialize our reply message to an empty string
     this.replyMessage = '';
 
     //Initialize our scroll duration
     this.scrollDuration = 350;
+
+    //Get the conversation passed from the last page
+    this.convo = this.navParams.get('conversation');
+    this.convoId = this.convo._id;
+
+    //Get the conversation title
+    this.convoTitle = this.getConvoTitle(this.convo);
+
+    //Tag which messages were sent by the user
+    //this.conversation = this.findUserMessages(this.conversation);
   }
 
   //Function called once the view is full loaded
   ionViewDidEnter() {
+
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+
+    //Start polling to get messages
+    let poll = this.appMessaging.conversationRequest(user.access_token);
+
+    //Get a reference to this
+    let self = this;
+
+    this.pollingRequest = poll.subscribe(function(success) {
+      //Success!
+
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+
+        //Add our messages/Get our conversation
+        self.appMessaging.conversations = success;
+
+        //Find and update our current conversation
+        for (let i = 0; i < self.appMessaging.conversations.length; ++i) {
+          if (self.convoId == self.appMessaging.conversations[i]._id) {
+
+            //Update the conversation
+            self.convo = self.appMessaging.conversations[i];
+
+            //Break from the loop
+            i = self.appMessaging.conversations.length;
+          }
+        }
+
+        //Update the UI
+        self.changeDetector.detectChanges();
+      });
+    }, function(error) {
+      //Error!
+
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+        //Pass to Error Handler
+        self.appNotify.handleError(error, [{
+          status: 404,
+          callback: function() {
+            //Pop back to the All conversations view
+
+            self.navCtrl.pop();
+          }
+        }]);
+      });
+
+    }, function() {
+      //Completed
+    })
+
     //Scroll to the bottom of the messages
     this.content.scrollToBottom(this.scrollDuration);
   }
 
+  /*
+ * JavaScript Pretty Date
+ * Copyright (c) 2011 John Resig (ejohn.org)
+ * Licensed under the MIT and GPL licenses.
+ */
+  //Using preety date for our message date strings
+  prettyDate(time) {
+    let date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
+      diff = (((new Date()).getTime() - date.getTime()) / 1000),
+      day_diff = Math.floor(diff / 86400);
+
+    if (isNaN(day_diff) || day_diff < 0 || day_diff >= 31)
+      return;
+
+    return day_diff == 0 && (
+      diff < 60 && "just now" ||
+      diff < 120 && "1 minute ago" ||
+      diff < 3600 && Math.floor(diff / 60) + " minutes ago" ||
+      diff < 7200 && "1 hour ago" ||
+      diff < 86400 && Math.floor(diff / 3600) + " hours ago") ||
+      day_diff == 1 && "Yesterday" ||
+      day_diff < 7 && day_diff + " days ago" ||
+      day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
+  }
+
   //Function to get the title of the conversationId
-  getConvoTitle(messages: Array<any>) {
+  getConvoTitle(conversation) {
 
     //Return if no senders
-    if (messages.length < 1) return 'Conversation';
+    if (conversation.length < 1) return 'Conversation';
 
     //Initialize our variables
     var convoTitle = '';
-    var convoMembers = [];
-
-    //Find all unique senders in the conversation
-    for (let i = 0; i < this.conversation.length; i++) {
-      if (convoMembers.indexOf(this.conversation[i].sender) < 0) {
-        convoMembers.push(this.conversation[i].sender);
-      }
-    }
 
     //Add all the senders to the conversation title
-    for (let i = 0; i < convoMembers.length; i++) {
+    for (let i = 0; i < conversation.memberNames.length; i++) {
       //Also, add the needed commas
-      if (i >= convoMembers.length - 1) convoTitle = convoTitle + convoMembers[i];
-      else convoTitle = convoTitle + convoMembers[i] + ", ";
+      if (i >= conversation.memberNames.length - 1) convoTitle = convoTitle + conversation.memberNames[i];
+      else convoTitle = convoTitle + conversation.memberNames[i] + ", ";
     }
 
     //Shorten the conversation title to 30 characters
@@ -152,11 +188,11 @@ export class ConversationPage {
     if (this.replyMessage.length < 1) return false;
 
     //TODO: Connect message sending to the backend
-    this.conversation.push({
-      senderId: "2424",
-      sender: "aaron",
-      message: this.replyMessage
-    });
+    // this.convo.push({
+    //   senderId: "2424",
+    //   sender: "aaron",
+    //   message: this.replyMessage
+    // });
 
     //Empty the reply message
     this.replyMessage = '';
@@ -166,6 +202,12 @@ export class ConversationPage {
       this.content.scrollToBottom(this.scrollDuration);//300ms animation speed
     });
 
+  }
+
+  //Run on page leave
+  ionViewWillLeave() {
+    //Stop
+    this.pollingRequest.unsubscribe();
   }
 
 }

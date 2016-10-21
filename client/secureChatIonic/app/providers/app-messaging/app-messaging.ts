@@ -14,6 +14,9 @@ export class AppMessaging {
 
   constructor(private http: Http, private appSettings: AppSettings) { }
 
+  //Our conversations
+  conversations: any;
+
   //Return all the conversations for a user
   conversationRequest(token) {
 
