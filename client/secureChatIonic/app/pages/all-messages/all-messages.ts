@@ -5,7 +5,9 @@ import { NavController } from 'ionic-angular';
 import { ConversationPage } from '../../pages/conversation/conversation';
 
 //Import our providers
-import { AppMessaging } from '../../providers/app-messaging/app-messaging'
+import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppNotify } from '../../providers/app-notify/app-notify';
+import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 import { AppAuth } from '../../providers/app-auth/app-auth';
 
 /*
@@ -23,15 +25,47 @@ export class AllMessagesPage {
   location: NavController;
 
   //Our recent conversations
-  recentMessages: any;
+  allConversations: any;
 
-  constructor(private navCtrl: NavController, private appMessaging: AppMessaging, private appAuth: AppAuth) {
+  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appMessaging: AppMessaging, private appAuth: AppAuth) {
 
     //Set our nav controller
     this.location = navCtrl;
 
+    //Start Loading
+    this.appNotify.startLoading('Getting Messages...');
+
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+
     //Make a request to get the messages
-    this.recentMessages = this.appMessaging.getConversations(this.appAuth.user.access_token);
+    let request = this.appMessaging.conversationRequest(user.access_token);
+
+    //Get a reference to this
+    let self = this;
+
+    request.subscribe(function(success) {
+      //Success!
+
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+        self.allConversations = success;
+        console.log(self.allConversations);
+      });
+    }, function(error) {
+      //Error!
+
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+        //Pass to Error Handler
+        self.appNotify.handleError(error);
+      });
+
+    }, function() {
+      //Completed
+    })
+
+
   }
 
   //Get shortened text with elipses

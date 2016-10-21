@@ -3,9 +3,6 @@ import { Http } from '@angular/http';
 import { App } from 'ionic-angular';
 import 'rxjs/add/operator/map';
 
-//Import Pages we navigate to
-import { Home } from '../../pages/home/home';
-
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
@@ -35,24 +32,19 @@ export class AppAuth {
         access_token: 'token'
     }
   */
-  user: any;
 
   //Class constructor
   constructor(private app: App, private http: Http, private appNotify: AppNotify) {
-    //Initialize the user
-    //Grab our user from localstorage
-    if (localStorage.getItem(AppSettings.shushItemName)) {
-      this.user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-    } else {
-      this.user = {
-        access_token: false
-      };
-    }
   }
 
   //Return our Login Status
   authStatus() {
-    if (this.user.access_token) return true;
+
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+    if (user && user.access_token) {
+      return true
+    }
     return false;
   }
 
@@ -90,10 +82,36 @@ export class AppAuth {
 
   //Logout
   logout() {
-    let payload = {
-      access_token: this.user.access_token
-    }
-    this.serverLogout(payload);
+
+    //Start Loading
+    this.appNotify.startLoading('Logging out...');
+
+    //No work is needed by the server, since the token will invalidate itself in OAuth
+
+    //Get our stored user
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+    if (user && user.access_token) user.access_token = false;;
+    if (user && user.user) user.user = {};
+
+    //Set the user to false
+    localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user));
+
+    //Store reference to this for timeout
+    let self = this;
+
+    //Stop Loading
+    this.appNotify.stopLoading().then(function() {
+      //Toast What Happened
+      //In a timeout to avoid colliding with loading
+      setTimeout(function() {
+        self.appNotify.showToast('Logout Successful!');
+      }, 250)
+    });
+
+    //Redirect to messages page
+    // let nav = this.app.getRootNav();
+    // nav.setRoot(Home);
   }
 
   //Private functions for server requests
@@ -113,14 +131,20 @@ export class AppAuth {
     response.subscribe(function(success) {
       //Success!
 
+      //Create our new user
+      let userJson = {
+        user: {},
+        access_token: '',
+        keys: {}
+      };
       //Get the neccesary info from the user object
-      self.user.user = success.user
-      self.user.access_token = payload.access_token;
+      userJson.user = success.user
+      userJson.access_token = payload.access_token;
       //TODO: Generate Encryption keys for the user if none
-      self.user.keys = {};
+      userJson.keys = {};
 
       //Save the user info
-      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(self.user));
+      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
 
       //Stop Loading
       self.appNotify.stopLoading().then(function() {
@@ -148,34 +172,5 @@ export class AppAuth {
 
   }
 
-  private serverLogout(payload) {
-
-    //Start Loading
-    this.appNotify.startLoading('Logging out...');
-
-    //No work is needed by the server, since the token will invalidate itself in OAuth
-
-    //Set the user to false
-    this.user.access_token = false;
-    this.user.user = {};
-    localStorage.setItem(AppSettings.shushItemName, JSON.stringify(this.user));
-
-    //Store reference to this for timeout
-    let self = this;
-
-    //Stop Loading
-    this.appNotify.stopLoading().then(function() {
-      //Toast What Happened
-      //In a timeout to avoid colliding with loading
-      setTimeout(function() {
-        self.appNotify.showToast('Logout Successful!');
-      }, 250)
-    });
-
-    //Redirect to messages page
-    let nav = this.app.getRootNav();
-    nav.setRoot(Home);
-
-  }
 
 }
