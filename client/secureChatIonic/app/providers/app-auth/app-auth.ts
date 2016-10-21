@@ -57,6 +57,12 @@ export class AppAuth {
         //Response from facebook on function call
         let jsonResponse = response.authResponse;
 
+        //Check for an error
+        if (!jsonResponse) {
+          observer.error(response);
+          return;
+        }
+
         //Pass the access token to our server login
         let payload = {
           access_token: jsonResponse.accessToken

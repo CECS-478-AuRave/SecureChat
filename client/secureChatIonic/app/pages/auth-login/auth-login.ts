@@ -70,8 +70,9 @@ export class AuthLoginPage {
       //Error
       //Stop Loading
       self.appNotify.stopLoading().then(function() {
-        //Pass to Error Handler
-        self.appNotify.handleError(error);
+
+        //There was an error connecting to facebook
+        self.appNotify.showToast('Error, Facebook did not return your credentials.')
       });
     }, function() {
       //Subscription has completed

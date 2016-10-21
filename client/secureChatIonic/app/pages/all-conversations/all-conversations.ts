@@ -11,7 +11,7 @@ import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 import { AppAuth } from '../../providers/app-auth/app-auth';
 
 @Component({
-  templateUrl: 'build/pages/all-messages/all-messages.html',
+  templateUrl: 'build/pages/all-conversations/all-conversations.html',
 })
 export class AllConversationsPage {
 
