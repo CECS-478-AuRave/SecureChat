@@ -4,15 +4,6 @@ var Conversation = mongoose.model('Conversation');
 
 module.exports = function(app, passport) {
 
-    // Route for checking if the user is already logged in the session.
-    app.get('/api/v1/login',
-        isLoggedIn,
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            res.status(200).json({'Login': 'Successful'});
-        }
-    );
-
     // Route for logging in.
     app.post('/api/v1/login',
         passport.authenticate(['facebook-token']),
@@ -31,7 +22,6 @@ module.exports = function(app, passport) {
 
     // Route for getting a user's publicKey
     app.get('/api/v1/user/id/:id/publicKey',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             //  Check if the user was authenticated
@@ -46,7 +36,6 @@ module.exports = function(app, passport) {
 
     // Route for posting publicKey
     app.put('/api/v1/user/id/:id/publicKey',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -61,7 +50,6 @@ module.exports = function(app, passport) {
 
     // Route for getting user information based on their facebook id.
     app.get('/api/v1/user/id/:id',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -99,7 +87,6 @@ module.exports = function(app, passport) {
 
     // Route for getting user information based on their email.
     app.get('/api/v1/user/email/:email',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -137,7 +124,6 @@ module.exports = function(app, passport) {
 
     // Route for accepting a pending friend request.
     app.put('/api/v1/user/friend/accept',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -205,7 +191,6 @@ module.exports = function(app, passport) {
 
     // Route for declining a pending friend request.
     app.put('/api/v1/user/friend/decline',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated.
@@ -249,7 +234,6 @@ module.exports = function(app, passport) {
 
     // Route for creating a friend request.
     app.put('/api/v1/user/friend/add',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -309,7 +293,6 @@ module.exports = function(app, passport) {
 
     // Routes for getting all messages for a user.
     app.get('/api/v1/conversation',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -320,7 +303,7 @@ module.exports = function(app, passport) {
                 // console.log(req.user);
 
                 // Find all conversations containing the current user's facebook id.
-                Conversation.find({members: {$in: [thisUserID]}}, function(err, conversation) {
+                Conversation.find({memberIDs: {$in: [thisUserID]}}, function(err, conversation) {
                     // console.log(conversation);
                     if (err) {
                         // Respond with status 500 since there was an error finding conversation.
@@ -342,7 +325,6 @@ module.exports = function(app, passport) {
 
     // Routes for posting in existing conversation
     app.put('/api/v1/conversation',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated.
@@ -410,7 +392,6 @@ module.exports = function(app, passport) {
 
     // Routes for creating new conversation
     app.post('/api/v1/conversation',
-        isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated.
@@ -425,12 +406,18 @@ module.exports = function(app, passport) {
                 }
                 // get the list of members sent by the JSON object.
                 var members = jsonObject.members;
+                // get the list of names sent by the JSON object.
+                var names = jsonObject.names;
                 // get the message sent by the Json Object
                 var message = jsonObject.message;
 
                 // Check if members exists from the json object.
                 if (!members || members.length == 0) {
                     res.status(400).json({'error': 'Member value required.'});
+                    return;
+                }
+                if (!names || names.length == 0) {
+                    res.status(400).json({'error': 'Names value required'});
                     return;
                 }
                 // Check if the message exists from the json object.
@@ -441,8 +428,11 @@ module.exports = function(app, passport) {
                 // Add the current user's facebook id to the members since
                 // we will be using it as the groupID.
                 members.push(thisUser.facebook.id);
+                // Add the current user's facebook name to the names since
+                // we need to store all the members' name.
+                names.push(thisUser.name);
                 // GroupID is the sorted facebookID that's joined altogether.
-                var groupID = members.sort().join('');
+                var groupID = members.sort().join('_');
                 var currentTime = Date.now();
                 // Find a group based on the groupID provided.
                 Conversation.findOne({_id: groupID}, function(err, conversation) {
@@ -455,7 +445,8 @@ module.exports = function(app, passport) {
                         // new conversation.
                         var newConversation = new Conversation({
                             _id: groupID,
-                            'members': members,
+                            'memberIDs': members,
+                            'memberNames': names,
                             date: currentTime
                         });
                         // We append the message to the new conversation.
@@ -488,17 +479,4 @@ module.exports = function(app, passport) {
             }
         }
     );
-};
-
-// Function to check if the user session is active.
-var isLoggedIn = function(req, res, next) {
-    console.log("Hey Arron I'm here");
-    // If the user is already authenticated then continue.
-    if (req.isAuthenticated()) {
-        return next();
-    }
-
-    console.log("I'm responding with 401k and errors");
-    // Respond with Unauthorized access.
-    res.status(401).json({'error': 'Access Not Authorized.'});
 };
