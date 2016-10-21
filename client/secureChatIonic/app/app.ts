@@ -2,21 +2,21 @@ import { Component, ViewChild } from '@angular/core';
 import { ionicBootstrap, Platform, Nav } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 
+//Import our providers (services)
+import { AppSettings } from './providers/app-settings/app-settings';
+import { AppNotify } from './providers/app-notify/app-notify';
+import { AppAuth } from './providers/app-auth/app-auth';
+import { AppMessaging } from './providers/app-messaging/app-messaging';
+
 //Import our pages
 import { Home } from './pages/home/home';
 import { AllMessagesPage } from './pages/all-messages/all-messages';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
-
-//Import our providers (services)
-import { AppSettings } from './providers/app-settings/app-settings';
-import { AppAuth } from './providers/app-auth/app-auth';
-import { AppMessaging } from './providers/app-messaging/app-messaging';
-import { AppNotification } from './providers/app-notification/app-notification';
-import { AppLoading } from './providers/app-loading/app-loading';
+import { ConversationPage } from './pages/conversation/conversation';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppSettings, AppAuth, AppMessaging, AppNotification, AppLoading]
+  providers: [AppSettings, AppAuth, AppMessaging, AppNotify]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;

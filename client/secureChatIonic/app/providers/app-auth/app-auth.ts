@@ -5,12 +5,10 @@ import 'rxjs/add/operator/map';
 
 //Import Pages we navigate to
 import { Home } from '../../pages/home/home';
-import { AllMessagesPage } from '../../pages/all-messages/all-messages';
 
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
-import { AppNotification } from '../../providers/app-notification/app-notification';
-import { AppLoading } from '../../providers/app-loading/app-loading';
+import { AppNotify } from '../../providers/app-notify/app-notify';
 
 /*
   Generated class for the AppAuth provider.
@@ -40,7 +38,7 @@ export class AppAuth {
   user: any;
 
   //Class constructor
-  constructor(private app: App, private http: Http, private appNotification: AppNotification, private appLoading: AppLoading) {
+  constructor(private app: App, private http: Http, private appNotify: AppNotify) {
     //Initialize the user
     //Grab our user from localstorage
     if (localStorage.getItem(AppSettings.shushItemName)) {
@@ -103,7 +101,7 @@ export class AppAuth {
   private serverLogin(payload) {
 
     //Start Loading
-    this.appLoading.startLoading('Logging in...');
+    this.appNotify.startLoading('Logging in...');
 
     //Save a reference to this
     let self = this;
@@ -125,24 +123,24 @@ export class AppAuth {
       localStorage.setItem(AppSettings.shushItemName, JSON.stringify(self.user));
 
       //Stop Loading
-      self.appLoading.stopLoading().then(function() {
+      self.appNotify.stopLoading().then(function() {
         //Toast What Happened
         //In a timeout to avoid colliding with loading
         setTimeout(function() {
-          self.appNotification.showToast('Login Successful!');
+          self.appNotify.showToast('Login Successful!');
         }, 250)
       });
 
       //Redirect to messages page
-      let nav = self.app.getRootNav();
-      nav.setRoot(AllMessagesPage);
+      //   let nav = self.app.getRootNav();
+      //   nav.setRoot(AllMessagesPage);
     }, function(error) {
 
       //Error
       //Stop Loading
-      self.appLoading.stopLoading().then(function() {
+      self.appNotify.stopLoading().then(function() {
         //Pass to Error Handler
-        self.appLoading.handleError(error);
+        self.appNotify.handleError(error);
       });
     }, function() {
       //Subscription has completed
@@ -153,7 +151,7 @@ export class AppAuth {
   private serverLogout(payload) {
 
     //Start Loading
-    this.appLoading.startLoading('Logging out...');
+    this.appNotify.startLoading('Logging out...');
 
     //No work is needed by the server, since the token will invalidate itself in OAuth
 
@@ -166,11 +164,11 @@ export class AppAuth {
     let self = this;
 
     //Stop Loading
-    this.appLoading.stopLoading().then(function() {
+    this.appNotify.stopLoading().then(function() {
       //Toast What Happened
       //In a timeout to avoid colliding with loading
       setTimeout(function() {
-        self.appNotification.showToast('Logout Successful!');
+        self.appNotify.showToast('Logout Successful!');
       }, 250)
     });
 
