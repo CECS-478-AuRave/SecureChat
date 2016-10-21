@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
 //Import to conversation view
@@ -10,17 +10,17 @@ import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 
 @Component({
-  templateUrl: 'build/pages/all-conversations/all-conversations.html',
+  templateUrl: 'build/pages/all-conversations/all-conversations.html'
 })
 export class AllConversationsPage {
 
   //Our recent conversations
   allConversations: any;
 
-  //If we have the conversations
-  hasConversations: boolean;
+  //Our message Polling
+  pollingRequest: any;
 
-  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appMessaging: AppMessaging) {
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private appNotify: AppNotify, private appMessaging: AppMessaging) {
 
     //Start Loading
     this.appNotify.startLoading('Getting Messages...');
@@ -28,19 +28,23 @@ export class AllConversationsPage {
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
-    //Make a request to get the messages
-    let request = this.appMessaging.conversationRequest(user.access_token);
+    //Start polling to get messages
+    let poll = this.appMessaging.conversationRequest(user.access_token);
 
     //Get a reference to this
     let self = this;
 
-    request.subscribe(function(success) {
+    this.pollingRequest = poll.subscribe(function(success) {
       //Success!
 
       //Stop loading
       self.appNotify.stopLoading().then(function() {
+
+        //Add our messages
         self.allConversations = success;
-        //console.log(self.allConversations);
+
+        //Update the UI
+        self.changeDetector.detectChanges();
       });
     }, function(error) {
       //Error!
@@ -48,24 +52,66 @@ export class AllConversationsPage {
       //Stop Loading
       self.appNotify.stopLoading().then(function() {
         //Pass to Error Handler
-        self.appNotify.handleError(error);
+        self.appNotify.handleError(error, [{
+          status: 404,
+          callback: function() {
+            //Simply set all conversations to an empty array
+            self.allConversations = [];
+
+            //Update the UI
+            self.changeDetector.detectChanges();
+          }
+        }]);
       });
 
     }, function() {
       //Completed
     })
+  }
 
+  //Function to return if we have conversations
+  hasConversations() {
+    if (!this.allConversations || (this.allConversations && this.allConversations.length > 0)) return true;
+    else return false;
+  }
+
+  //Function to reutn the users in a conversations
+  getConvoMembers(convo: any) {
+
+    //Get the last message sender
+    console.log(convo);
+
+    //Get the names of the members spilt by spaces
+    let members = '';
+    for (let i = 0; i < convo.memberNames.length; ++i) {
+      members += convo.memberNames[i].split(' ')[0];
+      if (i < convo.memberNames.length - 1) members += ', ';
+    }
+
+    return this.shortenText(members, 20);
 
   }
 
+  getConvoLatestText(convo: any) {
+
+    //Get the last message sender
+    let lastMessage = convo.message[convo.message.length - 1];
+
+    let lastSender = lastMessage.from.split(' ')[0];
+    let lastText = lastMessage.message;
+
+    return this.shortenText(lastSender + ': ' + lastText, 35)
+  }
+
+  //Function to return
   //Get shortened text with elipses
-  shortenText(text: string) {
-    let textMax = 35;
+  shortenText(text: string, textMax) {
+
     //First check if the text is already short
     if (text.length < textMax) return text;
     else {
       //Get a substring of text
-      text = text.substring(0, (textMax - 1));
+      text = text.substring(0, (textMax - 3));
       text = text + '...';
       return text;
     }
@@ -77,6 +123,13 @@ export class AllConversationsPage {
     this.navCtrl.push(ConversationPage, {
       conversationId: id
     });
+  }
+
+  //Run on page leave
+  ionViewWillLeave() {
+    //Stop polling
+    console.log('hello!');
+    this.pollingRequest.unsubscribe();
   }
 
 }

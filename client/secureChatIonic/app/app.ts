@@ -14,6 +14,7 @@ import { AuthLoginPage } from './pages/auth-login/auth-login';
 import { AllConversationsPage } from './pages/all-conversations/all-conversations';
 import { ConversationPage } from './pages/conversation/conversation';
 
+//Change detection needed for updating "this" AKA $scope
 @Component({
   templateUrl: 'build/app.html',
   providers: [AppSettings, AppAuth, AppMessaging, AppNotify],

@@ -19,11 +19,22 @@
 
   <!-- ngFor through all of our messages -->
   <ion-list class="recentMessagesList">
-    <button ion-item class="messageItem" (click)="convoClick(conversation.conversationId)" *ngFor="let conversation of allConversations; let i = index;">
-      <!-- Our user name -->
-      <h3 class="messageUser">{{conversation.message[conversation.message.length - 1].from}}</h3>
-      <!-- Our message text -->
-      <div class="messageText">{{shortenText(conversation.message[conversation.message.length - 1].from + ':  ' + conversation.message[conversation.message.length - 1].message)}}</div>
-  </button>
+
+    <!-- If no Messages found -->
+    <div *ngIf="!hasConversations()">
+      <h2 class="centerText">No Conversations Found!</h2>
+      <h6 class="centerText">(Add some friends using the side menu)</h6>
+    </div>
+
+    <!-- If we have messages -->
+    <div *ngIf="hasConversations()">
+      <button ion-item class="messageItem" (click)="convoClick(conversation.conversationId)" *ngFor="let conversation of allConversations; let i = index;">
+          <!-- Our user name -->
+          <h3 class="messageUser">{{getConvoMembers(conversation)}}</h3>
+          <!-- Our message text -->
+          <div class="messageText">{{getConvoLatestText(conversation)}}</div>
+        </button>
+    </div>
+
   </ion-list>
 </ion-content>
