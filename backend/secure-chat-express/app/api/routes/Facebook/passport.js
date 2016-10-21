@@ -26,7 +26,7 @@ module.exports = function(passport) {
     },
     // Verify callback for facebook authentication
     function(accessToken, refreshToken, profile, done) {
-        console.log(accessToken);
+        // console.log(accessToken);
         User.findOne({'facebook.id' : profile.id}, function(err, user) {
             var newUser;
             // Error occurred making query.
@@ -38,7 +38,7 @@ module.exports = function(passport) {
                 return done(null, user); // returning the user.
             } else {
                 // Creating new user since it doesn't exist in database.
-                console.log(profile);
+                // console.log(profile);
                 newUser = new User({
                     name: profile.name.givenName + ' ' + profile.name.familyName,
                     email: profile.emails[0].value,
