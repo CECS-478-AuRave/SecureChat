@@ -4,12 +4,6 @@ var Conversation = mongoose.model('Conversation');
 
 module.exports = function(app, passport) {
 
-    // Route for main page where status response is 200.
-    // app.get('/', isLoggedIn, function(req, res) {
-    //     res.writeHead(200, {'Content-Type': 'application/json'});
-    //     res.end('{login:success}');
-    // });
-
     // Route for checking if the user is already logged in the session.
     app.get('/api/v1/login',
         isLoggedIn,
@@ -27,39 +21,11 @@ module.exports = function(app, passport) {
             if (req.user || req.newUser) {
                 var user = req.user ? req.user : req.newUser;
                 // Respond with status 200 and JSON
-                res.status(200).json({'login': 'Successful',
-                                      'user': user});
+                res.status(200).json({'Session': 'True','user': user});
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
             }
-        }
-    );
-
-    /// Route for login page where respond with status 401.
-    // app.get('/login', function(req, res) {
-    //     res.writeHead(401, {'Content-Type': 'application/json'});
-    //     res.end('{login:failure}');
-    // });
-
-    // // Routes for facebook authentication
-    // app.get('/auth/facebook', passport.authenticate('facebook'));
-    //
-    // // Route for callback handling after facebook authentication
-    // app.get('/auth/facebook/callback',
-    //     passport.authenticate(
-    //         'facebook', {
-    //                 successRedirect: '/',
-    //                 failureRedirect: '/login',
-    //         }
-    //     ));
-
-    // Route for logging out, if the user is already logged in.
-    app.get('/api/v1/logout',
-        isLoggedIn,
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            req.logout();
         }
     );
 
@@ -110,7 +76,21 @@ module.exports = function(app, passport) {
 
                 // Find the user based on their facebookID and return the data
                 // stored in the database.
-                User.findOne({'facebook.id' : facebookID}, findUser);
+                User.findOne({'facebook.id' : facebookID}, function(err, user) {
+                    if (!user) {
+                        // if the user wasn't found respond with status 404
+                        // and the information stating User was not found.
+                        res.status(404).json({'error': 'User was not found.'});
+                    } else if (err) {
+                        // if there was an error respond with status 500
+                        // and the err information.
+                        res.status(500).json(err);
+                    } else {
+                        // if there wasn't an error and the user was found.
+                        // respond with status 200 and user's information
+                        res.status(200).json(user);
+                    }
+                });
             } else {
                 res.status(401).json({'error': 'Access Not Authorized.'})
             }
@@ -133,7 +113,21 @@ module.exports = function(app, passport) {
                 }
 
                 // Find a user based on their email and return that user.
-                User.findOne({'email' : email}, findUser);
+                User.findOne({'email' : email}, function(err, user) {
+                    if (!user) {
+                        // if the user wasn't found respond with status 404
+                        // and the information stating User was not found.
+                        res.status(404).json({'error': 'User was not found.'});
+                    } else if (err) {
+                        // if there was an error respond with status 500
+                        // and the err information.
+                        res.status(500).json(err);
+                    } else {
+                        // if there wasn't an error and the user was found.
+                        // respond with status 200 and user's information
+                        res.status(200).json(user);
+                    }
+                });
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
@@ -172,9 +166,9 @@ module.exports = function(app, passport) {
                         // and the information stating User was not found...
                         res.status(404).json({'error': 'Other User was not found.'});
                     } else if (err) {
-                        // if there was an error respond with status 404
+                        // if there was an error respond with status 500
                         // and the err information.
-                        res.status(404).json(err);
+                        res.status(500).json(err);
                     } else {
                         // Add each users as friends.
                         otherUser.friends.push(thisUser.facebook.id);
@@ -201,6 +195,9 @@ module.exports = function(app, passport) {
                         });
                     }
                 });
+            } else {
+                // Respond with Unauthorized access.
+                res.status(401).json({'error': 'Access Not Authorized.'});
             }
         }
     );
@@ -279,9 +276,9 @@ module.exports = function(app, passport) {
                         // and the information stating User was not found...
                         res.status(404).json({'error': 'User was not found.'});
                     } else if (err) {
-                        // if there was an error respond with status 404
+                        // if there was an error respond with status 500
                         // and the err information.
-                        res.status(404).json(err);
+                        res.status(500).json(err);
                     } else if (user.pendingFriends.indexOf(req.user.facebook.id) == -1) {
                         res.status(400).json({'error': 'Already pending friend request'});
                     } else if (user.friends.indexOf(req.user.facebook.id) == -1) {
@@ -315,14 +312,24 @@ module.exports = function(app, passport) {
         isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
+            // Check if the user was authenticated
             if (req.user) {
+                // get the authenticated user's facebook id.
                 var thisUserID = req.user.facebook.id;
+                // console.log(thisUserID);
+                // console.log(req.user);
+
+                // Find all conversations containing the current user's facebook id.
                 Conversation.find({members: {$in: [thisUserID]}}, function(err, conversation) {
+                    // console.log(conversation);
                     if (err) {
-                        res.status(404).json(err);
-                    } else if (!conversation) {
-                        res.status(404).json({'error': 'No conversation found for user'});
+                        // Respond with status 500 since there was an error finding conversation.
+                        res.status(500).json(err);
+                    } else if (!conversation || conversation.length == 0) {
+                        // Respond with status 404 since no conversation was found for user.
+                        res.status(404).json({'error': 'No available conversations for ' + req.user.name});
                     } else {
+                        // Respond with status 200 and the whole conversation as a json object.
                         res.status(200).json(conversation);
                     }
                 });
@@ -333,44 +340,65 @@ module.exports = function(app, passport) {
         }
     );
 
-        //     else {
-        //        conversation.date = currentTime;
-        //        conversation.message.push({
-        //            'message': message,
-        //            from: thisUser.facebook.id,
-        //            date: currentTime
-        //        });
-        //        conversation.save(saveConversation);
-        //    }
-        // Routes for posting in existing conversation
+    // Routes for posting in existing conversation
     app.put('/api/v1/conversation',
         isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
+            // Check if the user was authenticated.
             if (req.user) {
+                // Get the _id for the conversationID since we are going to use
+                // it for finding the conversation.
                 var _id = req.body.conversationID;
+                // Get the message from the body so we can append it to the
+                // found conversation.
                 var message = req.body.message;
+                // Check if the _id was passed into the body
                 if (!_id) {
+                    // Respond with bad request status and an error json message
+                    // since the conversationID was not found in the body.
                     res.status(400).json({'error': '_id required in body'});
                     return;
                 }
+                // Check if the message was passed into the body
                 if (!message) {
+                    // Respond with bad request status and an error json message
+                    // since the message was not found in the body.
                     res.status(400).json({'error': 'message required in body'});
                 }
-                Conversation.findOne({_id: groupID}, function(err, conversation) {
+                // Find a conversation based on the conversation ID
+                Conversation.findOne({'_id': _id}, function(err, conversation) {
                     if (err) {
-                        res.status(404).json(err);
+                        // Server error in finding a single conversation based on
+                        // the id. Respond with status 500 and the err object.
+                        res.status(500).json(err);
                     } else if (!conversation) {
+                        // Conversation was not found. Respond with 404 and
+                        // an message stating the conversation was not found.
                         res.status(404).json({'error': 'Conversation Not Found'});
                     } else {
-                        var currentTime = Date.now;
+                        var currentTime = Date.now();
+                        // Change the conversation date to be the current time
+                        // since it's the latest time that the message was sent.
                         conversation.date = currentTime;
+                        // append the message to the conversation.
                         conversation.message.push({
                             'message': message,
                             from: req.user.name,
                             date: currentTime
                         });
-                        conversation.save(saveConversation);
+                        // Save the conversation schema
+                        conversation.save(function(err, conversation) {
+                            if (err) {
+                                // Server error when saving the conversation,
+                                // respond with status 500 and the error object.
+                                res.status(500).json(err);
+                            } else {
+                                // Succfully saved the conversation. respond with
+                                // status 201 and the conversation object.
+                                res.status(201).json(conversation);
+                            }
+                        });
                     }
                 });
             } else {
@@ -385,38 +413,72 @@ module.exports = function(app, passport) {
         isLoggedIn,
         passport.authenticate(['facebook-token']),
         function(req, res) {
+            // Check if the user was authenticated.
             if (req.user) {
+                // Get the authenticated user.
                 var thisUser = req.user;
-                var members = req.body.members.list;
-                var message = req.body.message;
-                // Check if otherUserID was put in the body.
-                if (!members) {
-                    res.status(400).json({'error': 'OtherUserID required in body'});
+                // Get the message json object from the body.
+                var jsonObject = req.body;
+                // Check if the json object was given.
+                if (!jsonObject) {
+                    res.status(400).json({'error': 'JSON message required.'});
+                }
+                // get the list of members sent by the JSON object.
+                var members = jsonObject.members;
+                // get the message sent by the Json Object
+                var message = jsonObject.message;
+
+                // Check if members exists from the json object.
+                if (!members || members.length == 0) {
+                    res.status(400).json({'error': 'Member value required.'});
                     return;
                 }
-                if (!message) {
-                    res.status(400).json({'error': 'Message required in body'});
+                // Check if the message exists from the json object.
+                if (!message || message.length == 0) {
+                    res.status(400).json({'error': 'Message value required.'});
                     return;
                 }
+                // Add the current user's facebook id to the members since
+                // we will be using it as the groupID.
                 members.push(thisUser.facebook.id);
+                // GroupID is the sorted facebookID that's joined altogether.
                 var groupID = members.sort().join('');
-                var currentTime = Date.now;
+                var currentTime = Date.now();
+                // Find a group based on the groupID provided.
                 Conversation.findOne({_id: groupID}, function(err, conversation) {
                     if (err) {
-                        res.status(404).json(err);
+                        // Respond with internal server error and the err object since
+                        // there was an error with the given query.
+                        res.status(500).json(err);
                     } else if (!conversation) {
+                        // Since the conversation didn't exist we need to create a
+                        // new conversation.
                         var newConversation = new Conversation({
                             _id: groupID,
                             'members': members,
                             date: currentTime
                         });
+                        // We append the message to the new conversation.
                         newConversation.message.push({
                             'message': message,
                             from: thisUser.name,
                             date: currentTime
                         });
-                        newConversation.save(saveConversation);
+                        // We need to save the conversation and return the conversation object.
+                        newConversation.save(function(err, conversation) {
+                            if (err) {
+                                // Error in saving the new conversation
+                                res.status(500).json(err);
+                            } else {
+                                // respond to the client with status 201 and the
+                                // convesation object.
+                                res.status(201).json(conversation);
+                            }
+                        });
                     } else {
+                        // You cannot create another conversation with the same person.
+                        // So, respond with status 400 and an json object with an error
+                        // message appended.
                         res.status(400).json({'error': 'Conversation Already Exists'});
                     }
                 });
@@ -428,37 +490,15 @@ module.exports = function(app, passport) {
     );
 };
 
-var saveConversation = function(err, conversation) {
-    if (err) {
-        res.status(500).json(err);
-    } else {
-        res.status(201).json(conversation);
-    }
-};
-
-var findUser = function(err, user) {
-    if (!user) {
-        // if the user wasn't found respond with status 404
-        // and the information stating User was not found.
-        res.status(404).json({'error': 'User was not found.'});
-    } else if (err) {
-        // if there was an error respond with status 404
-        // and the err information.
-        res.status(404).json(err);
-    } else {
-        // if there wasn't an error and the user was found.
-        // respond with status 200 and user's information
-        res.status(200).json(user);
-    }
-};
-
+// Function to check if the user session is active.
 var isLoggedIn = function(req, res, next) {
-
+    console.log("Hey Arron I'm here");
     // If the user is already authenticated then continue.
     if (req.isAuthenticated()) {
         return next();
     }
 
+    console.log("I'm responding with 401k and errors");
     // Respond with Unauthorized access.
     res.status(401).json({'error': 'Access Not Authorized.'});
 };
