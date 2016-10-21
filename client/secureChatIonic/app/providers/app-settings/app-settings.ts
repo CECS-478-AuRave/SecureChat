@@ -9,13 +9,15 @@ export class AppSettings {
 
   //Fake key for now, to get the dialog working
   //Can be stored on the client: http://stackoverflow.com/questions/6709883/facebook-app-security-what-if-someone-uses-my-appid
-  static facebookAppId = '2867455650741445';
+  static facebookAppId = '2365441780952680';
 
+  //The name of the json object stored on the device
   static shushItemName = 'shushUser';
 
 
 
   //Add our server URL (Local testing not actual)
-  static serverUrl = 'http://192.168.86.43:4780/api/v1';
+  //Must end with a slash
+  static serverUrl = 'http://192.168.43.86:4780/api/v1/';
 
 }
