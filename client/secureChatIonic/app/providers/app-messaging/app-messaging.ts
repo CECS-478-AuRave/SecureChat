@@ -17,7 +17,7 @@ export class AppMessaging {
   //Our conversations
   conversations: any;
 
-  //Return all the conversations for a user
+  //Return all the conversations for a user, for server polling
   conversationRequest(token) {
 
     //Our headers
@@ -27,9 +27,22 @@ export class AppMessaging {
     let options = new RequestOptions({ headers: headers });
 
     //Continually poll the server in an interval to get messages
-    //Poll Interval every 30 seconds
-    let pollInterval = 5000;
-    return Observable.interval(pollInterval)
+    //Poll Interval from the App Settings
+    return this.http.get(AppSettings.serverUrl + 'conversation', options).map(res => res.json());
+  }
+
+  //Return all the conversations for a user, for server polling
+  conversationRequestPoll(token) {
+
+    //Our headers
+    let headers = new Headers({
+      access_token: token
+    });
+    let options = new RequestOptions({ headers: headers });
+
+    //Continually poll the server in an interval to get messages
+    //Poll Interval from the App Settings
+    return Observable.interval(AppSettings.pollInterval)
       .switchMap(() => this.http.get(AppSettings.serverUrl + 'conversation', options))
       .map(res => res.json());
   }

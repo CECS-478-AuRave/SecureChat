@@ -63,7 +63,7 @@ export class ConversationPage {
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
     //Start polling to get messages
-    let poll = this.appMessaging.conversationRequest(user.access_token);
+    let poll = this.appMessaging.conversationRequestPoll(user.access_token);
 
     //Get a reference to this
     let self = this;
