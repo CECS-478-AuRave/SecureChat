@@ -70,6 +70,7 @@ export class AppNotify {
       localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user))
 
       //Force the user to the login page
+      //Will Create circular dependency, need to create pages provider
       //   let nav = this.app.getRootNav();
       //   nav.setRoot(AuthLoginPage);
 

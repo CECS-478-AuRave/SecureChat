@@ -50,7 +50,7 @@ export class AllConversationsPage {
       //Stop loading
       self.appNotify.stopLoading().then(function() {
         self.allConversations = success;
-        console.log(self.allConversations);
+        //console.log(self.allConversations);
       });
     }, function(error) {
       //Error!
