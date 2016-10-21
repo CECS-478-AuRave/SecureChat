@@ -10,12 +10,13 @@ import { AuthLoginPage } from './pages/auth-login/auth-login';
 //Import our providers (services)
 import { AppSettings } from './providers/app-settings/app-settings';
 import { AppAuth } from './providers/app-auth/app-auth';
+import { AppMessaging } from './providers/app-messaging/app-messaging';
 import { AppNotification } from './providers/app-notification/app-notification';
 import { AppLoading } from './providers/app-loading/app-loading';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppAuth, AppSettings, AppNotification, AppLoading]
+  providers: [AppSettings, AppAuth, AppMessaging, AppNotification, AppLoading]
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;

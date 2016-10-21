@@ -4,6 +4,9 @@ import { NavController } from 'ionic-angular';
 //Import to conversation view
 import { ConversationPage } from '../../pages/conversation/conversation';
 
+//Import our providers
+import { AppMessaging } from '../../providers/app-messaging/app-messaging'
+
 /*
   Generated class for the AllMessagesPage page.
 
@@ -19,14 +22,15 @@ export class AllMessagesPage {
   location: NavController;
 
   //Our recent conversations
-  recentMessages: Array<any>;
+  recentMessages: any;
 
-  constructor(private navCtrl: NavController) {
+  constructor(private navCtrl: NavController, private appMessaging: AppMessaging) {
 
     //Set our nav controller
     this.location = navCtrl;
 
     //Make a request to get the messages
+    this.recentMessages = this.appMessaging.getConversations();
   }
 
   //Get shortened text with elipses
