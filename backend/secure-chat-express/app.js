@@ -1,12 +1,13 @@
 var express = require('express');
 var path = require('path');
-// var favicon = require('serve-favicon');
 var logger = require('morgan');
 var passport = require('passport');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var flash = require('connect-flash');
 var session = require('express-session');
+//Cors (Cross origin requests) app.js
+var cors = require('cors')
 var app = express();
 
 // Require Database for connection and schema initalization.
@@ -23,7 +24,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -39,11 +40,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // required for passport sessions
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    savedUninitalized: true,
+    saveUninitialized: true,
     resave: true
 }));
 
-// initalize passport authentication
+// initialize passport authentication
 app.use(passport.initialize());
 
 // used for persistent login sessions.
