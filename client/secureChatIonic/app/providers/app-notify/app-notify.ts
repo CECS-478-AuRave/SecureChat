@@ -58,7 +58,7 @@ export class AppNotify {
   }
 
   //Function to handle Errors
-  handleError(error) {
+  handleError(error, expected?) {
 
     //TODO: Allow for overiding error codes, and using custom callbacks
 
@@ -67,6 +67,19 @@ export class AppNotify {
 
     //Get our status
     let status = error.status;
+
+    //Check if we have any callbacks for specific error codes
+    if (expected) {
+      for (let i = 0; i < expected.length; ++i) {
+        if (expected[i].status == status) {
+
+          //Launch the call abck and return
+          expected[i].callback();
+          return;
+        }
+
+      }
+    }
 
     if (status == 400) {
       //400 Bad Request

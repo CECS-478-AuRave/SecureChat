@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Http, RequestOptions, Headers } from '@angular/http';
+import { Observable } from "rxjs/Observable";
+import 'rxjs/add/observable/interval';
+import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/map';
+
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
@@ -19,10 +23,12 @@ export class AppMessaging {
     });
     let options = new RequestOptions({ headers: headers });
 
-    //Send the request with the payload to the server
-    return this.http.get(AppSettings.serverUrl + 'conversation', options).map(res => res.json());
-
-
+    //Continually poll the server in an interval to get messages
+    //Poll Interval every 30 seconds
+    let pollInterval = 5000;
+    return Observable.interval(pollInterval)
+      .switchMap(() => this.http.get(AppSettings.serverUrl + 'conversation', options))
+      .map(res => res.json());
   }
 
 
