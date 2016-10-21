@@ -5,4 +5,4 @@ End-To-End Ecryption app. Created using Ionic and Node.js, using the MEAN stack
 
 [ApiEndpoint](https://shushapi.aaronthedev.com/)
 
-[SSL Labs Results (Grade: A)](https://www.ssllabs.com/ssltest/analyze.html?d=shushapi.aaronthedev.com&latest)
+[SSL Labs Results (Grade: A+)](https://www.ssllabs.com/ssltest/analyze.html?d=shushapi.aaronthedev.com&latest)
