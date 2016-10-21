@@ -15,7 +15,7 @@ import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 export class AllConversationsPage {
 
   //Our recent conversations
-  allConversations: any;
+  convoList: any;
 
   //Our message Polling
   pollingRequest: any;
@@ -24,6 +24,12 @@ export class AllConversationsPage {
 
     //Start Loading
     this.appNotify.startLoading('Getting Messages...');
+
+    //Will be finished once the view enters, ionViewDidEnter
+  }
+
+  //Function called once the view is full loaded
+  ionViewDidEnter() {
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
@@ -41,7 +47,8 @@ export class AllConversationsPage {
       self.appNotify.stopLoading().then(function() {
 
         //Add our messages
-        self.allConversations = success;
+        self.appMessaging.conversations = success
+        self.convoList = self.appMessaging.conversations;
 
         //Update the UI
         self.changeDetector.detectChanges();
@@ -56,7 +63,7 @@ export class AllConversationsPage {
           status: 404,
           callback: function() {
             //Simply set all conversations to an empty array
-            self.allConversations = [];
+            self.convoList = [];
 
             //Update the UI
             self.changeDetector.detectChanges();
@@ -71,15 +78,14 @@ export class AllConversationsPage {
 
   //Function to return if we have conversations
   hasConversations() {
-    if (!this.allConversations || (this.allConversations && this.allConversations.length > 0)) return true;
-    else return false;
+    if (this.convoList && this.convoList.length == 0) return true;
+    else return true;
   }
 
   //Function to reutn the users in a conversations
   getConvoMembers(convo: any) {
 
     //Get the last message sender
-    console.log(convo);
 
     //Get the names of the members spilt by spaces
     let members = '';
@@ -118,17 +124,16 @@ export class AllConversationsPage {
   }
 
   //Fucntion to run when an item is clicked
-  convoClick(id) {
+  convoClick(convo) {
     //Go to the conversation page, and pass the conversation id
     this.navCtrl.push(ConversationPage, {
-      conversationId: id
+      conversation: convo
     });
   }
 
   //Run on page leave
   ionViewWillLeave() {
-    //Stop polling
-    console.log('hello!');
+    //Stop
     this.pollingRequest.unsubscribe();
   }
 
