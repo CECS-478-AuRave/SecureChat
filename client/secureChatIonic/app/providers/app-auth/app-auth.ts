@@ -4,6 +4,9 @@ import { App } from 'ionic-angular';
 import 'rxjs/add/operator/map';
 import {Observable} from 'rxjs/Observable';
 
+//pages
+import { Home } from '../../pages/home/home';
+
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
@@ -104,8 +107,9 @@ export class AppAuth {
     });
 
     //Redirect to messages page
-    // let nav = this.app.getRootNav();
-    // nav.setRoot(Home);
+    //Force the user to the login page
+    let nav = this.app.getRootNav();
+    nav.setRoot(Home);
   }
 
 

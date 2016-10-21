@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
+//Pages
+import { AllConversationsPage } from '../../pages/all-conversations/all-conversations';
+
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
@@ -55,13 +58,13 @@ export class AuthLoginPage {
         //Toast What Happened
         //In a timeout to avoid colliding with loading
         setTimeout(function() {
+          //Show Toast
           self.appNotify.showToast('Login Successful!');
+
+          //Redirect to messages page
+          self.navCtrl.setRoot(AllConversationsPage);
         }, 250)
       });
-
-      //Redirect to messages page
-      //   let nav = self.app.getRootNav();
-      //   nav.setRoot(AllMessagesPage);
     }, function(error) {
 
       //Error
