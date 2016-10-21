@@ -26,19 +26,7 @@ export class AllMessagesPage {
     //Set our nav controller
     this.location = navCtrl;
 
-    //Recent messages from all conversations (template for now)
-    this.recentMessages = [
-      {
-        user: "Kumin In",
-        text: "Sup dude!",
-        conversationId: "1457"
-      },
-      {
-        user: "Bob Smith",
-        text: "What's the homework?",
-        conversationId: "1243"
-      }
-    ];
+    //Make a request to get the messages
   }
 
   //Get shortened text with elipses
