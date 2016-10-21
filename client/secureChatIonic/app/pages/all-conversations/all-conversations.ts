@@ -10,12 +10,6 @@ import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 import { AppAuth } from '../../providers/app-auth/app-auth';
 
-/*
-  Generated class for the AllMessagesPage page.
-
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
   templateUrl: 'build/pages/all-messages/all-messages.html',
 })
