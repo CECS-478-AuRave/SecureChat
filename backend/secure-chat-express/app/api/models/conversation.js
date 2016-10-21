@@ -10,7 +10,8 @@ var messageSchema = new Schema({
 
 var conversationSchema = new Schema({
     _id: {type: String, required: true},
-    members: [{type: String, required: true}],
+    memberIDs: [{type: String, required: true}],
+    memberNames: [{type: String, required: true}],
     message: [messageSchema],
     date: {type: Date}
 });
