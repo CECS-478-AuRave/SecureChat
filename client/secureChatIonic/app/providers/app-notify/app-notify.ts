@@ -1,12 +1,22 @@
-import { Injectable } from '@angular/core';
-import { App, LoadingController, ToastController  } from 'ionic-angular';
+import { Injectable, ViewChild } from '@angular/core';
+import { App, Nav, LoadingController, ToastController  } from 'ionic-angular';
 
 //Our Providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppAuth } from '../../providers/app-auth/app-auth';
+
+//Page to redirect to on 401
+import { Home } from '../../pages/home/home';
 
 //Handle Async requests, loading spinners, Toasts, and general errors
 @Injectable()
 export class AppNotify {
+
+  //Our Nav
+  @ViewChild(Nav) nav: Nav;
+
+  //Our login pages
+  loginPage: any;
 
   //Our Loader
   loader: any;
@@ -14,7 +24,7 @@ export class AppNotify {
   //Our default loading string
   defaultMessage: 'Loading, please wait...';
 
-  constructor(private app: App, private loadingCtrl: LoadingController, private toastCtrl: ToastController) {
+  constructor(private app: App, private appAuth: AppAuth, private loadingCtrl: LoadingController, private toastCtrl: ToastController) {
   }
 
   //Show a Static toast
@@ -64,15 +74,12 @@ export class AppNotify {
     } else if (status == 401) {
       //401 Unauthorized
 
-      //Set the access token to false
-      let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-      user.access_token = false;
-      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user))
+      //Logout
+      this.appAuth.logout();
 
-      //Force the user to the login page
-      //Will Create circular dependency, need to create pages provider
-      //   let nav = this.app.getRootNav();
-      //   nav.setRoot(AuthLoginPage);
+      //Redirect to home
+      let nav = this.app.getActiveNav();
+      nav.setRoot(Home);
 
       //Toast the user
       this.showToast('Unauthorized. Please log back in.');

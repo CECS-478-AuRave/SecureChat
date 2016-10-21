@@ -8,23 +8,19 @@ import { ConversationPage } from '../../pages/conversation/conversation';
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
-import { AppAuth } from '../../providers/app-auth/app-auth';
 
 @Component({
   templateUrl: 'build/pages/all-conversations/all-conversations.html',
 })
 export class AllConversationsPage {
 
-  //Our NavController
-  location: NavController;
-
   //Our recent conversations
   allConversations: any;
 
-  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appMessaging: AppMessaging, private appAuth: AppAuth) {
+  //If we have the conversations
+  hasConversations: boolean;
 
-    //Set our nav controller
-    this.location = navCtrl;
+  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appMessaging: AppMessaging) {
 
     //Start Loading
     this.appNotify.startLoading('Getting Messages...');

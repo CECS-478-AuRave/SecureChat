@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ionicBootstrap, Platform, Nav } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 
@@ -10,13 +10,14 @@ import { AppMessaging } from './providers/app-messaging/app-messaging';
 
 //Import our pages
 import { Home } from './pages/home/home';
-import { AllConversationsPage } from './pages/all-conversations/all-conversations';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
+import { AllConversationsPage } from './pages/all-conversations/all-conversations';
 import { ConversationPage } from './pages/conversation/conversation';
 
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppSettings, AppAuth, AppMessaging, AppNotify]
+  providers: [AppSettings, AppAuth, AppMessaging, AppNotify],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;
@@ -29,7 +30,7 @@ class MyApp {
   noAuthPages: Array<{ title: string, component: any }>;
   authPages: Array<{ title: string, component: any }>;
 
-  constructor(public platform: Platform, public authProvider: AppAuth) {
+  constructor(public platform: Platform, private authProvider: AppAuth, private appNotify: AppNotify) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -68,12 +69,34 @@ class MyApp {
 
   //Check if we are logged in
   isLoggedIn() {
-    return this.authProvider.authStatus();
+
+    //Get the auth Status
+    return this.authProvider.authStatus;
   }
 
   //Logout the user
   logout() {
+    //Start Loading
+    this.appNotify.startLoading('Logging out...');
+
     this.authProvider.logout();
+
+    //Store reference to this for timeout
+    let self = this;
+
+    //Stop Loading
+    this.appNotify.stopLoading().then(function() {
+      //Toast What Happened
+      //In a timeout to avoid colliding with loading
+      setTimeout(function() {
+
+        //Go back home
+        self.rootPage = Home;
+        self.nav.setRoot(Home);
+
+        self.appNotify.showToast('Logout Successful!');
+      }, 250)
+    });
   }
 }
 
