@@ -20,7 +20,9 @@ var userSchema = new Schema({
     },
     publicKey: {
         type: String
-    }
+    },
+    friends: [String],
+    pendingFriends: [String]
 });
 
 mongoose.model('User', userSchema);
