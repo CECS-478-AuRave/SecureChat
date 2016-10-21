@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import { App } from 'ionic-angular';
 import 'rxjs/add/operator/map';
 import {Observable} from 'rxjs/Observable';
 
@@ -9,24 +8,27 @@ import { Home } from '../../pages/home/home';
 
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
-import { AppNotify } from '../../providers/app-notify/app-notify';
 
 @Injectable()
 export class AppAuth {
 
+  //Our auth status
+  authStatus: boolean;
+
   //Class constructor
-  constructor(private app: App, private http: Http, private appNotify: AppNotify) {
-  }
-
-  //Return our Login Status
-  authStatus() {
-
+  constructor(private http: Http) {
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
     if (user && user.access_token) {
-      return true
+      this.updateAuthStatus(true);
+    } else {
+      this.updateAuthStatus(false);
     }
-    return false;
+  }
+
+  //Return our Login Status
+  updateAuthStatus(status) {
+    this.authStatus = status;
   }
 
   //Initialize facebook
@@ -85,10 +87,6 @@ export class AppAuth {
 
   //Logout
   logout() {
-
-    //Start Loading
-    this.appNotify.startLoading('Logging out...');
-
     //No work is needed by the server, since the token will invalidate itself in OAuth
 
     //Get our stored user
@@ -100,22 +98,8 @@ export class AppAuth {
     //Set the user to false
     localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user));
 
-    //Store reference to this for timeout
-    let self = this;
-
-    //Stop Loading
-    this.appNotify.stopLoading().then(function() {
-      //Toast What Happened
-      //In a timeout to avoid colliding with loading
-      setTimeout(function() {
-        self.appNotify.showToast('Logout Successful!');
-      }, 250)
-    });
-
-    //Redirect to messages page
-    //Force the user to the login page
-    let nav = this.app.getRootNav();
-    nav.setRoot(Home);
+    //Update the auth status
+    this.updateAuthStatus(false);
   }
 
 

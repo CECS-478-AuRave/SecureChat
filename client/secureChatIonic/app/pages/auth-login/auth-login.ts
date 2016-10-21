@@ -21,7 +21,7 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 export class AuthLoginPage {
 
-  constructor(private navCtrl: NavController, private appNotify: AppNotify, private authProvider: AppAuth) { }
+  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appAuth: AppAuth) { }
 
   //Call our log in function from our auth service
   login() {
@@ -32,7 +32,7 @@ export class AuthLoginPage {
     //Save a reference to this
     let self = this;
 
-    let response = this.authProvider.login();
+    let response = this.appAuth.login();
 
     //Respond to the callback
     response.subscribe(function(success: any) {
@@ -52,6 +52,9 @@ export class AuthLoginPage {
 
       //Save the user info
       localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
+
+      //Update the auth status
+      self.appAuth.updateAuthStatus(true);
 
       //Stop Loading
       self.appNotify.stopLoading().then(function() {
