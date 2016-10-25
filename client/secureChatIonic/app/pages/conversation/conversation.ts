@@ -60,7 +60,7 @@ export class ConversationPage {
   ionViewDidEnter() {
 
     //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
 
     //Start polling to get messages
     let poll = this.appMessaging.conversationRequestPoll(user.access_token);
@@ -74,23 +74,13 @@ export class ConversationPage {
       //Stop loading
       self.appNotify.stopLoading().then(function() {
 
+        console.log(success);
+
         //Add our messages/Get our conversation
         self.appMessaging.conversations = success;
 
-        //Find and update our current conversation
-        for (let i = 0; i < self.appMessaging.conversations.length; ++i) {
-          if (self.convoId == self.appMessaging.conversations[i]._id) {
-
-            //Update the conversation
-            self.convo = self.appMessaging.conversations[i];
-
-            //Break from the loop
-            i = self.appMessaging.conversations.length;
-          }
-        }
-
-        //Update the UI
-        self.changeDetector.detectChanges();
+        //Update our conversations
+        self.updateConversation();
       });
     }, function(error) {
       //Error!
@@ -164,6 +154,24 @@ export class ConversationPage {
     return convoTitle;
   }
 
+  //Function to update our conversation
+  updateConversation() {
+    //Find and update our current conversation
+    for (let i = 0; i < this.appMessaging.conversations.length; ++i) {
+      if (this.convoId == this.appMessaging.conversations[i]._id) {
+
+        //Update the conversation
+        this.convo = this.appMessaging.conversations[i];
+
+        //Break from the loop
+        i = this.appMessaging.conversations.length;
+      }
+    }
+
+    //Update the UI
+    this.changeDetector.detectChanges();
+  }
+
   //Function to tag the messages that were sent by this user
   findUserMessages(messages: Array<any>) {
 
@@ -187,12 +195,57 @@ export class ConversationPage {
     //Check if the reply text is empty
     if (this.replyMessage.length < 1) return false;
 
-    //TODO: Connect message sending to the backend
-    // this.convo.push({
-    //   senderId: "2424",
-    //   sender: "aaron",
-    //   message: this.replyMessage
-    // });
+    //Start Loading
+    this.appNotify.startLoading('Sending Message...');
+
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
+
+    //Create our payload
+    var payload = {
+      access_token: user.access_token,
+      message: this.replyMessage,
+      conversationID: this.convoId
+    }
+
+    //Get a reference to this
+    let self = this;
+
+    //Make our request
+    this.appMessaging.conversationReply(payload).subscribe(function(success) {
+      //Success
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+
+        //Add our messages/Get our conversation
+        self.appMessaging.conversations = success;
+
+        console.log(success);
+
+        //Update our conversations
+        self.updateConversation();
+
+        //Toast the user
+        self.appNotify.showToast('Message Sent!');
+      });
+
+    }, function(error) {
+      //Error
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+        //Pass to Error Handler
+        self.appNotify.handleError(error, [{
+          status: 404,
+          callback: function() {
+            //Pop back to the All conversations view
+
+            self.navCtrl.pop();
+          }
+        }]);
+      });
+    }, function() {
+      //Completed
+    });
 
     //Empty the reply message
     this.replyMessage = '';
