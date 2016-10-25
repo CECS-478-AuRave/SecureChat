@@ -47,5 +47,12 @@ export class AppMessaging {
       .map(res => res.json());
   }
 
+  //POST to the server a new message
+  conversationReply(payload) {
+
+    //Update the conversation on the server
+    return this.http.put(AppSettings.serverUrl + 'conversation', payload).map(res => res.json());
+  }
+
 
 }
