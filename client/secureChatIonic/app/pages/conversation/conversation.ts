@@ -52,12 +52,14 @@ export class ConversationPage {
     //Get the conversation title
     this.convoTitle = this.getConvoTitle(this.convo);
 
-    //Tag which messages were sent by the user
-    //this.conversation = this.findUserMessages(this.conversation);
+    //User messages can be tagged in HTML, by comparing user ids in the ngFor
   }
 
   //Function called once the view is full loaded
   ionViewDidEnter() {
+
+    //Scroll to the bottom of the messages (Request below is for polling, not getting messages)
+    this.content.scrollToBottom(this.scrollDuration);
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
@@ -101,34 +103,28 @@ export class ConversationPage {
     }, function() {
       //Completed
     })
+  }
+
+  //Function to update our conversation
+  updateConversation() {
+
+    //Find and update our current conversation
+    for (let i = 0; i < this.appMessaging.conversations.length; ++i) {
+      if (this.convoId == this.appMessaging.conversations[i]._id) {
+
+        //Update the conversation
+        this.convo = this.appMessaging.conversations[i];
+
+        //Break from the loop
+        i = this.appMessaging.conversations.length;
+      }
+    }
+
+    //Update the UI
+    this.changeDetector.detectChanges();
 
     //Scroll to the bottom of the messages
     this.content.scrollToBottom(this.scrollDuration);
-  }
-
-  /*
- * JavaScript Pretty Date
- * Copyright (c) 2011 John Resig (ejohn.org)
- * Licensed under the MIT and GPL licenses.
- */
-  //Using preety date for our message date strings
-  prettyDate(time) {
-    let date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
-      diff = (((new Date()).getTime() - date.getTime()) / 1000),
-      day_diff = Math.floor(diff / 86400);
-
-    if (isNaN(day_diff) || day_diff < 0 || day_diff >= 31)
-      return;
-
-    return day_diff == 0 && (
-      diff < 60 && "just now" ||
-      diff < 120 && "1 minute ago" ||
-      diff < 3600 && Math.floor(diff / 60) + " minutes ago" ||
-      diff < 7200 && "1 hour ago" ||
-      diff < 86400 && Math.floor(diff / 3600) + " hours ago") ||
-      day_diff == 1 && "Yesterday" ||
-      day_diff < 7 && day_diff + " days ago" ||
-      day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
   }
 
   //Function to get the title of the conversationId
@@ -152,38 +148,6 @@ export class ConversationPage {
 
     //Return the conversation title
     return convoTitle;
-  }
-
-  //Function to update our conversation
-  updateConversation() {
-    //Find and update our current conversation
-    for (let i = 0; i < this.appMessaging.conversations.length; ++i) {
-      if (this.convoId == this.appMessaging.conversations[i]._id) {
-
-        //Update the conversation
-        this.convo = this.appMessaging.conversations[i];
-
-        //Break from the loop
-        i = this.appMessaging.conversations.length;
-      }
-    }
-
-    //Update the UI
-    this.changeDetector.detectChanges();
-  }
-
-  //Function to tag the messages that were sent by this user
-  findUserMessages(messages: Array<any>) {
-
-    //Get out user settings from localStorage
-    var userToken = JSON.parse(localStorage.getItem("shushUser"));
-
-    //Simply iterate through the array
-    for (let i = 0; i < messages.length; ++i) {
-      if (messages[i].senderId = userToken.id) messages[i].isUser = true;
-    }
-
-    return messages;
   }
 
   //Function to send a message (Done from click)
@@ -214,16 +178,21 @@ export class ConversationPage {
     //Make our request
     this.appMessaging.conversationReply(payload).subscribe(function(success) {
       //Success
+
       //Stop Loading
       self.appNotify.stopLoading().then(function() {
 
-        //Add our messages/Get our conversation
-        self.appMessaging.conversations = success;
+        //Set our convo to the the success result
+        self.convo = success;
 
-        console.log(success);
+        //Empty the reply message
+        self.replyMessage = '';
 
-        //Update our conversations
-        self.updateConversation();
+        //Update the UI
+        self.changeDetector.detectChanges();
+
+        //Scroll to the bottom of the messages
+        self.content.scrollToBottom(self.scrollDuration);
 
         //Toast the user
         self.appNotify.showToast('Message Sent!');
@@ -246,21 +215,38 @@ export class ConversationPage {
     }, function() {
       //Completed
     });
-
-    //Empty the reply message
-    this.replyMessage = '';
-
-    //Scroll to the bottom of the messages
-    setTimeout(() => {
-      this.content.scrollToBottom(this.scrollDuration);//300ms animation speed
-    });
-
   }
 
   //Run on page leave
   ionViewWillLeave() {
     //Stop
     this.pollingRequest.unsubscribe();
+  }
+
+
+  /*
+ * JavaScript Pretty Date
+ * Copyright (c) 2011 John Resig (ejohn.org)
+ * Licensed under the MIT and GPL licenses.
+ */
+  //Using preety date for our message date strings
+  prettyDate(time) {
+    let date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
+      diff = (((new Date()).getTime() - date.getTime()) / 1000),
+      day_diff = Math.floor(diff / 86400);
+
+    if (isNaN(day_diff) || day_diff < 0 || day_diff >= 31)
+      return;
+
+    return day_diff == 0 && (
+      diff < 60 && "just now" ||
+      diff < 120 && "1 minute ago" ||
+      diff < 3600 && Math.floor(diff / 60) + " minutes ago" ||
+      diff < 7200 && "1 hour ago" ||
+      diff < 86400 && Math.floor(diff / 3600) + " hours ago") ||
+      day_diff == 1 && "Yesterday" ||
+      day_diff < 7 && day_diff + " days ago" ||
+      day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
   }
 
 }

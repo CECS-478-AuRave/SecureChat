@@ -22,10 +22,16 @@ export class AllConversationsPage {
 
   constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private appNotify: AppNotify, private appMessaging: AppMessaging) {
 
+    //polling done and requests done on very request
+  }
+
+  //Function called once the view is full loaded
+  ionViewDidEnter() {
+
     //Start Loading
     this.appNotify.startLoading('Getting Messages...');
 
-    //Get the messages now, and then poll later once the view is opened
+    //Get the messages on view load, and start a polling request
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
@@ -53,19 +59,9 @@ export class AllConversationsPage {
     }, function() {
       //Completed
     })
-  }
-
-  //Function called once the view is full loaded
-  ionViewDidEnter() {
-
-    //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
     //Start polling to get messages
     let poll = this.appMessaging.conversationRequestPoll(user.access_token);
-
-    //Get a reference to this
-    let self = this;
 
     this.pollingRequest = poll.subscribe(function(success) {
       //Success!
