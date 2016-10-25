@@ -1,0 +1,40 @@
+<!--
+  Generated template for the AllMessagesPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<!-- Navbar -->
+<ion-header>
+  <ion-navbar>
+    <button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Messages</ion-title>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content padding>
+
+  <!-- ngFor through all of our messages -->
+  <ion-list class="recentMessagesList">
+
+    <!-- If no Messages found -->
+    <div *ngIf="!hasConversations()">
+      <h2 class="centerText">No Conversations Found!</h2>
+      <h6 class="centerText">(Add some friends using the side menu)</h6>
+    </div>
+
+    <!-- If we have messages -->
+    <div *ngIf="hasConversations()">
+      <button ion-item class="messageItem" *ngFor="let conversation of convoList; let i = index;" (click)="convoClick(conversation)">
+          <!-- Our user name -->
+          <h3 class="messageUser">{{getConvoMembers(conversation)}}</h3>
+          <!-- Our message text -->
+          <div class="messageText">{{getConvoLatestText(conversation)}}</div>
+        </button>
+    </div>
+
+  </ion-list>
+</ion-content>
