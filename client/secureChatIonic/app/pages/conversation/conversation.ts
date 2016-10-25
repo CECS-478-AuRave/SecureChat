@@ -76,8 +76,6 @@ export class ConversationPage {
       //Stop loading
       self.appNotify.stopLoading().then(function() {
 
-        console.log(success);
-
         //Add our messages/Get our conversation
         self.appMessaging.conversations = success;
 
