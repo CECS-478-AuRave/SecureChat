@@ -70,11 +70,11 @@ export class AppAuth {
           access_token: jsonResponse.accessToken
         }
 
-        let request = self.http.post(AppSettings.serverUrl + 'login', payload).map(res => res.json());
+        let serverRequest = self.http.post(AppSettings.serverUrl + 'login', payload).map(res => res.json());
 
 
         observer.next({
-          request: request,
+          request: serverRequest,
           access_token: jsonResponse.accessToken
         });
 
