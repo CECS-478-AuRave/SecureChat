@@ -12,8 +12,32 @@ import { NavController } from 'ionic-angular';
 })
 export class SearchFriendsPage {
 
-  constructor(private navCtrl: NavController) {
+  searchQuery: string = '';
+  searchItems: string[];
 
+  constructor(private navCtrl: NavController) {
+    this.initializeSearchItems();
   }
 
+  initializeSearchItems() {
+    this.searchItems = [
+      'Amsterdam',
+      'Bogota',
+    ];
+  }
+
+  getSearchItems(ev: any) {
+    // Reset items back to all of the items
+    this.initializeSearchItems();
+
+    // set val to the value of the searchbar
+    let val = ev.target.value;
+
+    // if the value is an empty string don't filter the items
+    if (val && val.trim() != '') {
+      this.searchItems = this.searchItems.filter((item) => {
+        return (item.toLowerCase().indexOf(val.toLowerCase()) > -1);
+      })
+    }
+  }
 }
