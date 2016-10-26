@@ -43,8 +43,6 @@ export class FriendsListPage {
 
     if (!user || !user.user) return;
 
-    console.log(user);
-
     //Start polling to get messages
     let request = this.appUsers.getUserById(user.user._id);
 

@@ -15,6 +15,7 @@ import { AuthLoginPage } from './pages/auth-login/auth-login';
 import { AllConversationsPage } from './pages/all-conversations/all-conversations';
 import { ConversationPage } from './pages/conversation/conversation';
 import { FriendsListPage } from './pages/friends-list/friends-list';
+import { SearchFriendsPage } from './pages/search-friends/search-friends';
 
 //Change detection needed for updating "this" AKA $scope
 @Component({
