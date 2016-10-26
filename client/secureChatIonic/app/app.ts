@@ -6,7 +6,6 @@ import { StatusBar } from 'ionic-native';
 import { AppSettings } from './providers/app-settings/app-settings';
 import { AppNotify } from './providers/app-notify/app-notify';
 import { AppAuth } from './providers/app-auth/app-auth';
-import { AppUsers} from './providers/app-users/app-users';
 import { AppMessaging } from './providers/app-messaging/app-messaging';
 
 //Import our pages
@@ -19,7 +18,7 @@ import { FriendsListPage } from './pages/friends-list/friends-list';
 //Change detection needed for updating "this" AKA $scope
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppSettings, AppNotify, AppAuth, AppUsers, AppMessaging],
+  providers: [AppSettings, AppAuth, AppMessaging, AppNotify],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class MyApp {

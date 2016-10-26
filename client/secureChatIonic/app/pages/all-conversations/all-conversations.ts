@@ -104,9 +104,8 @@ export class AllConversationsPage {
 
   //Function to return if we have conversations
   hasConversations() {
-    //Return true if we have no conversations object, or if the length is not zero
-    if (!this.convoList || this.convoList.length != 0) return true;
-    else return false;
+    if (this.convoList && this.convoList.length == 0) return true;
+    else return true;
   }
 
   //Function to reutn the users in a conversations
