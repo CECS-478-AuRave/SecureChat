@@ -35,38 +35,53 @@ export class AuthLoginPage {
     let response = this.appAuth.login();
 
     //Respond to the callback
-    response.subscribe(function(success: any) {
+    response.subscribe(function(fbRes: any) {
       //Success!
 
-      //Create our new user
-      let userJson = {
-        user: {},
-        access_token: '',
-        keys: {}
-      };
-      //Get the neccesary info from the user object
-      userJson.user = success.user;
-      userJson.access_token = success.access_token;
-      //TODO: Generate Encryption keys for the user if none
-      userJson.keys = {};
+      //Now subscribe to our server login response
+      fbRes.request.subscribe(function(success: any) {
+        //Success
 
-      //Save the user info
-      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
+        //Create our new user
+        let userJson = {
+          user: {},
+          access_token: '',
+          keys: {}
+        };
+        //Get the neccesary info from the user object
+        userJson.user = success.user;
+        userJson.access_token = fbRes.access_token;
+        //TODO: Generate Encryption keys for the user if none
+        userJson.keys = {};
 
-      //Update the auth status
-      self.appAuth.updateAuthStatus(true);
+        //Save the user info
+        localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
 
-      //Stop Loading
-      self.appNotify.stopLoading().then(function() {
-        //Toast What Happened
-        //In a timeout to avoid colliding with loading
-        setTimeout(function() {
-          //Show Toast
-          self.appNotify.showToast('Login Successful!');
+        //Update the auth status
+        self.appAuth.updateAuthStatus(true);
 
-          //Redirect to messages page
-          self.navCtrl.setRoot(AllConversationsPage);
-        }, 250)
+        //Stop Loading
+        self.appNotify.stopLoading().then(function() {
+          //Toast What Happened
+          //In a timeout to avoid colliding with loading
+          setTimeout(function() {
+            //Show Toast
+            self.appNotify.showToast('Login Successful!');
+
+            //Redirect to messages page
+            self.navCtrl.setRoot(AllConversationsPage);
+          }, 250)
+        });
+      }, function(error) {
+        //Error
+        //Stop Loading
+        self.appNotify.stopLoading().then(function() {
+
+          //There was an error connecting to facebook
+          self.appNotify.handleError(error);
+        });
+      }, function() {
+        //Complete
       });
     }, function(error) {
 
@@ -75,7 +90,7 @@ export class AuthLoginPage {
       self.appNotify.stopLoading().then(function() {
 
         //There was an error connecting to facebook
-        self.appNotify.showToast('Error, Facebook did not return your credentials.')
+        self.appNotify.showToast('Error, Facebook did not return your credentials.');
       });
     }, function() {
       //Subscription has completed
