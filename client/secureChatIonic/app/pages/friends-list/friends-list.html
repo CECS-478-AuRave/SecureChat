@@ -1,0 +1,43 @@
+<!--
+  Generated template for the FriendsListPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<!-- Navbar -->
+<ion-header>
+  <ion-navbar>
+    <button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Friends</ion-title>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content padding>
+
+  <!-- Ngfor our messages -->
+  <ion-card *ngFor="let friend of friends; let i = index;">
+    <ion-card-content>
+
+      <!-- User who sent the item -->
+      <ion-card-title>
+        {{friend.name}}
+      </ion-card-title>
+
+      <!--
+            For media messages if supported
+            <img src="img/nin-live.png" />
+        -->
+
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>
+
+
+<!-- Add friend fab -->
+<ion-fab class="addFriendFab">
+  <button ion-fab color="primary"><ion-icon name="add"></ion-icon></button>
+</ion-fab>

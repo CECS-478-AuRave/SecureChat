@@ -9,9 +9,9 @@
 
 //Import our page scss
 @import "../pages/home/home";
-@import "../pages/all-conversations/all-conversations";
-@import "../pages/conversation/conversation";
 @import "../pages/auth-login/auth-login";
+@import "../pages/all-conversations/all-conversations";
+@import "../pages/friends-list/friends-list";
 
 //Import custom scss
 @import "sharedStyles"
