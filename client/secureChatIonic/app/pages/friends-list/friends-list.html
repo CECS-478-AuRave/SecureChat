@@ -17,22 +17,32 @@
 
 <ion-content padding>
 
-  <!-- Ngfor our messages -->
-  <ion-card *ngFor="let friend of friends; let i = index;">
+  <!-- If no Messages found -->
+  <ion-card *ngIf="!hasFriends()">
     <ion-card-content>
+      <h2 class="centerText">No Friends Found!</h2>
+      <h6 class="centerText">Add them with the "+" button in the corner!</h6>
+    </ion-card-content>
+  </ion-card>
 
-      <!-- User who sent the item -->
-      <ion-card-title>
-        {{friend.name}}
-      </ion-card-title>
+  <!-- Ngfor our friends -->
+  <div *ngIf="hasFriends()">
+    <ion-card *ngFor="let friend of friends; let i = index;">
+      <ion-card-content>
 
-      <!--
+        <!-- User who sent the item -->
+        <ion-card-title>
+          {{friend.name}}
+        </ion-card-title>
+
+        <!--
             For media messages if supported
             <img src="img/nin-live.png" />
         -->
 
-    </ion-card-content>
-  </ion-card>
+      </ion-card-content>
+    </ion-card>
+  </div>
 
 </ion-content>
 
