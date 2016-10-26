@@ -16,6 +16,7 @@ import { AllConversationsPage } from './pages/all-conversations/all-conversation
 import { ConversationPage } from './pages/conversation/conversation';
 import { FriendsListPage } from './pages/friends-list/friends-list';
 import { SearchFriendsPage } from './pages/search-friends/search-friends';
+import { ViewUserPage } from './pages/view-user/view-user';
 
 //Change detection needed for updating "this" AKA $scope
 @Component({
@@ -46,7 +47,8 @@ class MyApp {
     ];
     this.authPages = [
       { title: 'Messages', component: AllConversationsPage },
-      { title: 'Friends', component: FriendsListPage }
+      { title: 'Friends', component: FriendsListPage },
+      { title: 'My Profile', component: ViewUserPage },
     ];
 
     //Set our root page

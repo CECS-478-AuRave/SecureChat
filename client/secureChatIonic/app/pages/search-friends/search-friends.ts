@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
+//Import our providers
+import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppNotify } from '../../providers/app-notify/app-notify';
+
 /*
   Generated class for the SearchFriendsPage page.
 

@@ -34,7 +34,7 @@ export class AllConversationsPage {
     //Get the messages on view load, and start a polling request
 
     //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
 
     //Start polling to get messages
     let request = this.appMessaging.conversationRequest(user.access_token);
