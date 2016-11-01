@@ -122,6 +122,55 @@ module.exports = function(app, passport) {
         }
     );
 
+    app.put('/api/v1/user/friend/delete',
+        passport.authenticate(['facebook-token']),
+        function(req, res) {
+            if (req.user) {
+                var thisUser = req.user;
+                var otherUserID = req.body.otherUserID;
+                var otherIdIndex = thisUser.friends.indexOf(otherUserID);
+                var thisFacebookId = thisUser.facebook.id;
+                if (!otherUserID) {
+                    res.status(400).json({'error' : 'otherUserID required in body'});
+                    return;
+                }
+                if (otherIdIndex == -1) {
+                    res.status(400).json({'error': 'That user is not your friend.'});
+                    return;
+                }
+                thisUser.friends.splice(otherIdIndex, 1);
+                thisUser.save(function(err, thisUser) {
+                    if (err) {
+                        res.status(500).json(err);
+                    }
+                });
+                User.findOne({'facebook.id':otherUserID}, function(err, otherUser) {
+                    if (!otherUser) {
+                        res.status(404).json({'error':'Other User was not found.'});
+                    } else if (err) {
+                        res.status(500).json(err);
+                    } else {
+                        var thisIdIndex = otherUser.friends.indexOf(thisFacebookId);
+                        if (thisIdIndex == -1) {
+                            res.status(400).json({'error': 'That user is not your friend.'});
+                            return;
+                        }
+                        otherUser.friends.splice(thisIdIndex, 1);
+                        otherUser.save(function(err, otherUser) {
+                            if (err) {
+                                res.status(500).json(err);
+                            } else {
+                                res.status(201).json({'message': 'Successfully deleted freind.'});
+                            }
+                        });
+                    }
+                });
+            } else {
+                // Respond with Unauthorized access
+                res.status(401).json({'error': 'Access Not Authorized'});
+            }
+        });
+
     // Route for accepting a pending friend request.
     app.put('/api/v1/user/friend/accept',
         passport.authenticate(['facebook-token']),
@@ -131,7 +180,7 @@ module.exports = function(app, passport) {
                 // Get the current user profile.
                 var thisUser = req.user;
                 // Get the friend's user id passed from the body.
-                var otherUserID = req.body.OtherUserID;
+                var otherUserID = req.body.otherUserID;
                 // Check if otherUserID was put in the body.
                 if (!otherUserID) {
                     res.status(400).json({'error': 'OtherUserID required in body'});
@@ -145,9 +194,9 @@ module.exports = function(app, passport) {
                 // get the index of the friend based on their id.
                 var idIndex = thisUser.pendingFriends.indexOf(otherUserID);
                 // remove that friend's id from the pending list.
-                thisUser.pendingFriends.slice(idIndex, 1);
+                thisUser.pendingFriends.splice(idIndex, 1);
                 User.findOne({'facebook.id':otherUserID}, function(err, otherUser) {
-                    if (!user) {
+                    if (!otherUser) {
                         // if the user wasn't found respond with status 404
                         // and the information stating User was not found...
                         res.status(404).json({'error': 'Other User was not found.'});
@@ -160,7 +209,7 @@ module.exports = function(app, passport) {
                         otherUser.friends.push(thisUser.facebook.id);
                         thisUser.friends.push(otherUserID);
                         // Save other user
-                        otherUser.save(function(err, user) {
+                        otherUser.save(function(err, otherUser) {
                             if (err) {
                                 // error with save respond with status 500 and
                                 // error information.
@@ -198,7 +247,7 @@ module.exports = function(app, passport) {
                 // Get the current user profile.
                 var thisUser = req.user;
                 // Get the friend's user id passed from the body.
-                var otherUserID = req.body.OtherUserID;
+                var otherUserID = req.body.otherUserID;
                 // Check if otherUserID was put in the body.
                 if (!otherUserID) {
                     res.status(400).json({'error': 'OtherUserID required in body'});
@@ -212,7 +261,7 @@ module.exports = function(app, passport) {
                 // get the index of the friend based on their id.
                 var idIndex = thisUser.pendingFriends.indexOf(otherUserID);
                 // remove that friend's id from the pending list.
-                thisUser.pendingFriends.slice(idIndex, 1);
+                thisUser.pendingFriends.splice(idIndex, 1);
                 // Save the current user schema.
                 thisUser.save(function(err, user) {
                     if (err) {
@@ -263,9 +312,9 @@ module.exports = function(app, passport) {
                         // if there was an error respond with status 500
                         // and the err information.
                         res.status(500).json(err);
-                    } else if (user.pendingFriends.indexOf(req.user.facebook.id) == -1) {
+                    } else if (user.pendingFriends.indexOf(req.user.facebook.id) != -1) {
                         res.status(400).json({'error': 'Already pending friend request'});
-                    } else if (user.friends.indexOf(req.user.facebook.id) == -1) {
+                    } else if (user.friends.indexOf(req.user.facebook.id) != -1) {
                         res.status(400).json({'error': 'User is already a friend.'})
                     }else {
                         // Push the authenticated freind's id to the facebook id.
