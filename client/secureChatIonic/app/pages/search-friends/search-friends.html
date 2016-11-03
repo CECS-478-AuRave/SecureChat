@@ -15,11 +15,25 @@
 
 <ion-content padding>
 
-  <ion-searchbar (ionInput)="getSearchItems($event)"></ion-searchbar>
+  <ion-searchbar class="friendSearchBar" placeholder="Enter an email or name" [(ngModel)]="searchQuery" (ionInput)="getSearchQuery()"></ion-searchbar>
+
+  <!-- Loading spinner for while we are searching -->
+  <div class="spinnerContainer centerText" *ngIf="isLoading && searchQuery.length > 0">
+    <ion-spinner></ion-spinner>
+  </div>
+
+
   <ion-list>
-    <ion-item *ngFor="let friend of searchItems">
-      {{ friend}}
-    </ion-item>
+    <!-- Show if we have input-->
+    <div *ngIf="searchQuery.length > 0">
+      <!-- Our list of currently found friends -->
+      <ion-item *ngFor="let friend of searchItems">
+        {{ friend}}
+      </ion-item>
+    </div>
   </ion-list>
+
+  <!-- Show if we dont have anything in the searchbar -->
+  <h2 *ngIf="searchQuery.length <= 0" class="centerText">Type in the search bar above to find some friends!</h2>
 
 </ion-content>

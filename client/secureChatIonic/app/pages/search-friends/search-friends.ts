@@ -4,6 +4,7 @@ import { NavController } from 'ionic-angular';
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
+import { AppUsers } from '../../providers/app-users/app-users';
 
 /*
   Generated class for the SearchFriendsPage page.
@@ -16,32 +17,67 @@ import { AppNotify } from '../../providers/app-notify/app-notify';
 })
 export class SearchFriendsPage {
 
+  //Our Search bar content
   searchQuery: string = '';
+
+  //Our returned items we searched for
   searchItems: string[];
 
-  constructor(private navCtrl: NavController) {
-    this.initializeSearchItems();
+  //Our observable request
+  searchRequest: any;
+
+  //If we are currently making requests to the backend
+  isLoading: boolean;
+
+  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appUsers: AppUsers) {
+
+    //Set our search items to empty
+    this.searchItems = [];
+
+    //Set is loading to false
+    this.isLoading = false;
   }
 
-  initializeSearchItems() {
-    this.searchItems = [
-      'Amsterdam',
-      'Bogota',
-    ];
-  }
+  getSearchQuery() {
 
-  getSearchItems(ev: any) {
-    // Reset items back to all of the items
-    this.initializeSearchItems();
+    //Set our search items to empty
+    this.searchItems = [];
 
-    // set val to the value of the searchbar
-    let val = ev.target.value;
+    //Start loading
+    this.isLoading = true;
 
-    // if the value is an empty string don't filter the items
-    if (val && val.trim() != '') {
-      this.searchItems = this.searchItems.filter((item) => {
-        return (item.toLowerCase().indexOf(val.toLowerCase()) > -1);
-      })
-    }
+    //Cancel any observables we have running
+    if(this.searchRequest) this.searchRequest.unsubscribe();
+
+    //Get a reference to self
+    let self = this;
+
+    //Search for the user
+    this.appUsers.searchUsers(this.searchQuery).subscribe(function(success) {
+      //Success!
+
+      //Set is loading to false
+      this.isLoading = false;
+
+
+      console.log(success);
+
+      //Set our returned search items
+
+      // if the value is an empty string don't filter the items
+      if (this.searchQuery && this.searchQuery.trim() != '') {
+        this.searchItems = this.searchItems.filter((item) => {
+          return (item.toLowerCase().indexOf(this.searchQuery.toLowerCase()) > -1);
+        })
+      }
+    }, function(error) {
+      //Set is loading to false
+      this.isLoading = false;
+
+      //Error
+      self.appNotify.handleError(error);
+    }, function() {
+      //Completed
+    })
   }
 }
