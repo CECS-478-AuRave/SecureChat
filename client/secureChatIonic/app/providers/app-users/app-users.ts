@@ -17,6 +17,7 @@ export class AppUsers {
 
   constructor(private http: Http) { }
 
+  //Gets the user by their facebook id
   getUserById(userId) {
 
     //Grab our user from localstorage

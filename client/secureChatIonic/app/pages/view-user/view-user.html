@@ -27,26 +27,39 @@
     </ion-item>
 
     <!-- Action Buttons, add friend, delete friend, etc... -->
-    <ion-row *ngIf="getUserType() != 2">
+    <ion-row *ngIf="getUserType() > 0">
       <ion-col>
         <!-- Add friend -->
-        <button primary clear small *ngIf="getUserType() == 0">
+        <button primary clear small *ngIf="getUserType() == 1">
         <ion-icon name="happy"></ion-icon>
         <div>Add Friend</div>
         </button>
 
+        <!-- Accept friend request-->
+        <button primary clear small *ngIf="getUserType() == 2">
+        <ion-icon name="thumbs-up"></ion-icon>
+        <div>Accept Request</div>
+        </button>
+
+        <!-- Send a friend a message-->
+        <button primary clear small *ngIf="getUserType() == 3">
+        <ion-icon name="text"></ion-icon>
+        <div>Send Message</div>
+        </button>
+      </ion-col>
+      <ion-col>
+
+        <!-- Decline friend request-->
+        <button primary clear small *ngIf="getUserType() == 2">
+        <ion-icon name="thumbs-down"></ion-icon>
+        <div>Decline Request</div>
+        </button>
+
         <!-- Remove friend -->
-        <button primary clear small *ngIf="getUserType() == 1">
+        <button primary clear small *ngIf="getUserType() == 3">
         <ion-icon name="remove-circle"></ion-icon>
         <div>Remove Friend</div>
         </button>
-
-      </ion-col>
-      <ion-col>
-        <button primary clear small *ngIf="getUserType() == 1">
-        <ion-icon name="text"></ion-icon>
-        <div>Send Message</div>
-      </button>
       </ion-col>
     </ion-row>
 

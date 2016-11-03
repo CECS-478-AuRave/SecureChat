@@ -47,7 +47,7 @@ export class FriendsListPage {
     if (!user || !user.user) return;
 
     //Start polling to get messages
-    let request = this.appUsers.getUserById(user.user._id);
+    let request = this.appUsers.getUserById(user.user.facebook.id);
 
     //Get a reference to this
     let self = this;
