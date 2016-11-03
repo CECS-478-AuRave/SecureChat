@@ -81,63 +81,60 @@ module.exports = function(app, passport) {
                     }
                 });
             } else {
-                res.status(401).json({'error': 'Access Not Authorized.'})
+              // Respond with Unauthorized access.
+              res.status(401).json({'error': 'Access Not Authorized.'});
             }
         }
     );
 
-    // Route for getting user information based on their email.
-    app.get('/api/v1/user/email/:email',
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            // Check if the user was authenticated
-            if (req.user) {
-                var email = req.params.email;
-
-                // Check if the email was passed in the parameter.
-                if (!email) {
-                    res.status(404).json({'error': 'Email is required to find user'});
-                    return;
-                }
-
-                // Find a user based on their email and return that user.
-                User.findOne({'email' : email}, function(err, user) {
-                    if (!user) {
-                        // if the user wasn't found respond with status 404
-                        // and the information stating User was not found.
-                        res.status(404).json({'error': 'User was not found.'});
-                    } else if (err) {
-                        // if there was an error respond with status 500
-                        // and the err information.
-                        res.status(500).json(err);
-                    } else {
-                        // if there wasn't an error and the user was found.
-                        // respond with status 200 and user's information
-                        res.status(200).json(user);
-                    }
-                });
+    // Route for getting user information based on query.
+    app.get('/api/v1/user', passport.authenticate(['facebook-token']), function(req, res) {
+      // Check if the user was authenticated
+      if (req.user) {
+        // set queryString variable to be from the requested query string.
+        var queryString = req.query.queryString;
+        // Check if queryString was provided
+        if (!queryString) {
+          res.status(400).json({'error': 'queryString required in query'});
+          return;
+        }
+        // search based on the queryString provided
+        User.search(queryString, function(err, result) {
+            if (err) {
+              // if there was an error respond with status 500
+              // and the err information.
+              res.status(500).json(err);
+            } else if (!result || result.length === 0) {
+              // if the result wasn't found respond with status 404
+              // and the information stating results were not found.
+              res.status(404).json({'error' : 'No Results Found.'});
             } else {
-                // Respond with Unauthorized access.
-                res.status(401).json({'error': 'Access Not Authorized.'});
+              // the results were found and responding with it as a list of
+              // json object.
+              res.status(200).json(result);
             }
-        }
-    );
+          });
+      } else {
+        // Respond with Unauthorized access.
+        res.status(401).json({'error': 'Access Not Authorized.'});
+      }
+    });
 
     // Route for deleting a friend.
     app.put('/api/v1/user/friend/delete', passport.authenticate(['facebook-token']),
-        friendController.deleteFriend);
+      friendController.deleteFriend);
 
     // Route for accepting a pending friend request.
     app.put('/api/v1/user/friend/accept', passport.authenticate(['facebook-token']),
-        friendController.acceptFriend);
+      friendController.acceptFriend);
 
     // Route for declining a pending friend request.
     app.put('/api/v1/user/friend/decline', passport.authenticate(['facebook-token']),
-        friendController.declineFriend);
+      friendController.declineFriend);
 
     // Route for creating a friend request.
     app.put('/api/v1/user/friend/add', passport.authenticate(['facebook-token']),
-        friendController.addFriend);
+      friendController.addFriend);
 
     // Routes for getting all messages for a user.
     app.get('/api/v1/conversation',
