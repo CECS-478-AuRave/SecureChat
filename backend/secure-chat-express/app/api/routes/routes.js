@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var Conversation = mongoose.model('Conversation');
+var friendController = require('../controllers/friends');
 
 module.exports = function(app, passport) {
 
@@ -21,7 +22,7 @@ module.exports = function(app, passport) {
     );
 
     // Route for getting a user's publicKey
-    app.get('/api/v1/user/id/:id/publicKey',
+    app.get('/api/v1/user/publicKey',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             //  Check if the user was authenticated
@@ -35,7 +36,7 @@ module.exports = function(app, passport) {
     );
 
     // Route for posting publicKey
-    app.put('/api/v1/user/id/:id/publicKey',
+    app.put('/api/v1/user/publicKey',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -49,7 +50,7 @@ module.exports = function(app, passport) {
     );
 
     // Route for getting user information based on their facebook id.
-    app.get('/api/v1/user/id/:id',
+    app.get('/api/v1/user/:id',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -80,216 +81,60 @@ module.exports = function(app, passport) {
                     }
                 });
             } else {
-                res.status(401).json({'error': 'Access Not Authorized.'})
+              // Respond with Unauthorized access.
+              res.status(401).json({'error': 'Access Not Authorized.'});
             }
         }
     );
 
-    // Route for getting user information based on their email.
-    app.get('/api/v1/user/email/:email',
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            // Check if the user was authenticated
-            if (req.user) {
-                var email = req.params.email;
-
-                // Check if the email was passed in the parameter.
-                if (!email) {
-                    res.status(404).json({'error': 'Email is required to find user'});
-                    return;
-                }
-
-                // Find a user based on their email and return that user.
-                User.findOne({'email' : email}, function(err, user) {
-                    if (!user) {
-                        // if the user wasn't found respond with status 404
-                        // and the information stating User was not found.
-                        res.status(404).json({'error': 'User was not found.'});
-                    } else if (err) {
-                        // if there was an error respond with status 500
-                        // and the err information.
-                        res.status(500).json(err);
-                    } else {
-                        // if there wasn't an error and the user was found.
-                        // respond with status 200 and user's information
-                        res.status(200).json(user);
-                    }
-                });
+    // Route for getting user information based on query.
+    app.get('/api/v1/user', passport.authenticate(['facebook-token']), function(req, res) {
+      // Check if the user was authenticated
+      if (req.user) {
+        // set queryString variable to be from the requested query string.
+        var queryString = req.query.queryString;
+        // Check if queryString was provided
+        if (!queryString) {
+          res.status(400).json({'error': 'queryString required in query'});
+          return;
+        }
+        // search based on the queryString provided
+        User.search(queryString, function(err, result) {
+            if (err) {
+              // if there was an error respond with status 500
+              // and the err information.
+              res.status(500).json(err);
+            } else if (!result || result.length === 0) {
+              // if the result wasn't found respond with status 404
+              // and the information stating results were not found.
+              res.status(404).json({'error' : 'No Results Found.'});
             } else {
-                // Respond with Unauthorized access.
-                res.status(401).json({'error': 'Access Not Authorized.'});
+              // the results were found and responding with it as a list of
+              // json object.
+              res.status(200).json(result);
             }
-        }
-    );
+          });
+      } else {
+        // Respond with Unauthorized access.
+        res.status(401).json({'error': 'Access Not Authorized.'});
+      }
+    });
+
+    // Route for deleting a friend.
+    app.put('/api/v1/user/friend/delete', passport.authenticate(['facebook-token']),
+      friendController.deleteFriend);
 
     // Route for accepting a pending friend request.
-    app.put('/api/v1/user/friend/accept',
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            // Check if the user was authenticated
-            if (req.user) {
-                // Get the current user profile.
-                var thisUser = req.user;
-                // Get the friend's user id passed from the body.
-                var otherUserID = req.body.OtherUserID;
-                // Check if otherUserID was put in the body.
-                if (!otherUserID) {
-                    res.status(400).json({'error': 'OtherUserID required in body'});
-                    return;
-                }
-                // Check if the current User has any pending friends.
-                if (!thisUser.pendingFriends || thisUser.pendingFriends.length == 0) {
-                    res.status(400).json({'error': 'User does not have any pending requests'});
-                    return;
-                }
-                // get the index of the friend based on their id.
-                var idIndex = thisUser.pendingFriends.indexOf(otherUserID);
-                // remove that friend's id from the pending list.
-                thisUser.pendingFriends.slice(idIndex, 1);
-                User.findOne({'facebook.id':otherUserID}, function(err, otherUser) {
-                    if (!user) {
-                        // if the user wasn't found respond with status 404
-                        // and the information stating User was not found...
-                        res.status(404).json({'error': 'Other User was not found.'});
-                    } else if (err) {
-                        // if there was an error respond with status 500
-                        // and the err information.
-                        res.status(500).json(err);
-                    } else {
-                        // Add each users as friends.
-                        otherUser.friends.push(thisUser.facebook.id);
-                        thisUser.friends.push(otherUserID);
-                        // Save other user
-                        otherUser.save(function(err, user) {
-                            if (err) {
-                                // error with save respond with status 500 and
-                                // error information.
-                                res.status(500).json(err);
-                            }
-                        });
-                        // Save this user
-                        thisUser.save(function(err, user) {
-                            if (err) {
-                                // error with save respond with status 500 and
-                                // error information.
-                                res.status(500).json(err);
-                            } else {
-                                // adding friend was successful. resond with
-                                // status 201.
-                                res.status(201).json({'message': 'Successfully added friends'});
-                            }
-                        });
-                    }
-                });
-            } else {
-                // Respond with Unauthorized access.
-                res.status(401).json({'error': 'Access Not Authorized.'});
-            }
-        }
-    );
-
+    app.put('/api/v1/user/friend/accept', passport.authenticate(['facebook-token']),
+      friendController.acceptFriend);
 
     // Route for declining a pending friend request.
-    app.put('/api/v1/user/friend/decline',
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            // Check if the user was authenticated.
-            if (req.user) {
-                // Get the current user profile.
-                var thisUser = req.user;
-                // Get the friend's user id passed from the body.
-                var otherUserID = req.body.OtherUserID;
-                // Check if otherUserID was put in the body.
-                if (!otherUserID) {
-                    res.status(400).json({'error': 'OtherUserID required in body'});
-                    return;
-                }
-                // Check if the current User has any pending friends.
-                if (!thisUser.pendingFriends || thisUser.pendingFriends.length == 0) {
-                    res.status(400).json({'error': 'User does not have any pending requests'});
-                    return;
-                }
-                // get the index of the friend based on their id.
-                var idIndex = thisUser.pendingFriends.indexOf(otherUserID);
-                // remove that friend's id from the pending list.
-                thisUser.pendingFriends.slice(idIndex, 1);
-                // Save the current user schema.
-                thisUser.save(function(err, user) {
-                    if (err) {
-                        // error with save respond with status 500 and
-                        // error information.
-                        res.status(500).json(err);
-                    } else {
-                        // deleting from the user was succesful and respond with
-                        // status code 201.
-                        res.status(201).json({'message': 'Sucessfully removed pending friend.'});
-                    }
-                });
-            } else {
-                // Respond with Unauthorized access.
-                res.status(401).json({'error': 'Access Not Authorized.'});
-            }
-        }
-    );
+    app.put('/api/v1/user/friend/decline', passport.authenticate(['facebook-token']),
+      friendController.declineFriend);
 
     // Route for creating a friend request.
-    app.put('/api/v1/user/friend/add',
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            // Check if the user was authenticated
-            if (req.user) {
-                // get the otherUserID from the body.
-                var otherUserID = req.body.otherUserID;
-                // Check if the authenticated user's facebook id is equal to
-                // the given friend's id.
-                if (req.user.facebook.id == otherUserID) {
-                    // Respond with bad request status code.
-                    res.status(400).json({'error': 'Cannot add yourself to the friends list.'});
-                    return;
-                }
-                // Check if the friend's facebook id was passed in the parameter
-                if (!otherUserID) {
-                    // Respond with bad request status code.
-                    res.status(400).json({'error': 'id is required to add friends'});
-                    return;
-                }
-                // Find user by checking for otherUserID and facebook id.
-                User.findOne({'facebook.id':otherUserID}, function(err, user) {
-                    if (!user) {
-                        // if the user wasn't found respond with status 404
-                        // and the information stating User was not found...
-                        res.status(404).json({'error': 'User was not found.'});
-                    } else if (err) {
-                        // if there was an error respond with status 500
-                        // and the err information.
-                        res.status(500).json(err);
-                    } else if (user.pendingFriends.indexOf(req.user.facebook.id) == -1) {
-                        res.status(400).json({'error': 'Already pending friend request'});
-                    } else if (user.friends.indexOf(req.user.facebook.id) == -1) {
-                        res.status(400).json({'error': 'User is already a friend.'})
-                    }else {
-                        // Push the authenticated freind's id to the facebook id.
-                        user.pendingFriends.push(req.user.facebook.id);
-                        // save the user schema that was found.
-                        user.save(function(err, user) {
-                            if (err) {
-                                // error with save respond with status 500 and
-                                // error information.
-                                res.status(500).json(err);
-                            } else {
-                                // saving was successful and respond with status
-                                // 201.
-                                res.status(201).json({'message': 'Successfully added to pending list'});
-                            }
-                        });
-                    }
-                });
-            } else {
-                // Respond with Unauthorized access.
-                res.status(401).json({'error': 'Access Not Authorized.'});
-            }
-        }
-    );
+    app.put('/api/v1/user/friend/add', passport.authenticate(['facebook-token']),
+      friendController.addFriend);
 
     // Routes for getting all messages for a user.
     app.get('/api/v1/conversation',
