@@ -22,7 +22,7 @@ module.exports = function(app, passport) {
     );
 
     // Route for getting a user's publicKey
-    app.get('/api/v1/user/id/:id/publicKey',
+    app.get('/api/v1/user/publicKey',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             //  Check if the user was authenticated
@@ -36,7 +36,7 @@ module.exports = function(app, passport) {
     );
 
     // Route for posting publicKey
-    app.put('/api/v1/user/id/:id/publicKey',
+    app.put('/api/v1/user/publicKey',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
@@ -50,7 +50,7 @@ module.exports = function(app, passport) {
     );
 
     // Route for getting user information based on their facebook id.
-    app.get('/api/v1/user/id/:id',
+    app.get('/api/v1/user/:id',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             // Check if the user was authenticated
