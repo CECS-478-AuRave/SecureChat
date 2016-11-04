@@ -1,13 +1,13 @@
 "use strict";
-// required
-// var FacebookStrategy = require('passport-facebook').Strategy;
+
 var FacebookTokenStrategy = require('passport-facebook-token');
-// load User model using mongoose.
-var mongoose = require('mongoose');
-var User = mongoose.model('User');
 
 // load the configuration auth file.
 var configAuth = require('./auth');
+// load User model using mongoose.
+var mongoose = require('mongoose');
+
+var User = mongoose.model('User');
 
 module.exports = function(passport) {
     // Serialization and Deserialization to support login sessions.
@@ -26,7 +26,6 @@ module.exports = function(passport) {
     },
     // Verify callback for facebook authentication
     function(accessToken, refreshToken, profile, done) {
-        console.log(accessToken);
         User.findOne({'facebook.id' : profile.id}, function(err, user) {
             var newUser;
             // Error occurred making query.
@@ -38,7 +37,6 @@ module.exports = function(passport) {
                 return done(null, user); // returning the user.
             } else {
                 // Creating new user since it doesn't exist in database.
-                console.log(profile);
                 newUser = new User({
                     name: profile.name.givenName + ' ' + profile.name.familyName,
                     email: profile.emails[0].value,
