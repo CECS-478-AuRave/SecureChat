@@ -27,8 +27,11 @@
     <!-- Show if we have input-->
     <div *ngIf="searchQuery.length > 0">
       <!-- Our list of currently found friends -->
-      <ion-item *ngFor="let friend of searchItems">
-        {{ friend}}
+      <ion-item *ngFor="let friend of searchItems" (click)="goToUser(friend)">
+        <ion-avatar item-left>
+          <img src="https://{{friend.profilePhotoURL}}">
+        </ion-avatar>
+        <h2>{{friend.name}}</h2>
       </ion-item>
     </div>
   </ion-list>

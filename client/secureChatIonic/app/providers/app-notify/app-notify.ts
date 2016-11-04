@@ -62,9 +62,6 @@ export class AppNotify {
 
     //TODO: Allow for overiding error codes, and using custom callbacks
 
-    //Log the error
-    console.log(error);
-
     //Get our status
     let status = error.status;
 
@@ -80,6 +77,9 @@ export class AppNotify {
 
       }
     }
+
+    //Log the error
+    console.log(error);
 
     if (status == 400) {
       //400 Bad Request

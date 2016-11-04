@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Component, ChangeDetectorRef } from '@angular/core';
+import { NavController, NavParams } from 'ionic-angular';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppUsers } from '../../providers/app-users/app-users';
+
+//Our Pages
+import { ViewUserPage } from '../../pages/view-user/view-user';
 
 /*
   Generated class for the SearchFriendsPage page.
@@ -29,7 +32,7 @@ export class SearchFriendsPage {
   //If we are currently making requests to the backend
   isLoading: boolean;
 
-  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appUsers: AppUsers) {
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appUsers: AppUsers) {
 
     //Set our search items to empty
     this.searchItems = [];
@@ -38,7 +41,19 @@ export class SearchFriendsPage {
     this.isLoading = false;
   }
 
+  //Go to a users page
+  goToUser(user) {
+    //Go to the conversation page, and pass the conversation id
+    this.navCtrl.push(ViewUserPage, {
+      user: user
+    });
+  }
+
+  //Make a request to the server to search for a user
   getSearchQuery() {
+
+    //Dont query if no text
+    if(this.searchQuery.length <= 0) return;
 
     //Set our search items to empty
     this.searchItems = [];
@@ -57,27 +72,33 @@ export class SearchFriendsPage {
       //Success!
 
       //Set is loading to false
-      this.isLoading = false;
-
-
-      console.log(success);
+      self.isLoading = false;
 
       //Set our returned search items
+      self.searchItems = success;
 
-      // if the value is an empty string don't filter the items
-      if (this.searchQuery && this.searchQuery.trim() != '') {
-        this.searchItems = this.searchItems.filter((item) => {
-          return (item.toLowerCase().indexOf(this.searchQuery.toLowerCase()) > -1);
-        })
-      }
+      //Update the UI
+      self.changeDetector.detectChanges();
+
     }, function(error) {
+      //Error!
+
       //Set is loading to false
-      this.isLoading = false;
+      self.isLoading = false;
 
       //Error
-      self.appNotify.handleError(error);
+      self.appNotify.handleError(error, [{
+        status: 404,
+        callback: function() {
+          //Dontdo anything
+          self.searchItems = [];
+        }
+      }]);
+
+      //Update the UI
+      self.changeDetector.detectChanges();
     }, function() {
       //Completed
-    })
+    });
   }
 }

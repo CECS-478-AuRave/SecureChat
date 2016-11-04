@@ -67,7 +67,14 @@ export class FriendsListPage {
       //Error!
       //Stop Loading
       self.appNotify.stopLoading().then(function() {
-        self.appNotify.handleError(error);
+        self.appNotify.handleError(error, [
+          {
+            status: '404',
+            callback: function() {
+              //Do nothing, because they simply don't have friends yet
+            }
+          }
+        ]);
       });
 
     }, function() {

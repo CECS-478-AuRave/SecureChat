@@ -4,6 +4,7 @@ import { NavController, NavParams } from 'ionic-angular';
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
+import { AppUsers} from '../../providers/app-users/app-users';
 
 /*
   Generated class for the ViewUserPage page.
@@ -18,23 +19,60 @@ export class ViewUserPage {
 
   user: any;
 
-  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams) {
-    if (!this.navParams.get('friend')) {
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appUsers: AppUsers) {
 
-      //Initialize the page with the user
-      let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
-      this.user = user;
-      console.log(this.user);
 
-      //Update the UI
-      //this.changeDetector.detectChanges();
-    }
+    //Get our user
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
 
-    //Grab the friend
+    //Set to ourselves for now
+    this.user = user;
+
+    //Get the passed user
+    let passedUser = this.navParams.get('user');
+
+    //Check if we should show our user, return if it is
+    if (!passedUser || passedUser._id == user._id) return;
+
+    //Start Loading
+    this.appNotify.startLoading('Getting User...');
+
+    console.log(passedUser);
+
+    //Grab the User
+    let request = this.appUsers.getUserById(passedUser.facebook.id);
+
+    //Get a reference to this
+    let self = this;
+
+    //Subscribe to the request
+    request.subscribe(function(success) {
+      //success
+
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+        console.log(success);
+      });
+
+    }, function(error) {
+      //error
+
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+        self.appNotify.handleError(error);
+      });
+
+    }, function() {
+      //Complete
+    });
   }
 
   //Get the user type. 0 = is the user, 1 = not friend, 2 = pending friend, 3 = friend
   getUserType() {
+
+    //CHeck if we currently have a user
+    if(!this.user || !this.user._id) return;
+
     //Get our current user
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
     //If they are the user, return
