@@ -25,7 +25,7 @@ module.exports = function(app, passport) {
     );
 
     // Route for getting a user's publicKey
-    app.get('/api/v1/user/publicKey',
+    app.get('/api/v1/user/:id/publicKey',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             //  Check if the user was authenticated
