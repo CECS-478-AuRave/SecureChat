@@ -30,7 +30,7 @@ export class AppUsers {
     let options = new RequestOptions({ headers: headers });
 
     //Return our request
-    let url = AppSettings.serverUrl + "user/id/" + userId;
+    let url = AppSettings.serverUrl + "user/" + userId;
     return this.http.get(url, options).map(res => res.json());
   }
 

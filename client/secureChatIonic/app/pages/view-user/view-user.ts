@@ -37,8 +37,6 @@ export class ViewUserPage {
     //Start Loading
     this.appNotify.startLoading('Getting User...');
 
-    console.log(passedUser);
-
     //Grab the User
     let request = this.appUsers.getUserById(passedUser.facebook.id);
 
@@ -51,7 +49,11 @@ export class ViewUserPage {
 
       //Stop loading
       self.appNotify.stopLoading().then(function() {
-        console.log(success);
+        //Set our user
+        self.user = success;
+
+        //Update the UI
+        self.changeDetector.detectChanges();
       });
 
     }, function(error) {
