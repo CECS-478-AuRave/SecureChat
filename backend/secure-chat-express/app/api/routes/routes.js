@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var Conversation = mongoose.model('Conversation');
+var Message = mongoose.model('Message');
 var friendController = require('../controllers/friends');
 var conversationController = require('../controllers/conversation');
 
@@ -138,111 +139,14 @@ module.exports = function(app, passport) {
       friendController.addFriend);
 
     // Routes for getting all messages for a user.
-    app.get('/api/v1/conversation',
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            // Check if the user was authenticated
-            if (req.user) {
-                // get the authenticated user's facebook id.
-                var thisUserID = req.user._id;
-                // console.log(thisUserID);
-                // console.log(req.user);
-
-                // Find all conversations containing the current user's facebook id.
-                Conversation
-                  .find({members: {$in: [thisUserID]}})
-                  .populate('members')
-                  .exec(function(err, conversation) {
-                    // console.log(conversation);
-                    if (!conversation || conversation.length == 0) {
-                      // Respond with status 404 since no conversation was found for user.
-                      res.status(404).json({'error': 'No available conversations for ' + req.user.name});
-                    } else if (err) {
-                      // Respond with status 500 since there was an error finding conversation.
-                      res.status(500).json(err);
-                    } else {
-                      // Respond with status 200 and the whole conversation as a json object.
-                      res.status(200).json(conversation);
-                    }
-                  });
-            } else {
-                // Respond with Unauthorized access.
-                res.status(401).json({'error': 'Access Not Authorized.'});
-            }
-        }
-    );
+    app.get('/api/v1/conversation', passport.authenticate(['facebook-token']),
+        conversationController.getConversation);
 
     // Routes for posting in existing conversation
-    app.put('/api/v1/conversation',
-        passport.authenticate(['facebook-token']),
-        function(req, res) {
-            // Check if the user was authenticated.
-            if (req.user) {
-                // Get the _id for the conversationID since we are going to use
-                // it for finding the conversation.
-                var _id = req.body.conversationID;
-                // Get the message from the body so we can append it to the
-                // found conversation.
-                var message = req.body.message;
-                // Check if the _id was passed into the body
-                if (!_id) {
-                    // Respond with bad request status and an error json message
-                    // since the conversationID was not found in the body.
-                    res.status(400).json({'error': '_id required in body'});
-                    return;
-                }
-                // Check if the message was passed into the body
-                if (!message) {
-                    // Respond with bad request status and an error json message
-                    // since the message was not found in the body.
-                    res.status(400).json({'error': 'message required in body'});
-                }
-                // Find a conversation based on the conversation ID
-                Conversation
-                  .findOne({'conversationID': _id})
-                  .populate('members')
-                  .exec(function(err, conversation) {
-                      if (err) {
-                          // Server error in finding a single conversation based on
-                          // the id. Respond with status 500 and the err object.
-                          res.status(500).json(err);
-                      } else if (!conversation) {
-                          // Conversation was not found. Respond with 404 and
-                          // an message stating the conversation was not found.
-                          res.status(404).json({'error': 'Conversation Not Found'});
-                      } else {
-                          var currentTime = Date.now();
-                          // Change the conversation date to be the current time
-                          // since it's the latest time that the message was sent.
-                          conversation.date = currentTime;
-                          // append the message to the conversation.
-                          conversation.message.push({
-                              'message': message,
-                              from: req.user.name,
-                              date: currentTime
-                          });
-                          // Save the conversation schema
-                          conversation.save(function(err, conversation) {
-                              if (err) {
-                                  // Server error when saving the conversation,
-                                  // respond with status 500 and the error object.
-                                  res.status(500).json(err);
-                              } else {
-                                  // Succfully saved the conversation. respond with
-                                  // status 201 and the conversation object.
-                                  res.status(201).json(conversation);
-                              }
-                          });
-                      }
-                  });
-            } else {
-                // Respond with Unauthorized access.
-                res.status(401).json({'error': 'Access Not Authorized.'});
-            }
-        }
-    );
+    app.put('/api/v1/conversation', passport.authenticate(['facebook-token']),
+        conversationController.putConversation);
 
     // Routes for creating new conversation
     app.post('/api/v1/conversation', passport.authenticate(['facebook-token']),
-        conversationController.createConversation);
+        conversationController.postConversation);
 };
