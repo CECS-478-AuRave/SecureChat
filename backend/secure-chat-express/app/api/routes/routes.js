@@ -143,12 +143,15 @@ module.exports = function(app, passport) {
             // Check if the user was authenticated
             if (req.user) {
                 // get the authenticated user's facebook id.
-                var thisUserID = req.user.facebook.id;
+                var thisUserID = req.user._id;
                 // console.log(thisUserID);
                 // console.log(req.user);
 
                 // Find all conversations containing the current user's facebook id.
-                Conversation.find({memberIDs: {$in: [thisUserID]}}, function(err, conversation) {
+                Conversation
+                  .find({members: {$in: [thisUserID]}})
+                  .populate('members')
+                  .exec(function(err, conversation) {
                     // console.log(conversation);
                     if (!conversation || conversation.length == 0) {
                       // Respond with status 404 since no conversation was found for user.
@@ -160,7 +163,7 @@ module.exports = function(app, passport) {
                       // Respond with status 200 and the whole conversation as a json object.
                       res.status(200).json(conversation);
                     }
-                });
+                  });
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
@@ -194,40 +197,43 @@ module.exports = function(app, passport) {
                     res.status(400).json({'error': 'message required in body'});
                 }
                 // Find a conversation based on the conversation ID
-                Conversation.findOne({'_id': _id}, function(err, conversation) {
-                    if (err) {
-                        // Server error in finding a single conversation based on
-                        // the id. Respond with status 500 and the err object.
-                        res.status(500).json(err);
-                    } else if (!conversation) {
-                        // Conversation was not found. Respond with 404 and
-                        // an message stating the conversation was not found.
-                        res.status(404).json({'error': 'Conversation Not Found'});
-                    } else {
-                        var currentTime = Date.now();
-                        // Change the conversation date to be the current time
-                        // since it's the latest time that the message was sent.
-                        conversation.date = currentTime;
-                        // append the message to the conversation.
-                        conversation.message.push({
-                            'message': message,
-                            from: req.user.name,
-                            date: currentTime
-                        });
-                        // Save the conversation schema
-                        conversation.save(function(err, conversation) {
-                            if (err) {
-                                // Server error when saving the conversation,
-                                // respond with status 500 and the error object.
-                                res.status(500).json(err);
-                            } else {
-                                // Succfully saved the conversation. respond with
-                                // status 201 and the conversation object.
-                                res.status(201).json(conversation);
-                            }
-                        });
-                    }
-                });
+                Conversation
+                  .findOne({'conversationID': _id})
+                  .populate('members')
+                  .exec(function(err, conversation) {
+                      if (err) {
+                          // Server error in finding a single conversation based on
+                          // the id. Respond with status 500 and the err object.
+                          res.status(500).json(err);
+                      } else if (!conversation) {
+                          // Conversation was not found. Respond with 404 and
+                          // an message stating the conversation was not found.
+                          res.status(404).json({'error': 'Conversation Not Found'});
+                      } else {
+                          var currentTime = Date.now();
+                          // Change the conversation date to be the current time
+                          // since it's the latest time that the message was sent.
+                          conversation.date = currentTime;
+                          // append the message to the conversation.
+                          conversation.message.push({
+                              'message': message,
+                              from: req.user.name,
+                              date: currentTime
+                          });
+                          // Save the conversation schema
+                          conversation.save(function(err, conversation) {
+                              if (err) {
+                                  // Server error when saving the conversation,
+                                  // respond with status 500 and the error object.
+                                  res.status(500).json(err);
+                              } else {
+                                  // Succfully saved the conversation. respond with
+                                  // status 201 and the conversation object.
+                                  res.status(201).json(conversation);
+                              }
+                          });
+                      }
+                  });
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
@@ -249,20 +255,14 @@ module.exports = function(app, passport) {
                 if (!jsonObject) {
                     res.status(400).json({'error': 'JSON message required.'});
                 }
-                // get the list of members sent by the JSON object.
+                // get the list of members, the user._id, sent by the JSON object.
                 var members = jsonObject.members;
-                // get the list of names sent by the JSON object.
-                var names = jsonObject.names;
                 // get the message sent by the Json Object
                 var message = jsonObject.message;
 
                 // Check if members exists from the json object.
                 if (!members || members.length == 0) {
                     res.status(400).json({'error': 'Member value required.'});
-                    return;
-                }
-                if (!names || names.length == 0) {
-                    res.status(400).json({'error': 'Names value required'});
                     return;
                 }
                 // Check if the message exists from the json object.
@@ -272,15 +272,15 @@ module.exports = function(app, passport) {
                 }
                 // Add the current user's facebook id to the members since
                 // we will be using it as the groupID.
-                members.push(thisUser.facebook.id);
+                members.push(thisUser._id);
                 // Add the current user's facebook name to the names since
                 // we need to store all the members' name.
-                names.push(thisUser.name);
+                // names.push(thisUser.name);
                 // GroupID is the sorted facebookID that's joined altogether.
                 var groupID = members.sort().join('_');
                 var currentTime = Date.now();
                 // Find a group based on the groupID provided.
-                Conversation.findOne({_id: groupID}, function(err, conversation) {
+                Conversation.findOne({conversationID: groupID}, function(err, conversation) {
                     if (err) {
                         // Respond with internal server error and the err object since
                         // there was an error with the given query.
@@ -289,9 +289,8 @@ module.exports = function(app, passport) {
                         // Since the conversation didn't exist we need to create a
                         // new conversation.
                         var newConversation = new Conversation({
-                            _id: groupID,
-                            'memberIDs': members,
-                            'memberNames': names,
+                            conversationID: groupID,
+                            'members': members,
                             date: currentTime
                         });
                         // We append the message to the new conversation.
@@ -306,9 +305,18 @@ module.exports = function(app, passport) {
                                 // Error in saving the new conversation
                                 res.status(500).json(err);
                             } else {
-                                // respond to the client with status 201 and the
-                                // convesation object.
-                                res.status(201).json(conversation);
+                                Conversation
+                                  .findById(conversation._id)
+                                  .populate('members')
+                                  .exec(function(err, conversation) {
+                                    if (err) {
+                                      res.status(500).json(err);
+                                    } else {
+                                      // respond to the client with status 201 and the
+                                      // convesation object.
+                                      res.status(201).json(conversation);
+                                    }
+                                  });
                             }
                         });
                     } else {

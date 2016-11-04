@@ -9,9 +9,8 @@ var messageSchema = new Schema({
 });
 
 var conversationSchema = new Schema({
-    _id: {type: String, required: true},
-    memberIDs: [{type: String, required: true}],
-    memberNames: [{type: String, required: true}],
+    conversationID: {type: String, required: true},
+    members: [{type: Schema.ObjectId, ref: 'User'}],
     message: [messageSchema],
     date: {type: Date}
 });
