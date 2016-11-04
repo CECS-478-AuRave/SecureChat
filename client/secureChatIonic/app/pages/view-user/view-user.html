@@ -27,27 +27,27 @@
     </ion-item>
 
     <!-- Action Buttons, add friend, delete friend, etc... -->
-    <ion-row *ngIf="getUserType() > 0">
+    <ion-row *ngIf="getUserType() > userTypeMap.currentUser">
       <ion-col>
         <!-- Add friend -->
-        <div *ngIf="getUserType() == 1">
-          <button primary clear small>
+        <div *ngIf="getUserType() == userTypeMap.notFriend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.addFriend)">
           <ion-icon name="happy"></ion-icon>
           <div>Add Friend</div>
           </button>
         </div>
 
         <!-- Accept friend request-->
-        <div *ngIf="getUserType() == 2">
-          <button primary clear small>
+        <div *ngIf="getUserType() == userTypeMap.pendingFriend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.acceptRequest)">
           <ion-icon name="thumbs-up"></ion-icon>
           <div>Accept Request</div>
           </button>
         </div>
 
         <!-- Send a friend a message-->
-        <div *ngIf="getUserType() == 3">
-          <button primary clear small>
+        <div *ngIf="getUserType() == userTypeMap.friend">
+          <button primary clear small (click)="goToNewMessage()">
           <ion-icon name="text"></ion-icon>
           <div>Send Message</div>
           </button>
@@ -57,16 +57,16 @@
       <ion-col>
 
         <!-- Decline friend request-->
-        <div *ngIf="getUserType() == 2">
-          <button primary clear small>
+        <div *ngIf="getUserType() == userTypeMap.pendingFriend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.declineRequest)">
           <ion-icon name="thumbs-down"></ion-icon>
           <div>Decline Request</div>
           </button>
         </div>
 
         <!-- Remove friend -->
-        <div *ngIf="getUserType() == 3">
-          <button primary clear small>
+        <div *ngIf="getUserType() == userTypeMap.friend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.deleteFriend)">
           <ion-icon name="remove-circle"></ion-icon>
           <div>Remove Friend</div>
           </button>
