@@ -150,15 +150,15 @@ module.exports = function(app, passport) {
                 // Find all conversations containing the current user's facebook id.
                 Conversation.find({memberIDs: {$in: [thisUserID]}}, function(err, conversation) {
                     // console.log(conversation);
-                    if (err) {
-                        // Respond with status 500 since there was an error finding conversation.
-                        res.status(500).json(err);
-                    } else if (!conversation || conversation.length == 0) {
-                        // Respond with status 404 since no conversation was found for user.
-                        res.status(404).json({'error': 'No available conversations for ' + req.user.name});
+                    if (!conversation || conversation.length == 0) {
+                      // Respond with status 404 since no conversation was found for user.
+                      res.status(404).json({'error': 'No available conversations for ' + req.user.name});
+                    } else if (err) {
+                      // Respond with status 500 since there was an error finding conversation.
+                      res.status(500).json(err);
                     } else {
-                        // Respond with status 200 and the whole conversation as a json object.
-                        res.status(200).json(conversation);
+                      // Respond with status 200 and the whole conversation as a json object.
+                      res.status(200).json(conversation);
                     }
                 });
             } else {
