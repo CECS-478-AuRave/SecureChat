@@ -36,7 +36,7 @@ module.exports.addFriend = function(req, res) {
             } else if (user.friends.indexOf(req.user.facebook.id) != -1) {
                 res.status(400).json({'error': 'User is already a friend.'})
             } else {
-                // Push the authenticated freind's id to the facebook id.
+                // Push the authenticated friend's id to the facebook id.
                 user.pendingFriends.push(req.user.facebook.id);
                 // save the user schema that was found.
                 user.save(function(err, user) {
@@ -89,7 +89,7 @@ module.exports.declineFriend = function(req, res) {
             } else {
                 // deleting from the user was succesful and respond with
                 // status code 201.
-                res.status(201).json({'message': 'Sucessfully removed pending friend.'});
+                res.status(201).json({'message': 'Successfully removed pending friend.'});
             }
         });
     } else {
@@ -198,7 +198,7 @@ module.exports.deleteFriend = function(req, res) {
                     if (err) {
                         res.status(500).json(err);
                     } else {
-                        res.status(201).json({'message': 'Successfully deleted freind.'});
+                        res.status(201).json({'message': 'Successfully deleted friend.'});
                     }
                 });
             }
