@@ -1,10 +1,12 @@
-var mongoose = require('mongoose');
-var User = mongoose.model('User');
-var Conversation = mongoose.model('Conversation');
-var Message = mongoose.model('Message');
-var friendController = require('../controllers/friends');
-var conversationController = require('../controllers/conversation');
-var userController = require('../controllers/user');
+const mongoose = require('mongoose');
+const crypto = require('crypto');
+const hash = crypto.createHash('sha1');
+const User = mongoose.model('User');
+const Conversation = mongoose.model('Conversation');
+const Message = mongoose.model('Message');
+const friendController = require('../controllers/friends');
+const conversationController = require('../controllers/conversation');
+const userController = require('../controllers/user');
 
 module.exports = function(app, passport) {
 
@@ -42,7 +44,13 @@ module.exports = function(app, passport) {
                     } else if (!publicKey) {
                         res.status(404).json({'error' : 'Public key not set for the queried user.'});
                     } else {
-                        res.status(200).json({'publicKey' : publicKey});
+                        hash.update(publicKey);
+                        res.status(200).json(
+                            {
+                                'publicKey' : publicKey,
+                                'readableKey' : hash.digest('hex')
+                            }
+                        );
                     }
                 });
             } else {
