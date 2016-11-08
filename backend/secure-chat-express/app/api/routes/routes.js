@@ -30,7 +30,21 @@ module.exports = function(app, passport) {
         function(req, res) {
             //  Check if the user was authenticated
             if (req.user) {
-                res.status(200).json({'auth': 'Successful'});
+                var otherUserId = req.params.id;
+                if (!otherUserId) {
+                    res.status(400).json({'error': 'OtherUserID required in body'});
+                    return;
+                }
+                User.findOne({'facebook.id': otherUserId}, function(err, user) {
+                    var publicKey = user.publicKey;
+                    if (err) {
+                        res.status(500).json(err);
+                    } else if (!publicKey) {
+                        res.status(404).json({'error' : 'Public key not set for the queried user.'});
+                    } else {
+                        res.status(200).json({'publicKey' : publicKey});
+                    }
+                });
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
