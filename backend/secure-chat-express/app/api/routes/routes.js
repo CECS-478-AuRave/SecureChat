@@ -25,14 +25,14 @@ module.exports = function(app, passport) {
     );
 
     // Route for getting a user's publicKey
-    app.get('/api/v1/user/:id/publicKey',
+    app.get('/api/v1/user/publicKey/:id',
         passport.authenticate(['facebook-token']),
         function(req, res) {
             //  Check if the user was authenticated
             if (req.user) {
                 var otherUserId = req.params.id;
                 if (!otherUserId) {
-                    res.status(400).json({'error': 'OtherUserID required in body'});
+                    res.status(400).json({'error': 'OtherUserID required in parameter.'});
                     return;
                 }
                 User.findOne({'facebook.id': otherUserId}, function(err, user) {
@@ -58,7 +58,20 @@ module.exports = function(app, passport) {
         function(req, res) {
             // Check if the user was authenticated
             if (req.user) {
-                res.status(200).json({'auth': 'Successful'});
+                var thisUser = req.user;
+                var publicKey = req.body.publicKey;
+                if (!publicKey) {
+                    res.status(400).json({'error' : 'publicKey required in body.'});
+                    return;
+                }
+                thisUser.publicKey = publicKey;
+                thisUser.save(function(err, user) {
+                    if (err) {
+                        res.status(500).json(err);
+                    } else {
+                        res.status(201).json(user);
+                    }
+                });
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
