@@ -1,6 +1,12 @@
 'use strict';
 
+require('./conversation');
+require('./message');
+require('./user');
+
 var mongoose = require('mongoose');
+const process = require('process');
+
 // Database connection string
 var dbURI = 'mongodb://localhost/chat';
 // Connect to the given connection string
@@ -33,6 +39,3 @@ process.on('SIGINT', function() {
         process.exit(0);
     });
 });
-
-require('./user');
-require('./conversation');
