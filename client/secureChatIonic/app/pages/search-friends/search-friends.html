@@ -1,0 +1,42 @@
+<!--
+  Generated template for the SearchFriendsPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>Search Friends</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+
+  <ion-searchbar class="friendSearchBar" placeholder="Enter an email or name" [(ngModel)]="searchQuery" (ionInput)="getSearchQuery()"></ion-searchbar>
+
+  <!-- Loading spinner for while we are searching -->
+  <div class="spinnerContainer centerText" *ngIf="isLoading && searchQuery.length > 0">
+    <ion-spinner></ion-spinner>
+  </div>
+
+
+  <ion-list>
+    <!-- Show if we have input-->
+    <div *ngIf="searchQuery.length > 0">
+      <!-- Our list of currently found friends -->
+      <ion-item *ngFor="let friend of searchItems" (click)="goToUser(friend)">
+        <ion-avatar item-left>
+          <img src="https://{{friend.profilePhotoURL}}">
+        </ion-avatar>
+        <h2>{{friend.name}}</h2>
+      </ion-item>
+    </div>
+  </ion-list>
+
+  <!-- Show if we dont have anything in the searchbar -->
+  <h2 *ngIf="searchQuery.length <= 0" class="centerText">Type in the search bar above to find some friends!</h2>
+
+</ion-content>

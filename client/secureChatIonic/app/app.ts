@@ -6,6 +6,7 @@ import { StatusBar } from 'ionic-native';
 import { AppSettings } from './providers/app-settings/app-settings';
 import { AppNotify } from './providers/app-notify/app-notify';
 import { AppAuth } from './providers/app-auth/app-auth';
+import { AppUsers} from './providers/app-users/app-users';
 import { AppMessaging } from './providers/app-messaging/app-messaging';
 
 //Import our pages
@@ -13,11 +14,14 @@ import { Home } from './pages/home/home';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 import { AllConversationsPage } from './pages/all-conversations/all-conversations';
 import { ConversationPage } from './pages/conversation/conversation';
+import { FriendsListPage } from './pages/friends-list/friends-list';
+import { SearchFriendsPage } from './pages/search-friends/search-friends';
+import { ViewUserPage } from './pages/view-user/view-user';
 
 //Change detection needed for updating "this" AKA $scope
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppSettings, AppAuth, AppMessaging, AppNotify],
+  providers: [AppSettings, AppNotify, AppAuth, AppUsers, AppMessaging],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class MyApp {
@@ -42,7 +46,9 @@ class MyApp {
       { title: 'Login', component: AuthLoginPage }
     ];
     this.authPages = [
-      { title: 'Messages', component: AllConversationsPage }
+      { title: 'Messages', component: AllConversationsPage },
+      { title: 'Friends', component: FriendsListPage },
+      { title: 'My Profile', component: ViewUserPage },
     ];
 
     //Set our root page

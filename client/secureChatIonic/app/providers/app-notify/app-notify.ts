@@ -1,4 +1,4 @@
-import { Injectable, ViewChild } from '@angular/core';
+import { Injectable, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { App, Nav, LoadingController, ToastController  } from 'ionic-angular';
 
 //Our Providers
@@ -24,7 +24,7 @@ export class AppNotify {
   //Our default loading string
   defaultMessage: 'Loading, please wait...';
 
-  constructor(private app: App, private appAuth: AppAuth, private loadingCtrl: LoadingController, private toastCtrl: ToastController) {
+  constructor(private changeDetector: ChangeDetectorRef, private app: App, private appAuth: AppAuth, private loadingCtrl: LoadingController, private toastCtrl: ToastController) {
   }
 
   //Show a Static toast
@@ -54,16 +54,20 @@ export class AppNotify {
 
   //Function to stop Loading
   stopLoading() {
-    return this.loader.dismiss();
+    //Dismiss the loader
+    let promise = this.loader.dismiss();
+
+    //Update the UI
+    //this.changeDetector.detectChanges();
+
+    //Return loader promise
+    return promise;
   }
 
   //Function to handle Errors
   handleError(error, expected?) {
 
     //TODO: Allow for overiding error codes, and using custom callbacks
-
-    //Log the error
-    console.log(error);
 
     //Get our status
     let status = error.status;
@@ -80,6 +84,9 @@ export class AppNotify {
 
       }
     }
+
+    //Log the error
+    console.log(error);
 
     if (status == 400) {
       //400 Bad Request

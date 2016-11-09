@@ -1,0 +1,92 @@
+<!--
+  Generated template for the ViewUserPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<!-- Navbar -->
+<ion-header>
+  <ion-navbar>
+    <button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>{{user.name}}</ion-title>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content padding>
+  <ion-card>
+
+    <!-- User name and picture -->
+    <ion-item>
+      <ion-avatar item-left>
+        <img src="https://{{user.profilePhotoURL}}">
+      </ion-avatar>
+      <h2>{{user.name}}</h2>
+    </ion-item>
+
+    <!-- Action Buttons, add friend, delete friend, etc... -->
+    <ion-row *ngIf="getUserType() > userTypeMap.currentUser">
+      <ion-col>
+        <!-- Add friend -->
+        <div *ngIf="getUserType() == userTypeMap.notFriend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.addFriend)">
+          <ion-icon name="happy"></ion-icon>
+          <div>Add Friend</div>
+          </button>
+        </div>
+
+        <!-- Friend Request sent -->
+        <div *ngIf="getUserType() == userTypeMap.requestPending">
+          <button primary clear small>
+            <ion-icon name="help-circle"></ion-icon>
+            <div>Request Pending...</div>
+          </button>
+        </div>
+
+        <!-- Accept friend request-->
+        <div *ngIf="getUserType() == userTypeMap.pendingFriend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.acceptRequest)">
+          <ion-icon name="thumbs-up"></ion-icon>
+          <div>Accept Request</div>
+          </button>
+        </div>
+
+        <!-- Send a friend a message-->
+        <div *ngIf="getUserType() == userTypeMap.friend">
+          <button primary clear small (click)="goToNewMessage()">
+          <ion-icon name="text"></ion-icon>
+          <div>Send Message</div>
+          </button>
+        </div>
+
+      </ion-col>
+      <ion-col>
+
+        <!-- Decline friend request-->
+        <div *ngIf="getUserType() == userTypeMap.pendingFriend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.declineRequest)">
+          <ion-icon name="thumbs-down"></ion-icon>
+          <div>Decline Request</div>
+          </button>
+        </div>
+
+        <!-- Remove friend -->
+        <div *ngIf="getUserType() == userTypeMap.friend">
+          <button primary clear small (click)="editUserStatus(userTypeMap.requests.deleteFriend)">
+          <ion-icon name="remove-circle"></ion-icon>
+          <div>Remove Friend</div>
+          </button>
+        </div>
+
+      </ion-col>
+    </ion-row>
+
+    <!-- Place information abou the user like keys and things here -->
+    <ion-card-content>
+      <h2 class="centerText">Shush Public Keys</h2>
+    </ion-card-content>
+
+  </ion-card>
+</ion-content>

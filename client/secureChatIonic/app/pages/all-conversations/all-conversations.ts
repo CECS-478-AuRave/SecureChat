@@ -34,7 +34,7 @@ export class AllConversationsPage {
     //Get the messages on view load, and start a polling request
 
     //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
 
     //Start polling to get messages
     let request = this.appMessaging.conversationRequest(user.access_token);
@@ -104,8 +104,9 @@ export class AllConversationsPage {
 
   //Function to return if we have conversations
   hasConversations() {
-    if (this.convoList && this.convoList.length == 0) return true;
-    else return true;
+    //Return true if we have no conversations object, or if the length is not zero
+    if (!this.convoList || this.convoList.length != 0) return true;
+    else return false;
   }
 
   //Function to reutn the users in a conversations
