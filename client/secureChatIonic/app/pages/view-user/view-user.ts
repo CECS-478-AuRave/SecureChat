@@ -29,8 +29,9 @@ export class ViewUserPage {
     this.userTypeMap = {
       currentUser: 0,
       notFriend: 1,
-      pendingFriend: 2,
-      friend: 3,
+      requestPending: 2,
+      pendingFriend: 3,
+      friend: 4,
       requests: {
         addFriend: 10,
         acceptRequest: 11,
@@ -105,24 +106,25 @@ export class ViewUserPage {
     //Get a reference to this
     let self = this;
 
-    console.log(requestType);
+    //Our user id
+    let userId = this.user.facebook.id;
 
     //Get our request and success text
     let observe: any;
-    let success: any;
+    let successText: any;
 
     if(this.userTypeMap.requests.addFriend === requestType) {
-      observe = this.appUsers.addFriend(this.user);
-      success = 'Sent friend request!';
+      observe = this.appUsers.addFriend(userId);
+      successText = 'Sent friend request!';
     } else if(this.userTypeMap.requests.acceptRequest === requestType) {
-      observe = this.appUsers.acceptFriend(this.user);
-      success = 'You are now friends!';
+      observe = this.appUsers.acceptFriend(userId);
+      successText = 'You are now friends!';
     } else if(this.userTypeMap.requests.declineRequest === requestType) {
-      observe = this.appUsers.declineFriend(this.user);
-      success = 'Declined the friend request.';
+      observe = this.appUsers.declineFriend(userId);
+      successText = 'Declined the friend request.';
     } else if(this.userTypeMap.requests.deleteFriend === requestType) {
-      observe = this.appUsers.deleteFriend(this.user);
-      success = 'Friend deleted';
+      observe = this.appUsers.deleteFriend(userId);
+      successText = 'Friend deleted';
     } else {
       //Invlid request type
       return;
@@ -138,7 +140,7 @@ export class ViewUserPage {
         self.getUser(self.user);
 
         //Toast the success
-        self.appNotify.showToast(success);
+        self.appNotify.showToast(successText);
 
       });
     }, function(error) {
@@ -166,9 +168,11 @@ export class ViewUserPage {
     if (this.user._id == user._id) return this.userTypeMap.currentUser;
 
     //Check if they are a friend, return 3
-    if (this.user.friends.indexOf(user._id) > 0) return this.userTypeMap.friend;
+    if (this.user.friends.indexOf(user.facebook.id) > 0) return this.userTypeMap.friend;
     //Check if they are a pending friend
-    else if (this.user.pendingFriends.indexOf(user._id) > 0) return this.userTypeMap.pendingFriend;
+    else if (user.pendingFriends.indexOf(this.user.facebook.id) >= 0) return this.userTypeMap.pendingFriend;
+    //Check if the user has us as a pending request
+    else if (this.user.pendingFriends.indexOf(user.facebook.id) >= 0) return this.userTypeMap.requestPending;
     //Else they are not our friend
     else return this.userTypeMap.notFriend;
   }

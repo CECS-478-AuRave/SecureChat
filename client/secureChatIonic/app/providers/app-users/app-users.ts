@@ -94,10 +94,10 @@ export class AppUsers {
 
     //Our payload
     let payload = {
-      otherUserId: userId
+      otherUserID: userId
     }
 
-    return this.http.post(AppSettings.serverUrl + urlPath, payload, options).map(res => res.json());
+    return this.http.put(AppSettings.serverUrl + urlPath, payload, options).map(res => res.json());
   }
 
 }

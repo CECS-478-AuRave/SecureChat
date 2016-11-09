@@ -37,6 +37,14 @@
           </button>
         </div>
 
+        <!-- Friend Request sent -->
+        <div *ngIf="getUserType() == userTypeMap.requestPending">
+          <button primary clear small>
+            <ion-icon name="help-circle"></ion-icon>
+            <div>Request Pending...</div>
+          </button>
+        </div>
+
         <!-- Accept friend request-->
         <div *ngIf="getUserType() == userTypeMap.pendingFriend">
           <button primary clear small (click)="editUserStatus(userTypeMap.requests.acceptRequest)">
