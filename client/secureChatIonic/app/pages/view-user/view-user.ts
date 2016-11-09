@@ -98,8 +98,59 @@ export class ViewUserPage {
   //E.g, add friend, remove friend etc...
   //Generalized since they will all just toast the result, and update the UI
   editUserStatus(requestType) {
-    //TODO: Write API Call
+
+    //Start Loading
+    this.appNotify.startLoading('Getting User...');
+
+    //Get a reference to this
+    let self = this;
+
     console.log(requestType);
+
+    //Get our request and success text
+    let observe: any;
+    let success: any;
+
+    if(this.userTypeMap.requests.addFriend === requestType) {
+      observe = this.appUsers.addFriend(this.user);
+      success = 'Sent friend request!';
+    } else if(this.userTypeMap.requests.acceptRequest === requestType) {
+      observe = this.appUsers.acceptFriend(this.user);
+      success = 'You are now friends!';
+    } else if(this.userTypeMap.requests.declineRequest === requestType) {
+      observe = this.appUsers.declineFriend(this.user);
+      success = 'Declined the friend request.';
+    } else if(this.userTypeMap.requests.deleteFriend === requestType) {
+      observe = this.appUsers.deleteFriend(this.user);
+      success = 'Friend deleted';
+    } else {
+      //Invlid request type
+      return;
+    }
+
+    observe.subscribe(function(success) {
+      //Success
+
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+
+        //Get the user
+        self.getUser(self.user);
+
+        //Toast the success
+        self.appNotify.showToast(success);
+
+      });
+    }, function(error) {
+      //Error
+
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+        self.appNotify.handleError(error);
+      });
+    }, function() {
+      //Complete
+    });
   }
 
   //Get the user type, refers to the user type map in the constructor
