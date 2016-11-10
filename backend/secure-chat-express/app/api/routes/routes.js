@@ -9,7 +9,6 @@ const conversationController = require('../controllers/conversation');
 const userController = require('../controllers/user');
 
 module.exports = function(app, passport) {
-
     // Route for logging in.
     app.post('/api/v1/login',
         passport.authenticate(['facebook-token']),
@@ -94,6 +93,30 @@ module.exports = function(app, passport) {
     // Route for getting user information based on query.
     app.get('/api/v1/user', passport.authenticate(['facebook-token']),
         userController.findUserByQuery);
+
+    app.get('/api/v1/user/friend/get', passport.authenticate(['facebook-token']),
+        function(req, res) {
+            if (req.user) {
+                if (req.user.friends.length <= 0) {
+                    res.status(404).json({'error' : 'No friends found for user'});
+                }
+                var friends = [];
+                req.user.friends.forEach(function(friendId) {
+                    User.findOne({'facebook.id' : friendId}, function(err, friend) {
+                        if (err) {
+                            res.status(500).json(err);
+                        } else if (friend) {
+                            friends.push(friend);
+                        }
+                    });
+                });
+                res.status(200).json(friends);
+            } else {
+                // Respond with Unauthorized access.
+                res.status(401).json({'error': 'Access Not Authorized.'});
+            }
+        }
+    );
 
     // Route for deleting a friend.
     app.put('/api/v1/user/friend/delete', passport.authenticate(['facebook-token']),

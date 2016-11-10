@@ -4,7 +4,22 @@ var User = mongoose.model('User');
 var Conversation = mongoose.model('Conversation');
 var Message = mongoose.model('Message');
 
-var findAndCreateConversation = function(req, res, members, message, thisUser) {
+var respondWithConversation = function(res, conversation, status) {
+    // Respond with status 200 and the whole conversation as a json object.
+    Conversation.populate(conversation, {
+        path : 'message.from',
+        select : 'name profilePhotoURL',
+        model : 'User'
+    }, function(err, conversation) {
+        if (err) {
+            // Respond with status 500 since there was an error populating conversation.
+            res.status(500).json(err);
+        }
+        res.status(status).json(conversation);
+    });
+}
+
+var findAndCreateConversation = function(res, members, message, thisUser) {
     // GroupID is the sorted facebookID that's joined altogether.
     var groupID = members.sort().join('_');
     var currentTime = Date.now();
@@ -18,12 +33,12 @@ var findAndCreateConversation = function(req, res, members, message, thisUser) {
             // Create the new Message.
             var newMessage = createMessage(message, thisUser, currentTime);
             // Create new Conversation.
-            createConversation(req, res, groupID, members, currentTime, newMessage);
+            createConversation(res, groupID, members, currentTime, newMessage);
         } else {
             // You cannot create another conversation with the same person.
             // So, respond with status 400 and an json object with an error
             // message appended.
-            res.status(400).json({'error': 'Conversation Already Exists'});
+            res.status(409).json({'error': 'Conversation Already Exists'});
         }
     });
 }
@@ -31,7 +46,7 @@ var findAndCreateConversation = function(req, res, members, message, thisUser) {
 var createMessage = function(message, thisUser, currentTime) {
     var newMessage = new Message({
         'message' : message,
-        from : thisUser.name,
+        from : thisUser._id,
         date : currentTime
     });
     newMessage.save(function(err, message) {
@@ -42,7 +57,7 @@ var createMessage = function(message, thisUser, currentTime) {
     return newMessage;
 }
 
-var createConversation = function(req, res, groupID, members, currentTime, newMessage) {
+var createConversation = function(res, groupID, members, currentTime, newMessage) {
     // Since the conversation didn't exist we need to create a
     // new conversation.
     var newConversation = new Conversation({
@@ -62,7 +77,7 @@ var createConversation = function(req, res, groupID, members, currentTime, newMe
           // conversation.
           Conversation
             .findById(conversation._id)
-            .populate('members message')
+            .populate('message')
             .exec(function(err, conversation) {
               if (err) {
                 // Respond with internal server error and the err object since
@@ -71,7 +86,7 @@ var createConversation = function(req, res, groupID, members, currentTime, newMe
               } else {
                 // respond to the client with status 201 and the
                 // convesation object.
-                res.status(201).json(conversation);
+                respondWithConversation(res, conversation, 201);
               }
             }
           );
@@ -109,14 +124,14 @@ module.exports.postConversation = function(req, res) {
         // Add the current user's facebook id to the members since
         // we will be using it as the groupID.
         members.push(thisUser._id);
-        findAndCreateConversation(req, res, members, message, thisUser);
+        findAndCreateConversation(res, members, message, thisUser);
     } else {
         // Respond with Unauthorized access.
         res.status(401).json({'error': 'Access Not Authorized.'});
     }
 };
 
-var addNewMessage = function(req, res, message, user, conversation) {
+var addNewMessage = function(res, message, user, conversation) {
     var currentTime = Date.now();
     // Change the conversation date to be the current time
     // since it's the latest time that the message was sent.
@@ -137,7 +152,7 @@ var addNewMessage = function(req, res, message, user, conversation) {
             // conversation _id.
             Conversation
                 .findById(conversation._id)
-                .populate('members message')
+                .populate('message')
                 .exec(function(err, conversation) {
                     if (err) {
                         // Server error when saving the conversation,
@@ -145,7 +160,7 @@ var addNewMessage = function(req, res, message, user, conversation) {
                         res.status(500).json(err);
                     } else {
                         // respond with the updated conversation document.
-                        res.status(201).json(conversation);
+                        respondWithConversation(res, conversation, 201);
                     }
                 }
             );
@@ -189,7 +204,7 @@ module.exports.putConversation = function(req, res) {
                     // an message stating the conversation was not found.
                     res.status(404).json({'error': 'Conversation Not Found'});
                 } else {
-                    addNewMessage(req, res, message, req.user, conversation);
+                    addNewMessage(res, message, req.user, conversation);
                 }
             }
         );
@@ -207,20 +222,19 @@ module.exports.getConversation = function(req, res) {
         var thisUserID = req.user._id;
         // Find all conversations containing the current user's facebook id.
         Conversation
-          .find({members: {$in: [thisUserID]}})
-          .populate('members message')
-          .exec(function(err, conversation) {
+        .find({members: {$in: [thisUserID]}})
+        .populate('message')
+        .exec(function(err, conversation) {
             if (!conversation || conversation.length == 0) {
-              // Respond with status 404 since no conversation was found for user.
-              res.status(404).json({'error': 'No available conversations for ' + req.user.name});
+                // Respond with status 200 and an empty array.
+                res.status(200).json([]);
             } else if (err) {
-              // Respond with status 500 since there was an error finding conversation.
-              res.status(500).json(err);
+                // Respond with status 500 since there was an error finding conversation.
+                res.status(500).json(err);
             } else {
-              // Respond with status 200 and the whole conversation as a json object.
-              res.status(200).json(conversation);
+                respondWithConversation(res, conversation, 200);
             }
-          });
+        });
     } else {
         // Respond with Unauthorized access.
         res.status(401).json({'error': 'Access Not Authorized.'});
