@@ -13,6 +13,7 @@ import { AppMessaging } from './providers/app-messaging/app-messaging';
 import { Home } from './pages/home/home';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 import { AllConversationsPage } from './pages/all-conversations/all-conversations';
+import { NewConversationPage } from './pages/new-conversation/new-conversation';
 import { ConversationPage } from './pages/conversation/conversation';
 import { FriendsListPage } from './pages/friends-list/friends-list';
 import { SearchFriendsPage } from './pages/search-friends/search-friends';
