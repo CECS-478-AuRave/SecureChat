@@ -32,9 +32,9 @@ module.exports.addFriend = function(req, res) {
                 // and the err information.
                 res.status(500).json(err);
             } else if (user.pendingFriends.indexOf(req.user.facebook.id) != -1) {
-                res.status(400).json({'error': 'Already pending friend request'});
+                res.status(409).json({'error': 'Already pending friend request'});
             } else if (user.friends.indexOf(req.user.facebook.id) != -1) {
-                res.status(400).json({'error': 'User is already a friend.'})
+                res.status(409).json({'error': 'User is already a friend.'})
             } else {
                 // Push the authenticated friend's id to the facebook id.
                 user.pendingFriends.push(req.user.facebook.id);
@@ -207,4 +207,4 @@ module.exports.deleteFriend = function(req, res) {
         // Respond with Unauthorized access
         res.status(401).json({'error': 'Access Not Authorized'});
     }
-}
+};
