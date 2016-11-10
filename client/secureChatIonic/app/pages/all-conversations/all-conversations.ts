@@ -58,7 +58,7 @@ export class AllConversationsPage {
 
     }, function() {
       //Completed
-    })
+    });
 
     //Start polling to get messages
     let poll = this.appMessaging.conversationRequestPoll(user.access_token);

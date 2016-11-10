@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>newConversation</ion-title>
+    <ion-title>New Conversation</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -15,4 +15,30 @@
 
 <ion-content padding>
 
+    <ion-searchbar class="friendSearchBar" placeholder="Enter an email or name" [(ngModel)]="searchQuery" (ionInput)="getSearchQuery()"></ion-searchbar>
+
+    <ion-list>
+      <!-- Our list of currently found friends
+      <ion-item *ngFor="let friend of user.friends" (click)="goToUser(friend)">
+        <ion-label>
+          <ion-avatar item-left>
+            <img src="https://{{friend.profilePhotoURL}}">
+          </ion-avatar>
+          {{friend.name}}
+        </ion-label>
+        <!-- Check Box for the item
+        <ion-checkbox color="dark" checked="{{friend.checked}}"></ion-checkbox>
+      </ion-item> -->
+    </ion-list>
 </ion-content>
+
+<!-- Fixed to the bottom of the page -->
+<div class="convoFooter">
+  <!-- The message reply box -->
+  <textarea class="replyBox" (keypress)="createConversation($event.keyCode)" placeholer="Type your reply here" [(ngModel)]="replyMessage">
+  </textarea>
+
+  <button class="replyButton" (click)="createConversation()">
+        <ion-icon name="send" isActive="{{sendActive}}"></ion-icon>
+    </button>
+</div>

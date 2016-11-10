@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, NavParams } from 'ionic-angular';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
@@ -11,8 +11,19 @@ import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 })
 export class NewConversationPage {
 
-  constructor(private navCtrl: NavController) {
+  //Our reply ng-model data
+  replyMessage: string;
 
+  constructor(private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appMessaging: AppMessaging) {
+
+  }
+
+  createConversation(keyCode) {
+    //Check if there is a key press, and if there is, if it is enter
+    if (keyCode && keyCode != 13) return true;
+
+    //Check if the reply text is empty
+    if (this.replyMessage.length < 1) return false;
   }
 
 }
