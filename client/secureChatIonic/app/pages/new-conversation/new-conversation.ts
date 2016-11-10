@@ -16,6 +16,11 @@ export class NewConversationPage {
 
   constructor(private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appMessaging: AppMessaging) {
 
+    if(this.navParams.get('user')) {
+    }
+
+    //TODO: Get a list of their friends
+
   }
 
   createConversation(keyCode) {
