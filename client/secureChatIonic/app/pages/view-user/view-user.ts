@@ -56,13 +56,13 @@ export class ViewUserPage {
     if (!passedUser || passedUser._id == user._id) return;
 
     //Get the user
-    this.getUser(passedUser);
+    this.getUser(passedUser, false);
 
 
   }
 
   //Function to get the user
-  getUser(passedUser) {
+  getUser(passedUser, toastText) {
     //Start Loading
     this.appNotify.startLoading('Getting User...');
 
@@ -83,6 +83,9 @@ export class ViewUserPage {
 
         //Update the UI
         self.changeDetector.detectChanges();
+
+        //Toast the success
+        if(toastText) self.appNotify.showToast(toastText);
       });
 
     }, function(error) {
@@ -139,12 +142,8 @@ export class ViewUserPage {
       //Stop loading
       self.appNotify.stopLoading().then(function() {
 
-        //Get the user
-        self.getUser(self.user);
-
-        //Toast the success
-        self.appNotify.showToast(successText);
-
+        //Get the user, and send the successText
+        self.getUser(self.user, successText);
       });
     }, function(error) {
       //Error
@@ -155,7 +154,11 @@ export class ViewUserPage {
       });
     }, function() {
       //Complete
+
+      //Update the UI
+      self.changeDetector.detectChanges();
     });
+
   }
 
   //Get the user type, refers to the user type map in the constructor
