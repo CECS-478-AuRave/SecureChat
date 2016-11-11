@@ -51,6 +51,22 @@ export class AppUsers {
     return this.http.get(url, options).map(res => res.json());
   }
 
+  //Get a user's array of friends
+  getUserFriends() {
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
+
+    //Our headers
+    let headers = new Headers({
+      access_token: user.access_token
+    });
+    let options = new RequestOptions({ headers: headers });
+
+    //Return our request
+    let url = AppSettings.serverUrl + "user/friends";
+    return this.http.get(url, options).map(res => res.json());
+  }
+
   //Add yourself toa user's pendingFriends
   addFriend(userId) {
 
