@@ -39,7 +39,10 @@ export class AppNotify {
       duration: 2000,
       closeButtonText: 'Ok'
     });
-    toast.present();
+    //Return the promise of the toast present
+    let toastPromise = toast.present();
+
+    return toastPromise;
   }
 
   //Function to start loading
@@ -56,9 +59,6 @@ export class AppNotify {
   stopLoading() {
     //Dismiss the loader
     let promise = this.loader.dismiss();
-
-    //Update the UI
-    //this.changeDetector.detectChanges();
 
     //Return loader promise
     return promise;
