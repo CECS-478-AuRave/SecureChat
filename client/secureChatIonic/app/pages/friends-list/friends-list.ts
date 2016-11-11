@@ -24,20 +24,12 @@ export class FriendsListPage {
 
   constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private appNotify: AppNotify, private appUsers: AppUsers) {
 
-    //Get the user
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-
-    //Update our user object with any new friends
-
-    //Set the friends on the user object
-    this.friends = user.user.friends;
+    //Initialize friends
+    this.friends = [];
   }
 
-  //Function called once the view is full loaded
+  //Call fucntion every time the view loads
   ionViewDidEnter() {
-
-    //Update our user
-
     //Start Loading
     this.appNotify.startLoading('Getting Friends...');
 
@@ -47,7 +39,7 @@ export class FriendsListPage {
     if (!user || !user.user) return;
 
     //Start polling to get messages
-    let request = this.appUsers.getUserById(user.user.facebook.id);
+    let request = this.appUsers.getUserFriends();
 
     //Get a reference to this
     let self = this;
@@ -58,10 +50,8 @@ export class FriendsListPage {
       //Stop loading
       self.appNotify.stopLoading().then(function() {
 
-        //Save our user object
-        user.user = success;
-        localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user));
-
+        //Save our friends
+        self.friends = success;
       });
     }, function(error) {
       //Error!

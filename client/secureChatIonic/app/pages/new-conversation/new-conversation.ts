@@ -5,6 +5,7 @@ import { NavController, NavParams } from 'ionic-angular';
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
+import { AppUsers} from '../../providers/app-users/app-users';
 
 @Component({
   templateUrl: 'build/pages/new-conversation/new-conversation.html',
@@ -14,13 +15,59 @@ export class NewConversationPage {
   //Our reply ng-model data
   replyMessage: string;
 
-  constructor(private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appMessaging: AppMessaging) {
+  //Our user's friends
+  friends: any;
 
-    if(this.navParams.get('user')) {
-    }
+  constructor(private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify,
+    private appMessaging: AppMessaging, private appUsers: AppUsers) {
 
-    //TODO: Get a list of their friends
+    //Initialize friends
+    this.friends = [];
 
+    //Start Loading
+    this.appNotify.startLoading('Getting Friends...');
+
+    //Grab our user from localstorage
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+
+    if (!user || !user.user) return;
+
+    //Start polling to get messages
+    let request = this.appUsers.getUserFriends();
+
+    //Get a reference to this
+    let self = this;
+
+    //Get our current conversation
+    request.subscribe(function(success) {
+      //Success!
+      //Stop loading
+      self.appNotify.stopLoading().then(function() {
+
+        //Save our friends
+        self.friends = success;
+
+        if(self.navParams.get('user')) {
+          //TODO: set a friend as check if we were passed a user
+        }
+      });
+    }, function(error) {
+      //Error!
+      //Stop Loading
+      self.appNotify.stopLoading().then(function() {
+        self.appNotify.handleError(error, [
+          {
+            status: '404',
+            callback: function() {
+              //Do nothing, because they simply don't have friends yet
+            }
+          }
+        ]);
+      });
+
+    }, function() {
+      //Completed
+    })
   }
 
   createConversation(keyCode) {

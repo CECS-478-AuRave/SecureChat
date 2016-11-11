@@ -63,7 +63,7 @@ export class AppUsers {
     let options = new RequestOptions({ headers: headers });
 
     //Return our request
-    let url = AppSettings.serverUrl + "user/friends";
+    let url = AppSettings.serverUrl + "user/friend/get";
     return this.http.get(url, options).map(res => res.json());
   }
 
