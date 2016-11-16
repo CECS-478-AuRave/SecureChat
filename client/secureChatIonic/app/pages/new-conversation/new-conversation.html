@@ -15,13 +15,13 @@
 
 <ion-content padding>
 
-    <ion-searchbar class="friendSearchBar" placeholder="Enter an email or name" [(ngModel)]="searchQuery" (ionInput)="getSearchQuery()"></ion-searchbar>
+    <ion-searchbar class="friendSearchBar" placeholder="Enter an email or name" [(ngModel)]="searchQuery"></ion-searchbar>
 
     <ion-list>
       <!-- Our list of currently found friends -->
-      <ion-item *ngFor="let friend of friends" (click)="goToUser(friend)">
+      <ion-item *ngFor="let friend of friends | NgForTextFilter:searchQuery" (click)="goToUser(friend)">
           <!-- Check Box for the item -->
-          <ion-checkbox color="dark" checked="{{friend.checked}}"></ion-checkbox>
+          <ion-checkbox color="dark" [(ngModel)]="friend.checked" checked="friend.checked"></ion-checkbox>
           <ion-avatar item-left>
             <img src="https://{{friend.profilePhotoURL}}">
           </ion-avatar>
@@ -34,10 +34,10 @@
 <!-- Fixed to the bottom of the page -->
 <div class="convoFooter">
   <!-- The message reply box -->
-  <textarea class="replyBox" (keypress)="createConversation($event.keyCode)" placeholer="Type your reply here" [(ngModel)]="replyMessage">
+  <textarea class="replyBox" (keypress)="createConversation($event.keyCode)" placeholer="Type your message here" [(ngModel)]="convoMessage">
   </textarea>
 
-  <button class="replyButton" (click)="createConversation()">
+  <button class="replyButton" (click)="createConversation()" [disabled]="convoMessage && convoMessage.length < 1">
         <ion-icon name="send" isActive="{{sendActive}}"></ion-icon>
-    </button>
+  </button>
 </div>

@@ -1,7 +1,8 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
-//Import to conversation view
+//Import views to navigate to
+import { NewConversationPage } from '../../pages/new-conversation/new-conversation';
 import { ConversationPage } from '../../pages/conversation/conversation';
 
 //Import our providers
@@ -148,6 +149,13 @@ export class AllConversationsPage {
       text = text + '...';
       return text;
     }
+  }
+
+  //Function to handle if a user would like to send another user a message
+  goToNewConversation() {
+
+    //Go to the new conversation page, and pass the user
+    this.navCtrl.push(NewConversationPage);
   }
 
   //Fucntion to run when an item is clicked

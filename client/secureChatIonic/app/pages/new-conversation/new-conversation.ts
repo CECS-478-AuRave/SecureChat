@@ -3,17 +3,19 @@ import { NavController, NavParams } from 'ionic-angular';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { NgForTextFilter } from '../../providers/app-pipes/app-pipes';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 import { AppUsers} from '../../providers/app-users/app-users';
 
 @Component({
   templateUrl: 'build/pages/new-conversation/new-conversation.html',
+  pipes: [NgForTextFilter]
 })
 export class NewConversationPage {
 
-  //Our reply ng-model data
-  replyMessage: string;
+  //Our convoMessage ng-model data
+  convoMessage: string;
 
   //Our user's friends
   friends: any;
@@ -23,6 +25,9 @@ export class NewConversationPage {
 
     //Initialize friends
     this.friends = [];
+
+    //Intialize message
+    this.convoMessage = '';
   }
 
   //Call function every time the view loads
@@ -52,8 +57,17 @@ export class NewConversationPage {
         self.friends = success;
 
         if(self.navParams.get('user')) {
-          //TODO: set a friend as check if we were passed a user
+          let passedUser = self.navParams.get('user');
+          console.log(passedUser)
+          for(let i = 0; i < self.friends.length; i++) {
+            if(self.friends[i].facebook.id === passedUser.facebook.id) {
+              self.friends[i].checked = true;
+              i = self.friends.length
+            }
+          }
         }
+
+        console.log(self.friends);
 
         //Update the UI
         self.changeDetector.detectChanges();
@@ -81,8 +95,8 @@ export class NewConversationPage {
     //Check if there is a key press, and if there is, if it is enter
     if (keyCode && keyCode != 13) return true;
 
-    //Check if the reply text is empty
-    if (this.replyMessage.length < 1) return false;
+    //Check if the convo text is empty
+    if (this.convoMessage.length < 1) return false;
   }
 
 }

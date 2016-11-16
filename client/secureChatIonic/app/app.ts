@@ -4,6 +4,7 @@ import { StatusBar } from 'ionic-native';
 
 //Import our providers (services)
 import { AppSettings } from './providers/app-settings/app-settings';
+import { NgForTextFilter } from './providers/app-pipes/app-pipes';
 import { AppNotify } from './providers/app-notify/app-notify';
 import { AppAuth } from './providers/app-auth/app-auth';
 import { AppUsers} from './providers/app-users/app-users';

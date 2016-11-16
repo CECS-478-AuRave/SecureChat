@@ -10,6 +10,26 @@
     text-align: center;
 }
 
+//Fab Buttons
+.plusFab {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    z-index: 4;
+    border-radius: 30px;
+
+    button {
+        padding-top: 32px;
+        padding-bottom: 32px;
+        padding-left: 12px;
+        padding-right: 12px;
+
+        //Make a circle
+        border-radius: 50%;
+    }
+}
+
+
 //Footer of the message page, meant for replying
 .convoFooter {
 
