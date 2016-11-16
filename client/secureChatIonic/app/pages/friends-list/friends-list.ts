@@ -29,15 +29,16 @@ export class FriendsListPage {
     this.friends = [];
   }
 
-  //Call fucntion every time the view loads
+  //Call function every time the view loads
   ionViewDidEnter() {
-    //Start Loading
-    this.appNotify.startLoading('Getting Friends...');
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
     if (!user || !user.user) return;
+
+    //Start Loading
+    this.appNotify.startLoading('Getting Friends...');
 
     //Start polling to get messages
     let request = this.appUsers.getUserFriends();

@@ -18,18 +18,17 @@
     <ion-searchbar class="friendSearchBar" placeholder="Enter an email or name" [(ngModel)]="searchQuery" (ionInput)="getSearchQuery()"></ion-searchbar>
 
     <ion-list>
-      <!-- Our list of currently found friends
-      <ion-item *ngFor="let friend of user.friends" (click)="goToUser(friend)">
-        <ion-label>
+      <!-- Our list of currently found friends -->
+      <ion-item *ngFor="let friend of friends" (click)="goToUser(friend)">
+          <!-- Check Box for the item -->
+          <ion-checkbox color="dark" checked="{{friend.checked}}"></ion-checkbox>
           <ion-avatar item-left>
             <img src="https://{{friend.profilePhotoURL}}">
           </ion-avatar>
-          {{friend.name}}
-        </ion-label>
-        <!-- Check Box for the item
-        <ion-checkbox color="dark" checked="{{friend.checked}}"></ion-checkbox>
-      </ion-item> -->
+          <ion-label>{{friend.name}}</ion-label>
+      </ion-item>
     </ion-list>
+
 </ion-content>
 
 <!-- Fixed to the bottom of the page -->

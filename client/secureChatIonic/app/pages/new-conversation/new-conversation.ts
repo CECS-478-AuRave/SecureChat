@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 
 //Import our providers
@@ -18,19 +18,23 @@ export class NewConversationPage {
   //Our user's friends
   friends: any;
 
-  constructor(private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify,
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify,
     private appMessaging: AppMessaging, private appUsers: AppUsers) {
 
     //Initialize friends
     this.friends = [];
+  }
 
-    //Start Loading
-    this.appNotify.startLoading('Getting Friends...');
+  //Call function every time the view loads
+  ionViewDidEnter() {
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
     if (!user || !user.user) return;
+
+    //Start Loading
+    this.appNotify.startLoading('Getting Friends...');
 
     //Start polling to get messages
     let request = this.appUsers.getUserFriends();
@@ -50,6 +54,9 @@ export class NewConversationPage {
         if(self.navParams.get('user')) {
           //TODO: set a friend as check if we were passed a user
         }
+
+        //Update the UI
+        self.changeDetector.detectChanges();
       });
     }, function(error) {
       //Error!
