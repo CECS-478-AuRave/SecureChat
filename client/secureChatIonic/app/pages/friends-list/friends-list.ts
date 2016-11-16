@@ -8,6 +8,7 @@ import { AppUsers} from '../../providers/app-users/app-users';
 
 //Import pages
 import { SearchFriendsPage } from '../../pages/search-friends/search-friends';
+import { ViewUserPage } from '../../pages/view-user/view-user';
 
 /*
   Generated class for the FriendsListPage page.
@@ -52,6 +53,9 @@ export class FriendsListPage {
 
         //Save our friends
         self.friends = success;
+
+        //Update the UI
+        self.changeDetector.detectChanges();
       });
     }, function(error) {
       //Error!
@@ -72,16 +76,17 @@ export class FriendsListPage {
     })
   }
 
-  //Function to return if we have conversations
-  hasFriends() {
-    //Return true if we have no friends object, or if the length is not zero
-    if (!this.friends && this.friends.length != 0) return true;
-    else return false;
-  }
-
   //Function to navigate to the search friends page
   goToSearchFriends() {
     this.navCtrl.push(SearchFriendsPage);
+  }
+
+  //Go to a users page
+  goToUser(user) {
+    //Go to the conversation page, and pass the conversation id
+    this.navCtrl.push(ViewUserPage, {
+      user: user
+    });
   }
 
 }
