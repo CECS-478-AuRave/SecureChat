@@ -101,16 +101,21 @@ module.exports = function(app, passport) {
                     res.status(404).json({'error' : 'No friends found for user'});
                 }
                 var friends = [];
+                var count = 0;
                 req.user.friends.forEach(function(friendId) {
                     User.findOne({'facebook.id' : friendId}, function(err, friend) {
                         if (err) {
                             res.status(500).json(err);
                         } else if (friend) {
+                            count++;
                             friends.push(friend);
+                        }
+                    }).then(function() {
+                        if (count === req.user.friends.length) {
+                            res.status(200).json(friends);
                         }
                     });
                 });
-                res.status(200).json(friends);
             } else {
                 // Respond with Unauthorized access.
                 res.status(401).json({'error': 'Access Not Authorized.'});
