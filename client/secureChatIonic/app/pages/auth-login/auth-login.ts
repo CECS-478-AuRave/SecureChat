@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
+//CryptoJs installed via: https://forum.ionicframework.com/t/import-crypto-js-in-ionic2/54869/3
+import * as CryptoJS from 'crypto-js';
+
 //Pages
 import { AllConversationsPage } from '../../pages/all-conversations/all-conversations';
 
@@ -8,6 +11,10 @@ import { AllConversationsPage } from '../../pages/all-conversations/all-conversa
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppAuth } from '../../providers/app-auth/app-auth';
+
+//3P JS library
+//https://www.thepolyglotdeveloper.com/2016/01/include-external-javascript-libraries-in-an-angular-2-typescript-project/
+declare var kbpgp: any;
 
 /*
   Generated class for the AuthLoginPage page.
@@ -51,7 +58,11 @@ export class AuthLoginPage {
         //Get the neccesary info from the user object
         userJson.user = success.user;
         userJson.access_token = fbRes.access_token;
+
         //TODO: Generate Encryption keys for the user if none
+        //Use the access token and pbkdf2 to help generate the pgp key pair
+        console.log(kbpgp);
+
         userJson.keys = {};
 
         //Save the user info

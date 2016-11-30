@@ -33,7 +33,7 @@ export class AppAuth {
 
   //Initialize facebook
   initFacebook() {
-    //Init the facebook sdk
+    //Init the facebook sdk, Imported from externalJsLibs
     FB.init({
       appId: AppSettings.facebookAppId,
       cookie: true,

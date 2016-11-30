@@ -108,6 +108,11 @@ export class AppNotify {
       //Toast the user
       this.showToast('Could not be found. Please ensure your input is complete and correct.');
 
+    } else if (status == 409) {
+
+      //Toast the user
+      this.showToast('There was a conflict with the server. Please make sure this does not already exist.');
+
     } else if (status == 500) {
       //Internal Server Error
 
