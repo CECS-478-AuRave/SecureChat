@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
 //CryptoJs installed via: https://forum.ionicframework.com/t/import-crypto-js-in-ionic2/54869/3
-import * as CryptoJS from 'crypto-js';
+import * as CryptoJs from 'crypto-js';
 
 //Pages
 import { AllConversationsPage } from '../../pages/all-conversations/all-conversations';
@@ -14,6 +14,7 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 //3P JS library
 //https://www.thepolyglotdeveloper.com/2016/01/include-external-javascript-libraries-in-an-angular-2-typescript-project/
+//Using kbpgp over open pgp for licensing reasons
 declare var kbpgp: any;
 
 /*
@@ -50,7 +51,9 @@ export class AuthLoginPage {
         //Success
 
         //Create our new user
-        let userJson = {
+        let userJson: any;
+        //Schema for userjson
+        userJson = {
           user: {},
           access_token: '',
           keys: {}
@@ -59,11 +62,54 @@ export class AuthLoginPage {
         userJson.user = success.user;
         userJson.access_token = fbRes.access_token;
 
-        //TODO: Generate Encryption keys for the user if none
-        //Use the access token and pbkdf2 to help generate the pgp key pair
-        console.log(kbpgp);
+        //Generate Encryption keys for the user if none
+        let localUser = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
+        if(localUser && localUser.keys) userJson.keys = localUser.keys;
+        else {
 
-        userJson.keys = {};
+          //Start the open pgp key gen
+          //Intialize our library
+          let openpgp = kbpgp["const"].openpgp;
+
+          //Grab our options
+          let options = {
+            userid: userJson.user.name + userJson.user.facebook.id,
+            primary: {
+              nbits: 4096,
+              flags: openpgp.certify_keys | openpgp.sign_data | openpgp.auth | openpgp.encrypt_comm | openpgp.encrypt_storage,
+              expire_in: 0  // never expire
+            },
+            subkeys: [
+              {
+                nbits: 2048,
+                flags: openpgp.sign_data,
+                expire_in: 0
+              }, {
+                nbits: 2048,
+                flags: openpgp.encrypt_comm | openpgp.encrypt_storage,
+                expire_in: 0
+              }
+            ]
+          };
+
+          kbpgp.KeyManager.generate(options, function(err, keys) {
+            if (!err) {
+              // sign keys's subkeys
+              keys.sign({}, function(err) {
+                console.log(keys);
+                // export demo; dump the private with a passphrase
+                keys.export_pgp_private ({
+                  passphrase: fbRes.access_token
+                }, function(err, pgp_private) {
+                  console.log("private key: ", pgp_private);
+                });
+                keys.export_pgp_public({}, function(err, pgp_public) {
+                  console.log("public key: ", pgp_public);
+                });
+              });
+            }
+          });
+        }
 
         //Save the user info
         localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
