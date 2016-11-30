@@ -28,7 +28,7 @@
 
     <!-- If we have messages -->
     <div *ngIf="hasConversations()">
-      <button ion-item class="messageItem" *ngFor="let conversation of convoList; let i = index;" (click)="convoClick(conversation)">
+      <button ion-item class="messageItem" *ngFor="let conversation of convoList" (click)="convoClick(conversation)">
           <!-- Our user name -->
           <h3 class="messageUser">{{getConvoMembers(conversation)}}</h3>
           <!-- Our message text -->

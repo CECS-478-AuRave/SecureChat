@@ -137,8 +137,6 @@ export class NewConversationPage {
     //Get a reference to this
     let self = this;
 
-    console.log(payload);
-
     this.appMessaging.conversationCreate(payload).subscribe(function(success) {
       //Success
 
@@ -150,7 +148,18 @@ export class NewConversationPage {
       //Error
       self.appNotify.stopLoading().then(function() {
         //Pass to Error Handler
-        self.appNotify.handleError(error);
+        self.appNotify.handleError(error, [{
+          status: 409,
+          callback: function() {
+            //Go back home
+            self.navCtrl.setRoot(AllConversationsPage);
+
+            //Timeout and show the toast
+            setTimeout(function() {
+              self.appNotify.showToast('Conversation already exists!');
+            }, 10);
+          }
+        }]);
       });
     }, function() {
       //Complete
