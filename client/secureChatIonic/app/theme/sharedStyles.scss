@@ -12,20 +12,23 @@
 
 //Fab Buttons
 .plusFab {
-    position: fixed;
+    position: absolute;
     bottom: 15px;
     right: 15px;
-    z-index: 4;
+    z-index: 999;
     border-radius: 30px;
 
     button {
-        padding-top: 32px;
-        padding-bottom: 32px;
-        padding-left: 12px;
-        padding-right: 12px;
+      overflow: hidden;
+      z-index: 0;
+      display: block;
+      padding-top: 32px;
+      padding-bottom: 32px;
+      padding-left: 12px;
+      padding-right: 12px;
 
-        //Make a circle
-        border-radius: 50%;
+      //Make a circle
+      border-radius: 50%;
     }
 }
 
@@ -36,6 +39,7 @@
     z-index: 3;
     position: absolute;
     border-top: 1px solid map-get($colors, borderDivider);
+    background-color: map-get($colors, pureLight);
     padding-top: $footerPadding;
     text-align: center;
     bottom: 0px;

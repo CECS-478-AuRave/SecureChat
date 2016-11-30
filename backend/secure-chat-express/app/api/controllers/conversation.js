@@ -223,7 +223,7 @@ module.exports.getConversation = function(req, res) {
         // Find all conversations containing the current user's facebook id.
         Conversation
         .find({members: {$in: [thisUserID]}})
-        .populate('message')
+        .populate('message members')
         .exec(function(err, conversation) {
             if (!conversation || conversation.length == 0) {
                 // Respond with status 200 and an empty array.

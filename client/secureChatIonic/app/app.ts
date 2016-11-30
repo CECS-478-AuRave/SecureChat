@@ -108,5 +108,4 @@ class MyApp {
     });
   }
 }
-
 ionicBootstrap(MyApp);

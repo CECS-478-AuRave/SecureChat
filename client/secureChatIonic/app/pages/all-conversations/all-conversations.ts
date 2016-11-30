@@ -113,13 +113,11 @@ export class AllConversationsPage {
   //Function to reutn the users in a conversations
   getConvoMembers(convo: any) {
 
-    //Get the last message sender
-
     //Get the names of the members spilt by spaces
     let members = '';
-    for (let i = 0; i < convo.memberNames.length; ++i) {
-      members += convo.memberNames[i].split(' ')[0];
-      if (i < convo.memberNames.length - 1) members += ', ';
+    for (let i = 0; i < convo.members.length; ++i) {
+      members += convo.members[i].name;
+      if (i < convo.members.length - 1) members += ', ';
     }
 
     return this.shortenText(members, 20);
@@ -131,7 +129,7 @@ export class AllConversationsPage {
     //Get the last message sender
     let lastMessage = convo.message[convo.message.length - 1];
 
-    let lastSender = lastMessage.from.split(' ')[0];
+    let lastSender = lastMessage.from.name.split(' ')[0];
     let lastText = lastMessage.message;
 
     return this.shortenText(lastSender + ': ' + lastText, 35)
