@@ -19,9 +19,9 @@
 
     <ion-list>
       <!-- Our list of currently found friends -->
-      <ion-item *ngFor="let friend of friends | NgForTextFilter:searchQuery" (click)="goToUser(friend)">
+      <ion-item *ngFor="let friend of friends | NgForTextFilter:searchQuery">
           <!-- Check Box for the item -->
-          <ion-checkbox color="dark" [(ngModel)]="friend.checked" checked="friend.checked"></ion-checkbox>
+          <ion-checkbox color="dark" [(ngModel)]="friend.checked" (ionChange)="updateUi()" checked="false"></ion-checkbox>
           <ion-avatar item-left>
             <img src="https://{{friend.profilePhotoURL}}">
           </ion-avatar>

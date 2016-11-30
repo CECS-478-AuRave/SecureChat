@@ -31,7 +31,7 @@ export class NewConversationPage {
   }
 
   //Call function every time the view loads
-  ionViewDidEnter() {
+  ionViewWillEnter() {
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
@@ -57,17 +57,16 @@ export class NewConversationPage {
         self.friends = success;
 
         if(self.navParams.get('user')) {
+
+          //Timeout the checking of the friend to get working with UI
           let passedUser = self.navParams.get('user');
-          console.log(passedUser)
           for(let i = 0; i < self.friends.length; i++) {
             if(self.friends[i].facebook.id === passedUser.facebook.id) {
               self.friends[i].checked = true;
-              i = self.friends.length
+              i = self.friends.length;
             }
           }
         }
-
-        console.log(self.friends);
 
         //Update the UI
         self.changeDetector.detectChanges();
@@ -89,6 +88,13 @@ export class NewConversationPage {
     }, function() {
       //Completed
     })
+  }
+
+  //Function to update the UI on a change,
+  //This is to fix the broken selected status on ion-checkbox
+  updateUi() {
+    //Update the UI
+    this.changeDetector.detectChanges();
   }
 
   createConversation(keyCode) {
