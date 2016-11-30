@@ -1,21 +1,15 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
-
-//CryptoJs installed via: https://forum.ionicframework.com/t/import-crypto-js-in-ionic2/54869/3
-import * as CryptoJs from 'crypto-js';
+import { Observable } from "rxjs/Observable";
 
 //Pages
 import { AllConversationsPage } from '../../pages/all-conversations/all-conversations';
 
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppCrypto } from '../../providers/app-crypto/app-crypto';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppAuth } from '../../providers/app-auth/app-auth';
-
-//3P JS library
-//https://www.thepolyglotdeveloper.com/2016/01/include-external-javascript-libraries-in-an-angular-2-typescript-project/
-//Using kbpgp over open pgp for licensing reasons
-declare var kbpgp: any;
 
 /*
   Generated class for the AuthLoginPage page.
@@ -29,13 +23,13 @@ declare var kbpgp: any;
 
 export class AuthLoginPage {
 
-  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appAuth: AppAuth) { }
+  constructor(private navCtrl: NavController, private appCrypto: AppCrypto, private appNotify: AppNotify, private appAuth: AppAuth) { }
 
   //Call our log in function from our auth service
   login() {
 
     //Start Loading
-    this.appNotify.startLoading('Logging in...');
+    this.appNotify.startLoading('Logging in, this may take a minute if this is a new device...');
 
     //Save a reference to this
     let self = this;
@@ -62,72 +56,52 @@ export class AuthLoginPage {
         userJson.user = success.user;
         userJson.access_token = fbRes.access_token;
 
-        //Generate Encryption keys for the user if none
-        let localUser = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-        if(localUser && localUser.keys) userJson.keys = localUser.keys;
-        else {
+        //Create an observable for key checking
+        let keyCheck = new Observable(function(observer) {
+          let localUserKeys = self.appCrypto.getUserKeys()
+          if(localUserKeys) {
+            observer.next({
+              keys: localUserKeys
+            });
+          } else {
+            self.appCrypto.generateUserKeys(userJson.user).subscribe(function(success) {
 
-          //Start the open pgp key gen
-          //Intialize our library
-          let openpgp = kbpgp["const"].openpgp;
-
-          //Grab our options
-          let options = {
-            userid: userJson.user.name + userJson.user.facebook.id,
-            primary: {
-              nbits: 4096,
-              flags: openpgp.certify_keys | openpgp.sign_data | openpgp.auth | openpgp.encrypt_comm | openpgp.encrypt_storage,
-              expire_in: 0  // never expire
-            },
-            subkeys: [
-              {
-                nbits: 2048,
-                flags: openpgp.sign_data,
-                expire_in: 0
-              }, {
-                nbits: 2048,
-                flags: openpgp.encrypt_comm | openpgp.encrypt_storage,
-                expire_in: 0
-              }
-            ]
-          };
-
-          kbpgp.KeyManager.generate(options, function(err, keys) {
-            if (!err) {
-              // sign keys's subkeys
-              keys.sign({}, function(err) {
-                console.log(keys);
-                // export demo; dump the private with a passphrase
-                keys.export_pgp_private ({
-                  passphrase: fbRes.access_token
-                }, function(err, pgp_private) {
-                  console.log("private key: ", pgp_private);
-                });
-                keys.export_pgp_public({}, function(err, pgp_public) {
-                  console.log("public key: ", pgp_public);
-                });
+              //TODO: Update the user account's public key
+              observer.next({
+                keys: success
               });
-            }
+            });
+          }
+        })
+
+
+        //Finish the rest of the login
+        keyCheck.subscribe(function(success) {
+
+          console.log(success);
+
+          //Save the keys to the user
+          userJson.keys = success;
+
+
+          //Save the user info
+          localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
+
+          //Update the auth status
+          self.appAuth.updateAuthStatus(true);
+
+          //Stop Loading
+          self.appNotify.stopLoading().then(function() {
+            //Toast What Happened
+            //In a timeout to avoid colliding with loading
+            setTimeout(function() {
+              //Show Toast
+              self.appNotify.showToast('Login Successful!');
+
+              //Redirect to messages page
+              self.navCtrl.setRoot(AllConversationsPage);
+            }, 250)
           });
-        }
-
-        //Save the user info
-        localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
-
-        //Update the auth status
-        self.appAuth.updateAuthStatus(true);
-
-        //Stop Loading
-        self.appNotify.stopLoading().then(function() {
-          //Toast What Happened
-          //In a timeout to avoid colliding with loading
-          setTimeout(function() {
-            //Show Toast
-            self.appNotify.showToast('Login Successful!');
-
-            //Redirect to messages page
-            self.navCtrl.setRoot(AllConversationsPage);
-          }, 250)
         });
       }, function(error) {
         //Error

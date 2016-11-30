@@ -9,6 +9,7 @@ import { AppNotify } from './providers/app-notify/app-notify';
 import { AppAuth } from './providers/app-auth/app-auth';
 import { AppUsers} from './providers/app-users/app-users';
 import { AppMessaging } from './providers/app-messaging/app-messaging';
+import { AppCrypto } from './providers/app-crypto/app-crypto';
 
 //Import our pages
 import { Home } from './pages/home/home';
@@ -23,7 +24,7 @@ import { ViewUserPage } from './pages/view-user/view-user';
 //Change detection needed for updating "this" AKA $scope
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppSettings, AppNotify, AppAuth, AppUsers, AppMessaging],
+  providers: [AppSettings, AppCrypto, AppNotify, AppAuth, AppUsers, AppMessaging],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class MyApp {
