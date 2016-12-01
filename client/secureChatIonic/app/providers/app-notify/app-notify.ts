@@ -1,5 +1,5 @@
 import { Injectable, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { App, Nav, LoadingController, ToastController  } from 'ionic-angular';
+import { App, Nav, LoadingController, ToastController, AlertController  } from 'ionic-angular';
 
 //Our Providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
@@ -24,7 +24,7 @@ export class AppNotify {
   //Our default loading string
   defaultMessage: 'Loading, please wait...';
 
-  constructor(private changeDetector: ChangeDetectorRef, private app: App, private appAuth: AppAuth, private loadingCtrl: LoadingController, private toastCtrl: ToastController) {
+  constructor(private changeDetector: ChangeDetectorRef, private app: App, private appAuth: AppAuth, private loadingCtrl: LoadingController, private toastCtrl: ToastController, private alertCtrl: AlertController) {
   }
 
   //Show a Static toast
@@ -107,6 +107,11 @@ export class AppNotify {
 
       //Toast the user
       this.showToast('Could not be found. Please ensure your input is complete and correct.');
+
+    } else if (status == 409) {
+
+      //Toast the user
+      this.showToast('There was a conflict with the server. Please make sure this does not already exist.');
 
     } else if (status == 500) {
       //Internal Server Error

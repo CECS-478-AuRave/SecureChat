@@ -3,6 +3,7 @@ import { NavController, NavParams } from 'ionic-angular';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppCrypto } from '../../providers/app-crypto/app-crypto';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppUsers} from '../../providers/app-users/app-users';
 
@@ -23,10 +24,10 @@ export class ViewUserPage {
   //Map of what each user type means, and map to what request to make on the user
   userTypeMap: any;
 
-  //The user that is being displayer
+  //The user that is being displayed
   user: any;
 
-  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appUsers: AppUsers) {
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appCrypto: AppCrypto, private appNotify: AppNotify, private appUsers: AppUsers) {
 
     //Create our map of user types, and their requests
     this.userTypeMap = {
@@ -44,7 +45,7 @@ export class ViewUserPage {
     }
 
     //Get our user
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user
 
     //Set to ourselves for now
     this.user = user;
@@ -80,6 +81,9 @@ export class ViewUserPage {
       self.appNotify.stopLoading().then(function() {
         //Set our user
         self.user = success;
+
+        //Validate the user key
+        self.appCrypto.validateLocalPublicKey(self.user, self.user.publicKey);
 
         //Update the UI
         self.changeDetector.detectChanges();

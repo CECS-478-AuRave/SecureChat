@@ -4,6 +4,7 @@ import { Content, NavController, NavParams } from 'ionic-angular';
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
+import { AppCrypto } from '../../providers/app-crypto/app-crypto';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
 
 /*
@@ -37,7 +38,7 @@ export class ConversationPage {
   //Our message Polling
   pollingRequest: any;
 
-  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appMessaging: AppMessaging) {
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appCrypto: AppCrypto, private appMessaging: AppMessaging) {
 
     //Initialize our reply message to an empty string
     this.replyMessage = '';
@@ -60,6 +61,15 @@ export class ConversationPage {
 
     //Scroll to the bottom of the messages (Request below is for polling, not getting messages)
     this.content.scrollToBottom(this.scrollDuration);
+
+    //Verify all public keys in the conversation on load
+    //Since from the backend, we are populating the users field in the conversation,
+    //we know we are getting most up to date, database public keys for users
+    for(let i = 0; i < this.convo.members.length; i++) {
+      //Validate each public key,
+      //Will handle showing the alert on bad key
+      this.appCrypto.validateLocalPublicKey(this.convo.members[i], this.convo.members[i].publicKey);
+    }
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));

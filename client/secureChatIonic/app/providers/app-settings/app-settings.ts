@@ -27,6 +27,14 @@ export class AppSettings {
   */
   static shushItemName = 'shushUser';
 
+  /**
+   * The public key store to validate friends against for conversations and things
+   * schema
+   * Key = User facebook id
+   * Value = user public key
+   */
+  static shushLocalKeyStore = 'shushUserKeys';
+
   //Add our server URL (Local testing not actual)
   //Must end with a slash
   static serverUrl = 'http://localhost:4780/api/v1/';
