@@ -7,6 +7,7 @@ const Message = mongoose.model('Message');
 const friendController = require('../controllers/friends');
 const conversationController = require('../controllers/conversation');
 const userController = require('../controllers/user');
+const words = require('../../wordJson/wordData');
 
 module.exports = function(app, passport) {
     // Route for logging in.
@@ -36,6 +37,7 @@ module.exports = function(app, passport) {
                     res.status(400).json({'error': 'OtherUserID required in parameter.'});
                     return;
                 }
+
                 User.findOne({'facebook.id': otherUserId}, function(err, user) {
                     var publicKey = user.publicKey;
                     if (err) {
@@ -44,10 +46,14 @@ module.exports = function(app, passport) {
                         res.status(404).json({'error' : 'Public key not set for the queried user.'});
                     } else {
                         hash.update(publicKey);
+                        var digests = hash.digest('hex').toUpperCase().match(/.{1,2}/g);
+                        for (var i = 0; i < digests.length; i++) {
+                            digests[i] = words[digests[i]];
+                        }
                         res.status(200).json(
                             {
                                 'publicKey' : publicKey,
-                                'readableKey' : hash.digest('hex')
+                                'readableKey' : digests.join(" ")
                             }
                         );
                     }
