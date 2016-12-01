@@ -23,7 +23,7 @@ export class ViewUserPage {
   //Map of what each user type means, and map to what request to make on the user
   userTypeMap: any;
 
-  //The user that is being displayer
+  //The user that is being displayed
   user: any;
 
   constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appUsers: AppUsers) {
@@ -44,7 +44,7 @@ export class ViewUserPage {
     }
 
     //Get our user
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user
 
     //Set to ourselves for now
     this.user = user;

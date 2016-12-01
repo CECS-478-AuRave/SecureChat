@@ -22,8 +22,9 @@ export class AppCrypto {
   //Function to return keys for the user
   //Returns either a Json returning keys, false if now keys were found,
   getUserKeys() {
-    //Generate Encryption keys for the user if none
-    let localUser = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
+    //Attempt to get the keys from the local user
+    let localUser;
+    if(localStorage.getItem(AppSettings.shushItemName)) localUser = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
     if(localUser && localUser.keys) return localUser.keys;
     else return false;
   }
@@ -94,4 +95,19 @@ export class AppCrypto {
     //Post the conversation on the server
     return this.http.put(AppSettings.serverUrl + 'user/publicKey', payload).map(res => res.json());
   }
+
+  //Get the public key for a user
+  getPublicKey(token, facebookId) {
+
+    //Our headers
+    let headers = new Headers({
+      access_token: token
+    });
+    let options = new RequestOptions({ headers: headers });
+
+    //Return the get request
+    return this.http.get(AppSettings.serverUrl + 'user/publicKey/' + facebookId).map(res => res.json());
+  }
+
+  //TODO: Validate and insert keys into the local public key store
 }

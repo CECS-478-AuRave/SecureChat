@@ -29,7 +29,7 @@ export class AuthLoginPage {
   login() {
 
     //Start Loading
-    this.appNotify.startLoading('Logging in, this may take a minute if this is a new device...');
+    this.appNotify.startLoading('Logging in, this may take a while if this is a new user or a new device...');
 
     //Save a reference to this
     let self = this;
@@ -58,11 +58,9 @@ export class AuthLoginPage {
 
         //Create an observable for key checking
         let keyCheck = new Observable(function(observer) {
-          let localUserKeys = self.appCrypto.getUserKeys()
+          let localUserKeys = self.appCrypto.getUserKeys();
           if(localUserKeys) {
-            observer.next({
-              keys: localUserKeys
-            });
+            observer.next(localUserKeys);
           } else {
             self.appCrypto.generateUserKeys(userJson.user).subscribe(function(generateSuccess: any) {
 
@@ -77,15 +75,11 @@ export class AuthLoginPage {
               self.appCrypto.setPublicKey(payload).subscribe(function(setSuccess) {
                 //Success
                 //Return success to our keyCheck
-                observer.next({
-                  keys: generateSuccess
-                });
+                observer.next(generateSuccess);
               }, function(error) {
                 //Error
                 console.log(error);
-                observer.next({
-                  keys: {}
-                });
+                observer.next({});
               },function() {
                 //Complete
               });
@@ -99,9 +93,6 @@ export class AuthLoginPage {
 
           //Save the keys to the user
           userJson.keys = success;
-
-          console.log(userJson);
-
 
           //Save the user info
           localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
