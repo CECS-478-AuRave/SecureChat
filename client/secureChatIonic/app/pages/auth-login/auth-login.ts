@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
+import { Observable } from "rxjs/Observable";
 
 //Pages
 import { AllConversationsPage } from '../../pages/all-conversations/all-conversations';
 
 //Import our providers (services)
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppCrypto } from '../../providers/app-crypto/app-crypto';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppAuth } from '../../providers/app-auth/app-auth';
 
@@ -21,13 +23,13 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 export class AuthLoginPage {
 
-  constructor(private navCtrl: NavController, private appNotify: AppNotify, private appAuth: AppAuth) { }
+  constructor(private navCtrl: NavController, private appCrypto: AppCrypto, private appNotify: AppNotify, private appAuth: AppAuth) { }
 
   //Call our log in function from our auth service
   login() {
 
     //Start Loading
-    this.appNotify.startLoading('Logging in...');
+    this.appNotify.startLoading('Logging in, this may take a while if this is a new user or a new device...');
 
     //Save a reference to this
     let self = this;
@@ -43,7 +45,9 @@ export class AuthLoginPage {
         //Success
 
         //Create our new user
-        let userJson = {
+        let userJson: any;
+        //Schema for userjson
+        userJson = {
           user: {},
           access_token: '',
           keys: {}
@@ -51,26 +55,63 @@ export class AuthLoginPage {
         //Get the neccesary info from the user object
         userJson.user = success.user;
         userJson.access_token = fbRes.access_token;
-        //TODO: Generate Encryption keys for the user if none
-        userJson.keys = {};
 
-        //Save the user info
-        localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
+        //Create an observable for key checking
+        let keyCheck = new Observable(function(observer) {
+          let localUserKeys = self.appCrypto.getUserKeys();
+          if(localUserKeys) {
+            observer.next(localUserKeys);
+          } else {
+            self.appCrypto.generateUserKeys(userJson.user).subscribe(function(generateSuccess: any) {
 
-        //Update the auth status
-        self.appAuth.updateAuthStatus(true);
+              //Update the user account's public key
+              //Create our payload
 
-        //Stop Loading
-        self.appNotify.stopLoading().then(function() {
-          //Toast What Happened
-          //In a timeout to avoid colliding with loading
-          setTimeout(function() {
-            //Show Toast
-            self.appNotify.showToast('Login Successful!');
+              let payload = {
+                access_token: userJson.access_token,
+                publicKey: generateSuccess.publicKey
+              };
 
-            //Redirect to messages page
-            self.navCtrl.setRoot(AllConversationsPage);
-          }, 250)
+              self.appCrypto.setPublicKey(payload).subscribe(function(setSuccess) {
+                //Success
+                //Return success to our keyCheck
+                observer.next(generateSuccess);
+              }, function(error) {
+                //Error
+                console.log(error);
+                observer.next({});
+              },function() {
+                //Complete
+              });
+            });
+          }
+        })
+
+
+        //Finish the rest of the login
+        keyCheck.subscribe(function(success) {
+
+          //Save the keys to the user
+          userJson.keys = success;
+
+          //Save the user info
+          localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
+
+          //Update the auth status
+          self.appAuth.updateAuthStatus(true);
+
+          //Stop Loading
+          self.appNotify.stopLoading().then(function() {
+            //Toast What Happened
+            //In a timeout to avoid colliding with loading
+            setTimeout(function() {
+              //Show Toast
+              self.appNotify.showToast('Login Successful!');
+
+              //Redirect to messages page
+              self.navCtrl.setRoot(AllConversationsPage);
+            }, 250)
+          });
         });
       }, function(error) {
         //Error

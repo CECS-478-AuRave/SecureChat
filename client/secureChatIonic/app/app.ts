@@ -9,6 +9,7 @@ import { AppNotify } from './providers/app-notify/app-notify';
 import { AppAuth } from './providers/app-auth/app-auth';
 import { AppUsers} from './providers/app-users/app-users';
 import { AppMessaging } from './providers/app-messaging/app-messaging';
+import { AppCrypto } from './providers/app-crypto/app-crypto';
 
 //Import our pages
 import { Home } from './pages/home/home';
@@ -20,10 +21,13 @@ import { FriendsListPage } from './pages/friends-list/friends-list';
 import { SearchFriendsPage } from './pages/search-friends/search-friends';
 import { ViewUserPage } from './pages/view-user/view-user';
 
+//Import our modals
+import { MaliciousKey } from './pages/malicious-key/malicious-key';
+
 //Change detection needed for updating "this" AKA $scope
 @Component({
   templateUrl: 'build/app.html',
-  providers: [AppSettings, AppNotify, AppAuth, AppUsers, AppMessaging],
+  providers: [AppSettings, AppCrypto, AppNotify, AppAuth, AppUsers, AppMessaging],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class MyApp {
@@ -37,7 +41,7 @@ class MyApp {
   noAuthPages: Array<{ title: string, component: any }>;
   authPages: Array<{ title: string, component: any }>;
 
-  constructor(public platform: Platform, private authProvider: AppAuth, private appNotify: AppNotify) {
+  constructor(public platform: Platform, private appSettings: AppSettings, private authProvider: AppAuth, private appNotify: AppNotify) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
