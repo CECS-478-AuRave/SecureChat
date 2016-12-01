@@ -21,6 +21,9 @@ import { FriendsListPage } from './pages/friends-list/friends-list';
 import { SearchFriendsPage } from './pages/search-friends/search-friends';
 import { ViewUserPage } from './pages/view-user/view-user';
 
+//Import our modals
+import { MaliciousKey } from './pages/malicious-key/malicious-key';
+
 //Change detection needed for updating "this" AKA $scope
 @Component({
   templateUrl: 'build/app.html',

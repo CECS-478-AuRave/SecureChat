@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Warning!
+    </ion-title>
+    <ion-buttons start>
+      <button ion-button (click)="closeModal()">
+        <span color="primary" showWhen="ios">Close</span>
+        <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content padding>
+
+  <h1 class="maliciousKeyTitle">A public key from the server has changed!</h1>
+
+  <div class="maliciousKeyText">
+    The public key we received from the server has changed. This means, either you friend has gotten a new device, or re-installed the application, or someone may have compromised the server and is trying to intercept your messages. We <b>HIGHLY</b> suggest you contact your friend, through another medium, and compare public keys from their "My profile tab" on their device, and their public profile on you're device. The public key of you're friend will be saved to this device from now on.
+  </div>
+</ion-content>

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { ModalController } from 'ionic-angular';
 import { Http, RequestOptions, Headers } from '@angular/http';
 import { Observable } from "rxjs/Observable";
 import 'rxjs/add/operator/map';
@@ -8,7 +9,9 @@ import * as CryptoJs from 'crypto-js';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
-import { AppNotify } from '../../providers/app-notify/app-notify';
+
+//Import Modals
+import { MaliciousKey } from '../../pages/malicious-key/malicious-key';
 
 //3P JS library
 //https://www.thepolyglotdeveloper.com/2016/01/include-external-javascript-libraries-in-an-angular-2-typescript-project/
@@ -18,7 +21,7 @@ declare var kbpgp: any;
 @Injectable()
 export class AppCrypto {
 
-  constructor(private http: Http, private appNotify: AppNotify, private appSettings: AppSettings) {
+  constructor(private http: Http, private modalCtrl: ModalController, private appSettings: AppSettings) {
     //Ensure that we has a public key store, create one if not
     if(!localStorage.getItem(AppSettings.shushLocalKeyStore)) {
       localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify({}));
@@ -143,11 +146,9 @@ export class AppCrypto {
     else {
       //Does exist, but has changed, alert the user!
       //Alert the user of possible malicious acitivity
-      this.appNotify.showAlert(AppSettings.maliciousPublicKey.title,
-        AppSettings.maliciousPublicKey.text).then(function() {
-          //Update and don't show alert for this user again
-          this.updateLocalPublicKey(passedUser.facebook.id, publicKey);
-        });
+      this.modalCtrl.create(MaliciousKey).present();
+      //Update and don't show alert for this user again
+      this.updateLocalPublicKey(passedUser.facebook.id, publicKey);
       return false;
     }
   }

@@ -45,22 +45,6 @@ export class AppNotify {
     return toastPromise;
   }
 
-  //Show a confirmable alert
-  showAlert(alertText, alertTitle) {
-    //Ensure we dont alert nothing
-    if(!alertText) return;
-
-    if(!alertTitle) alertTitle = 'Alert!';
-
-    //Alert the conent
-    let alert = this.alertCtrl.create({
-      title: alertTitle,
-      subTitle: alertText,
-      buttons: ['OK']
-    });
-    return alert.present();
-  }
-
   //Function to start loading
   startLoading(loadingString) {
     //First make sure we stop loading
