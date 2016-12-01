@@ -1,5 +1,8 @@
 import { Pipe, Injectable } from '@angular/core';
 
+/*
+Pipe used in searching for users on the new conversation page, and the search friends pages
+ */
 @Pipe({
   name: 'NgForTextFilter'
 })

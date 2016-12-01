@@ -68,16 +68,14 @@ export class AppCrypto {
             keys.export_pgp_private ({
               passphrase: passedUser.access_token
             }, function(err, pgp_private) {
-              console.log("private key: ", pgp_private);
 
               //Next, export the public key
               keys.export_pgp_public({}, function(err, pgp_public) {
-                console.log("public key: ", pgp_public);
 
                 //Return to our observer
                 observer.next({
-                  public: pgp_public,
-                  private: pgp_private
+                  publicKey: pgp_public,
+                  privateKey: pgp_private
                 });
               });
             });
@@ -85,5 +83,15 @@ export class AppCrypto {
         }
       });
     });
+  }
+
+  //Set the public key for a user
+  setPublicKey(payload) {
+    //Payload should have the following params
+    //token: The users Facebook token
+    //public key: the public key of the user
+
+    //Post the conversation on the server
+    return this.http.put(AppSettings.serverUrl + 'user/publicKey', payload).map(res => res.json());
   }
 }

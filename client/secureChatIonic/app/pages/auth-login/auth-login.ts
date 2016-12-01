@@ -64,11 +64,30 @@ export class AuthLoginPage {
               keys: localUserKeys
             });
           } else {
-            self.appCrypto.generateUserKeys(userJson.user).subscribe(function(success) {
+            self.appCrypto.generateUserKeys(userJson.user).subscribe(function(generateSuccess: any) {
 
-              //TODO: Update the user account's public key
-              observer.next({
-                keys: success
+              //Update the user account's public key
+              //Create our payload
+
+              let payload = {
+                access_token: userJson.access_token,
+                publicKey: generateSuccess.publicKey
+              };
+
+              self.appCrypto.setPublicKey(payload).subscribe(function(setSuccess) {
+                //Success
+                //Return success to our keyCheck
+                observer.next({
+                  keys: generateSuccess
+                });
+              }, function(error) {
+                //Error
+                console.log(error);
+                observer.next({
+                  keys: {}
+                });
+              },function() {
+                //Complete
               });
             });
           }
@@ -78,10 +97,10 @@ export class AuthLoginPage {
         //Finish the rest of the login
         keyCheck.subscribe(function(success) {
 
-          console.log(success);
-
           //Save the keys to the user
           userJson.keys = success;
+
+          console.log(userJson);
 
 
           //Save the user info
