@@ -6,6 +6,9 @@ import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppUsers} from '../../providers/app-users/app-users';
 
+//Our Pages we navigate to
+import { NewConversationPage } from '../../pages/new-conversation/new-conversation';
+
 /*
   Generated class for the ViewUserPage page.
 
@@ -178,6 +181,15 @@ export class ViewUserPage {
     else if (this.user.pendingFriends.indexOf(user.facebook.id) >= 0) return this.userTypeMap.requestPending;
     //Else they are not our friend
     else return this.userTypeMap.notFriend;
+  }
+
+  //Function to handle if a user would like to send another user a message
+  sendUserMessage() {
+
+    //Go to the new conversation page, and pass the user
+    this.navCtrl.push(NewConversationPage, {
+      user: this.user
+    });
   }
 
 }

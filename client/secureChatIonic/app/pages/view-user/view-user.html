@@ -55,7 +55,7 @@
 
         <!-- Send a friend a message-->
         <div *ngIf="getUserType() == userTypeMap.friend">
-          <button primary clear small (click)="goToNewMessage()">
+          <button primary clear small (click)="sendUserMessage()">
           <ion-icon name="text"></ion-icon>
           <div>Send Message</div>
           </button>

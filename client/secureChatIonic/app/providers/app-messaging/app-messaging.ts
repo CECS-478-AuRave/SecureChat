@@ -47,7 +47,19 @@ export class AppMessaging {
       .map(res => res.json());
   }
 
-  //POST to the server a new message
+  //Create/POST a new conversation
+  conversationCreate(payload) {
+
+    //Payload should have the following params
+    //token: The users Facebook token
+    //members: array of users facebook ids(not including the current user)
+    //message: the string to initialize the message with
+
+    //Post the conversation on the server
+    return this.http.post(AppSettings.serverUrl + 'conversation', payload).map(res => res.json());
+  }
+
+  //PUT a new message within a conversation
   conversationReply(payload) {
 
     //Update the conversation on the server

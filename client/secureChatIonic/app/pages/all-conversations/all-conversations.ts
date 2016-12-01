@@ -1,7 +1,8 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
-//Import to conversation view
+//Import views to navigate to
+import { NewConversationPage } from '../../pages/new-conversation/new-conversation';
 import { ConversationPage } from '../../pages/conversation/conversation';
 
 //Import our providers
@@ -58,7 +59,7 @@ export class AllConversationsPage {
 
     }, function() {
       //Completed
-    })
+    });
 
     //Start polling to get messages
     let poll = this.appMessaging.conversationRequestPoll(user.access_token);
@@ -112,13 +113,11 @@ export class AllConversationsPage {
   //Function to reutn the users in a conversations
   getConvoMembers(convo: any) {
 
-    //Get the last message sender
-
     //Get the names of the members spilt by spaces
     let members = '';
-    for (let i = 0; i < convo.memberNames.length; ++i) {
-      members += convo.memberNames[i].split(' ')[0];
-      if (i < convo.memberNames.length - 1) members += ', ';
+    for (let i = 0; i < convo.members.length; ++i) {
+      members += convo.members[i].name;
+      if (i < convo.members.length - 1) members += ', ';
     }
 
     return this.shortenText(members, 20);
@@ -130,7 +129,7 @@ export class AllConversationsPage {
     //Get the last message sender
     let lastMessage = convo.message[convo.message.length - 1];
 
-    let lastSender = lastMessage.from.split(' ')[0];
+    let lastSender = lastMessage.from.name.split(' ')[0];
     let lastText = lastMessage.message;
 
     return this.shortenText(lastSender + ': ' + lastText, 35)
@@ -148,6 +147,13 @@ export class AllConversationsPage {
       text = text + '...';
       return text;
     }
+  }
+
+  //Function to handle if a user would like to send another user a message
+  goToNewConversation() {
+
+    //Go to the new conversation page, and pass the user
+    this.navCtrl.push(NewConversationPage);
   }
 
   //Fucntion to run when an item is clicked

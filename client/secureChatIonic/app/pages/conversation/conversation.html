@@ -21,22 +21,25 @@
         For media messages if supported
         <img src="img/nin-live.png" />
     -->
-    <ion-card-content>
-      <!-- User who sent the item -->
-      <ion-card-title>
-        {{convoMessage.from}}
-      </ion-card-title>
 
+    <!-- User who sent the item -->
+    <ion-item>
+      <ion-avatar item-left>
+        <img src="https://{{convoMessage.from.profilePhotoURL}}">
+      </ion-avatar>
+      <h2>
+        {{convoMessage.from.name}}
+      </h2>
+      <p class="messageTime">
+        {{convoMessage.date | date:'short'}}
+      </p>
+    </ion-item>
+
+    <ion-card-content>
       <!-- The actual message contents -->
       <p class="convoMessage">
         {{convoMessage.message}}
       </p>
-
-      <!-- Time stamp of the message -->
-      <p class="messageTime">
-        {{prettyDate(convoMessage.date)}}
-      </p>
-
     </ion-card-content>
   </ion-card>
 
