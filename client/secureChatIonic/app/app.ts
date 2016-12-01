@@ -4,6 +4,7 @@ import { StatusBar } from 'ionic-native';
 
 //Import our providers (services)
 import { AppSettings } from './providers/app-settings/app-settings';
+import { NgForTextFilter } from './providers/app-pipes/app-pipes';
 import { AppNotify } from './providers/app-notify/app-notify';
 import { AppAuth } from './providers/app-auth/app-auth';
 import { AppUsers} from './providers/app-users/app-users';
@@ -13,6 +14,7 @@ import { AppMessaging } from './providers/app-messaging/app-messaging';
 import { Home } from './pages/home/home';
 import { AuthLoginPage } from './pages/auth-login/auth-login';
 import { AllConversationsPage } from './pages/all-conversations/all-conversations';
+import { NewConversationPage } from './pages/new-conversation/new-conversation';
 import { ConversationPage } from './pages/conversation/conversation';
 import { FriendsListPage } from './pages/friends-list/friends-list';
 import { SearchFriendsPage } from './pages/search-friends/search-friends';
@@ -106,5 +108,4 @@ class MyApp {
     });
   }
 }
-
 ionicBootstrap(MyApp);

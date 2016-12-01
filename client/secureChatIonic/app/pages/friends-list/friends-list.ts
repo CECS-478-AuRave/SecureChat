@@ -8,6 +8,7 @@ import { AppUsers} from '../../providers/app-users/app-users';
 
 //Import pages
 import { SearchFriendsPage } from '../../pages/search-friends/search-friends';
+import { ViewUserPage } from '../../pages/view-user/view-user';
 
 /*
   Generated class for the FriendsListPage page.
@@ -24,30 +25,23 @@ export class FriendsListPage {
 
   constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private appNotify: AppNotify, private appUsers: AppUsers) {
 
-    //Get the user
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-
-    //Update our user object with any new friends
-
-    //Set the friends on the user object
-    this.friends = user.user.friends;
+    //Initialize friends
+    this.friends = [];
   }
 
-  //Function called once the view is full loaded
+  //Call function every time the view loads
   ionViewDidEnter() {
-
-    //Update our user
-
-    //Start Loading
-    this.appNotify.startLoading('Getting Friends...');
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
     if (!user || !user.user) return;
 
+    //Start Loading
+    this.appNotify.startLoading('Getting Friends...');
+
     //Start polling to get messages
-    let request = this.appUsers.getUserById(user.user.facebook.id);
+    let request = this.appUsers.getUserFriends();
 
     //Get a reference to this
     let self = this;
@@ -58,10 +52,11 @@ export class FriendsListPage {
       //Stop loading
       self.appNotify.stopLoading().then(function() {
 
-        //Save our user object
-        user.user = success;
-        localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user));
+        //Save our friends
+        self.friends = success;
 
+        //Update the UI
+        self.changeDetector.detectChanges();
       });
     }, function(error) {
       //Error!
@@ -82,16 +77,17 @@ export class FriendsListPage {
     })
   }
 
-  //Function to return if we have conversations
-  hasFriends() {
-    //Return true if we have no friends object, or if the length is not zero
-    if (!this.friends && this.friends.length != 0) return true;
-    else return false;
-  }
-
   //Function to navigate to the search friends page
   goToSearchFriends() {
     this.navCtrl.push(SearchFriendsPage);
+  }
+
+  //Go to a users page
+  goToUser(user) {
+    //Go to the conversation page, and pass the conversation id
+    this.navCtrl.push(ViewUserPage, {
+      user: user
+    });
   }
 
 }
