@@ -38,7 +38,7 @@ class MyApp {
   noAuthPages: Array<{ title: string, component: any }>;
   authPages: Array<{ title: string, component: any }>;
 
-  constructor(public platform: Platform, private authProvider: AppAuth, private appNotify: AppNotify) {
+  constructor(public platform: Platform, private appSettings: AppSettings, private authProvider: AppAuth, private appNotify: AppNotify) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation

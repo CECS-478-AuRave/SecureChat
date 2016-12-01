@@ -1,5 +1,5 @@
 import { Injectable, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { App, Nav, LoadingController, ToastController  } from 'ionic-angular';
+import { App, Nav, LoadingController, ToastController, AlertController  } from 'ionic-angular';
 
 //Our Providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
@@ -24,7 +24,7 @@ export class AppNotify {
   //Our default loading string
   defaultMessage: 'Loading, please wait...';
 
-  constructor(private changeDetector: ChangeDetectorRef, private app: App, private appAuth: AppAuth, private loadingCtrl: LoadingController, private toastCtrl: ToastController) {
+  constructor(private changeDetector: ChangeDetectorRef, private app: App, private appAuth: AppAuth, private loadingCtrl: LoadingController, private toastCtrl: ToastController, private alertCtrl: AlertController) {
   }
 
   //Show a Static toast
@@ -43,6 +43,22 @@ export class AppNotify {
     let toastPromise = toast.present();
 
     return toastPromise;
+  }
+
+  //Show a confirmable alert
+  showAlert(alertText, alertTitle) {
+    //Ensure we dont alert nothing
+    if(!alertText) return;
+
+    if(!alertTitle) alertTitle = 'Alert!';
+
+    //Alert the conent
+    let alert = this.alertCtrl.create({
+      title: alertTitle,
+      subTitle: alertText,
+      buttons: ['OK']
+    });
+    alert.present();
   }
 
   //Function to start loading

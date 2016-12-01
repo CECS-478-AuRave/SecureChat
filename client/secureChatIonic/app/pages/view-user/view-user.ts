@@ -3,6 +3,7 @@ import { NavController, NavParams } from 'ionic-angular';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppCrypto } from '../../providers/app-crypto/app-crypto';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppUsers} from '../../providers/app-users/app-users';
 
@@ -26,7 +27,7 @@ export class ViewUserPage {
   //The user that is being displayed
   user: any;
 
-  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify, private appUsers: AppUsers) {
+  constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appCrypto: AppCrypto, private appNotify: AppNotify, private appUsers: AppUsers) {
 
     //Create our map of user types, and their requests
     this.userTypeMap = {
@@ -80,6 +81,9 @@ export class ViewUserPage {
       self.appNotify.stopLoading().then(function() {
         //Set our user
         self.user = success;
+
+        //Validate the user key
+        self.appCrypto.validateLocalPublicKey(self.user, self.user.publicKey);
 
         //Update the UI
         self.changeDetector.detectChanges();

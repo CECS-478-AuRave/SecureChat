@@ -8,6 +8,7 @@ import * as CryptoJs from 'crypto-js';
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppNotify } from '../../providers/app-notify/app-notify';
 
 //3P JS library
 //https://www.thepolyglotdeveloper.com/2016/01/include-external-javascript-libraries-in-an-angular-2-typescript-project/
@@ -17,7 +18,12 @@ declare var kbpgp: any;
 @Injectable()
 export class AppCrypto {
 
-  constructor(private http: Http, private appSettings: AppSettings) { }
+  constructor(private http: Http, private appSettings: AppSettings) {
+    //Ensure that we has a public key store, create one if not
+    if(!localStorage.getItem(AppSettings.shushLocalKeyStore)) {
+      localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify({}));
+    }
+  }
 
   //Function to return keys for the user
   //Returns either a Json returning keys, false if now keys were found,
@@ -109,5 +115,37 @@ export class AppCrypto {
     return this.http.get(AppSettings.serverUrl + 'user/publicKey/' + facebookId).map(res => res.json());
   }
 
-  //TODO: Validate and insert keys into the local public key store
+  //Function to validate a users id and an input public key
+  //True if the key did not exists, or the keys match
+  //False otherwise
+  validateLocalPublicKey(passedUser, publicKey) {
+
+    //Ignore the request if it is the current user
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
+
+    if(passedUser.facebook.id == user.facebook.id) return true;
+
+    //Get the local key store
+    let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalKeyStore));
+
+    //Check if the key exists in the map
+    if(!localKeyStore[passedUser.facebook.id]) {
+      this.updateLocalPublicKey(passedUser.facebook.id, publicKey);
+      return true;
+    } else if(localKeyStore[passedUser.facebook.id] == publicKey) return true;
+    else {
+      //Alert the user of possible malicious acitivy
+      return false;
+    }
+  }
+
+  //Function to update the local key store with the new key
+  updateLocalPublicKey(facebookId, publicKey) {
+    //Get the local key store
+    let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalKeyStore));
+
+    //Set the key and save
+    localKeyStore[facebookId] = publicKey;
+    localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify(localKeyStore));
+  }
 }
