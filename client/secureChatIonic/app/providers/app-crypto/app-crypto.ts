@@ -18,7 +18,7 @@ declare var kbpgp: any;
 @Injectable()
 export class AppCrypto {
 
-  constructor(private http: Http, private appSettings: AppSettings) {
+  constructor(private http: Http, private appNotify: AppNotify, private appSettings: AppSettings) {
     //Ensure that we has a public key store, create one if not
     if(!localStorage.getItem(AppSettings.shushLocalKeyStore)) {
       localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify({}));
@@ -123,18 +123,31 @@ export class AppCrypto {
     //Ignore the request if it is the current user
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
 
-    if(passedUser.facebook.id == user.facebook.id) return true;
+    if(passedUser.facebook.id == user.facebook.id) {
+      return true;
+    }
 
     //Get the local key store
     let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalKeyStore));
 
     //Check if the key exists in the map
     if(!localKeyStore[passedUser.facebook.id]) {
+      //Doesn't exist, add it to key store
       this.updateLocalPublicKey(passedUser.facebook.id, publicKey);
       return true;
-    } else if(localKeyStore[passedUser.facebook.id] == publicKey) return true;
+    } else if(localKeyStore[passedUser.facebook.id] == publicKey) {
+        //Does exist, and is valid, return true
+        console.log('Valid!');
+        return true;
+    }
     else {
-      //Alert the user of possible malicious acitivy
+      //Does exist, but has changed, alert the user!
+      //Alert the user of possible malicious acitivity
+      this.appNotify.showAlert(AppSettings.maliciousPublicKey.title,
+        AppSettings.maliciousPublicKey.text).then(function() {
+          //Update and don't show alert for this user again
+          this.updateLocalPublicKey(passedUser.facebook.id, publicKey);
+        });
       return false;
     }
   }

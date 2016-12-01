@@ -58,7 +58,7 @@ export class AppNotify {
       subTitle: alertText,
       buttons: ['OK']
     });
-    alert.present();
+    return alert.present();
   }
 
   //Function to start loading
