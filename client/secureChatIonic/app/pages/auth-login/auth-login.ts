@@ -89,9 +89,10 @@ export class AuthLoginPage {
 
 
         //Finish the rest of the login
-        keyCheck.subscribe(function(success) {
+        keyCheck.subscribe(function(success: any) {
 
           //Save the keys to the user
+          userJson.user.publicKey = success.publicKey;
           userJson.keys = success;
 
           //Save the user info

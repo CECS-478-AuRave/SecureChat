@@ -28,8 +28,21 @@ export class AppCrypto {
     }
 
     //Testing encrypt and decrypt
-    // let plainText = 'hi!';
-    // let publicKey = ''
+    let thing = true;
+    if(thing) {
+      let plainText = 'hi there!';
+      let publicKey = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).keys.publicKey;
+      let self = this;
+      this.encryptMessage(plainText, publicKey).subscribe(function(success: any) {
+        console.log('ENCRYPTED!!!');
+        self.decryptMessage(success.message, success.messageKey).subscribe(function(success2: any) {
+          console.log('DECRYPTED!');
+          console.log(success2);
+        })
+      });
+    }
+
+
   }
 
   //Function to return keys for the user
@@ -55,17 +68,7 @@ export class AppCrypto {
         flags: openpgp.certify_keys | openpgp.sign_data | openpgp.auth | openpgp.encrypt_comm | openpgp.encrypt_storage,
         expire_in: 0  // never expire
       },
-      subkeys: [
-        {
-          nbits: 2048,
-          flags: openpgp.sign_data,
-          expire_in: 0
-        }, {
-          nbits: 2048,
-          flags: openpgp.encrypt_comm | openpgp.encrypt_storage,
-          expire_in: 0
-        }
-      ]
+      subkeys: []
     };
 
     //Generate the keys
@@ -178,8 +181,9 @@ export class AppCrypto {
 
       //Encrypt the message with AES
       let cipherText = CryptoJs.AES.encrypt(plainText, aesKey).toString();
+
       //Computer the HMAC of the ciphertext
-      let cipherTextHmac = CryptoJs.HmacSHA256(cipherText, hmacKey);
+      let cipherTextHmac = CryptoJs.HmacSHA256(cipherText, hmacKey).toString();
 
       //Stringify our keys
       let jsonKeys = JSON.stringify({
@@ -206,7 +210,6 @@ export class AppCrypto {
           };
           kbpgp.box(params, function(err, encryptedKeys, encryptedKeysBuffer) {
             if(!err) {
-
               //Return the result
               observer.next({
                 message: jsonMessage,
@@ -220,13 +223,13 @@ export class AppCrypto {
   }
 
   //Function to decrypt a message
-  decryptMessage(message, messageKey) {
+  decryptMessage(message, encryptedKeys) {
 
     //Create the observable
     return new Observable(function(observer) {
 
       //First decrypt the messageKey
-      //Grab the user's priavte key from the device
+      //Grab the user's public/private key from the device
       let privateKey = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).keys.privateKey;
 
       //Create our key manager from the private key
@@ -234,14 +237,9 @@ export class AppCrypto {
         armored: privateKey
       }, function(err, keyManager) {
         if (!err) {
-          console.log("Loaded private key w/o passphrase");
-
-          //Key ring to decrypt message
-          let ring = new kbpgp.keyring.KeyRing;
-          ring.add_key_manager(keyManager);
           kbpgp.unbox({
-            keyfetch: ring,
-            armored: message.messageKey
+            keyfetch: keyManager,
+            armored: encryptedKeys
           }, function(err, messageKeyJson) {
             if(!err) {
               //Now we have the keys!
@@ -250,20 +248,27 @@ export class AppCrypto {
               let decryptedKeys = JSON.parse(messageKeyJson);
 
               //Parse the message json
-              let messageJson = JSON.parse(message.message);
+              let messageJson = JSON.parse(message);
 
               //First, compute the hmac of the cipher text of the message we received
-              let computedHmac = CryptoJs.HmacSHA256(messageJson.messageText, decryptedKeys.hmacKey);
+              let computedHmac = CryptoJs.HmacSHA256(messageJson.messageText, decryptedKeys.hmacKey).toString();
 
               //Check if the HMAC is true
               if(computedHmac == messageJson.messageHmac) {
                 //Our message was not tampered!!!
+
                 //Decrypt with the AES Key
-                let decryptedMessage = CryptoJs.AES.decrypt(messageJson.messageText, decryptedKeys.aesKey);
+                //Must pass the encoding on decrypt
+                //http://ramkulkarni.com/blog/encrypting-data-with-crypto-js-in-javascript/
+                let decryptedMessage =
+                  CryptoJs.AES.decrypt(messageJson.messageText, decryptedKeys.aesKey).toString(CryptoJs.enc.Utf8);
 
                 //Return the decrypted message
                 observer.next(decryptedMessage)
               }
+            } else {
+              console.log('there was an error!');
+              console.log(err);
             }
           });
         }
@@ -279,6 +284,6 @@ export class AppCrypto {
       cryptoString += Math.random().toString(36).substr(2, 24);
     }
 
-    return CryptoJs.SHA256(cryptoString);
+    return CryptoJs.SHA256(cryptoString).toString();
   }
 }
