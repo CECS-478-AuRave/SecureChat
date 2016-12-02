@@ -5,7 +5,9 @@ var mongoose = require('mongoose'),
 var conversationSchema = new Schema({
     conversationID: {type: String, required: true},
     members: [{type: Schema.ObjectId, ref: 'User'}],
-    message: [{type: Schema.ObjectId, ref: 'Message'}],
+    messages: [{
+        message: [{type: Schema.ObjectId, ref: 'Message'}]
+    }],
     date: {type: Date}
 });
 

@@ -7,7 +7,7 @@ var Message = mongoose.model('Message');
 var respondWithConversation = function(res, conversation, status) {
     // Respond with status 200 and the whole conversation as a json object.
     Conversation.populate(conversation, {
-        path : 'message.from',
+        path : 'messages.message.from messages.message.issuedTo',
         select : 'name profilePhotoURL',
         model : 'User'
     }, function(err, conversation) {
@@ -19,10 +19,11 @@ var respondWithConversation = function(res, conversation, status) {
     });
 }
 
-var findAndCreateConversation = function(res, members, message, thisUser) {
+var findAndCreateConversation = function(res, members, message, thisUser, messageKey) {
     // GroupID is the sorted facebookID that's joined altogether.
     var groupID = members.sort().join('_');
     var currentTime = Date.now();
+    var newMessages = [];
     // Find a group based on the groupID provided.
     Conversation.findOne({conversationID: groupID}, function(err, conversation) {
         if (err) {
@@ -31,9 +32,22 @@ var findAndCreateConversation = function(res, members, message, thisUser) {
             res.status(500).json(err);
         } else if (!conversation) {
             // Create the new Message.
-            var newMessage = createMessage(message, thisUser, currentTime);
-            // Create new Conversation.
-            createConversation(res, groupID, members, currentTime, newMessage);
+            for (let i = 0; i < members.length; i++) {
+                otherUserId = members[i];
+                var messageInformation = {
+                    message: message,
+                    thisUser: thisUser,
+                    currentTime: currentTime,
+                    otherUserId: otherUserId,
+                    messageKey: messageKey
+                };
+                // Create new Conversation.
+                newMessages.push(createMessage(res, messageInformation));
+                if (i == members.length - 1) {
+                    createConversation(res, groupID, members, currentTime, newMessages);
+                    return;
+                }
+            }
         } else {
             // You cannot create another conversation with the same person.
             // So, respond with status 400 and an json object with an error
@@ -43,12 +57,15 @@ var findAndCreateConversation = function(res, members, message, thisUser) {
     });
 }
 
-var createMessage = function(message, thisUser, currentTime) {
+var createMessage = function(res, messageInformation) {
     var newMessage = new Message({
-        'message' : message,
-        from : thisUser._id,
-        date : currentTime
+        'message' : messageInformation.message,
+        from : messageInformation.thisUser._id,
+        date : messageInformation.currentTime,
+        issuedTo: messageInformation.otherUserId,
+        messageKey: messageInformation.messageKey[String(otherUserId)]
     });
+    if (messageInformation)
     newMessage.save(function(err, message) {
         if (err) {
             res.status(500).json(err);
@@ -64,7 +81,10 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
         conversationID : groupID,
         'members' : members,
         date : currentTime,
-        message : [newMessage._id]
+        messages : []
+    });
+    newConversation.messages.push({
+        message : newMessage
     });
     // We need to save the conversation and return the conversation object.
     newConversation.save(function(err, conversation) {
@@ -77,7 +97,7 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
           // conversation.
           Conversation
             .findById(conversation._id)
-            .populate('message')
+            .populate('messages.message')
             .exec(function(err, conversation) {
               if (err) {
                 // Respond with internal server error and the err object since
@@ -86,6 +106,7 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
               } else {
                 // respond to the client with status 201 and the
                 // convesation object.
+                // res.status(201).json(conversation);
                 respondWithConversation(res, conversation, 201);
               }
             }
@@ -110,6 +131,8 @@ module.exports.postConversation = function(req, res) {
         var members = jsonObject.members;
         // get the message sent by the Json Object
         var message = jsonObject.message;
+        // get the messageKey sent by the Json Object.
+        var messageKey = jsonObject.messageKey;
 
         // Check if members exists from the json object.
         if (!members || members.length == 0) {
@@ -121,10 +144,15 @@ module.exports.postConversation = function(req, res) {
             res.status(400).json({'error': 'Message value required.'});
             return;
         }
+        // Check if the messageKey was sent by the user.
+        if (!messageKey) {
+            res.status(400).json({'error': 'Message value required.'});
+            return;
+        }
         // Add the current user's facebook id to the members since
         // we will be using it as the groupID.
         members.push(thisUser._id);
-        findAndCreateConversation(res, members, message, thisUser);
+        findAndCreateConversation(res, members, message, thisUser, messageKey);
     } else {
         // Respond with Unauthorized access.
         res.status(401).json({'error': 'Access Not Authorized.'});
