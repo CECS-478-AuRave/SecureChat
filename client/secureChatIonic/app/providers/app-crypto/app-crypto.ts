@@ -22,27 +22,13 @@ declare var kbpgp: any;
 export class AppCrypto {
 
   constructor(private http: Http, private modalCtrl: ModalController, private appSettings: AppSettings) {
-    //Ensure that we has a public key store, create one if not
-    if(!localStorage.getItem(AppSettings.shushLocalKeyStore)) {
-      localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify({}));
+    //Ensure that we has a public/private key store, create one if not
+    if(!localStorage.getItem(AppSettings.shushLocalPublicKeyStore)) {
+      localStorage.setItem(AppSettings.shushLocalPublicKeyStore, JSON.stringify({}));
     }
-
-    //Testing encrypt and decrypt
-    let thing = true;
-    if(thing) {
-      let plainText = 'hi there!';
-      let publicKey = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).keys.publicKey;
-      let self = this;
-      this.encryptMessage(plainText, publicKey).subscribe(function(success: any) {
-        console.log('ENCRYPTED!!!');
-        self.decryptMessage(success.message, success.messageKey).subscribe(function(success2: any) {
-          console.log('DECRYPTED!');
-          console.log(success2);
-        })
-      });
+    if(!localStorage.getItem(AppSettings.shushLocalPrivateKeyStore)) {
+      localStorage.setItem(AppSettings.shushLocalPrivateKeyStore, JSON.stringify({}));
     }
-
-
   }
 
   //Function to return keys for the user
@@ -71,8 +57,10 @@ export class AppCrypto {
       subkeys: []
     };
 
-    //Generate the keys
+    //Get a reference to this
+    let self = this;
 
+    //Generate the keys
     //Return a new observable that can be subscribed to
     return new Observable(function(observer) {
       kbpgp.KeyManager.generate(options, function(err, keys) {
@@ -85,6 +73,9 @@ export class AppCrypto {
 
               //Next, export the public key
               keys.export_pgp_public({}, function(err, pgp_public) {
+
+                //Save to our local private key store
+                self.updateLocalPrivateKeyStore(passedUser.facebook.id, pgp_public, pgp_private);
 
                 //Return to our observer
                 observer.next({
@@ -135,12 +126,12 @@ export class AppCrypto {
     }
 
     //Get the local key store
-    let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalKeyStore));
+    let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPublicKeyStore));
 
     //Check if the key exists in the map
     if(!localKeyStore[passedUser.facebook.id]) {
       //Doesn't exist, add it to key store
-      this.updateLocalPublicKey(passedUser.facebook.id, publicKey);
+      this.updateLocalPublicKeyStore(passedUser.facebook.id, publicKey);
       return true;
     } else if(localKeyStore[passedUser.facebook.id] == publicKey) {
         //Does exist, and is valid, return true
@@ -151,19 +142,31 @@ export class AppCrypto {
       //Alert the user of possible malicious acitivity
       this.modalCtrl.create(MaliciousKey).present();
       //Update and don't show alert for this user again
-      this.updateLocalPublicKey(passedUser.facebook.id, publicKey);
+      this.updateLocalPublicKeyStore(passedUser.facebook.id, publicKey);
       return false;
     }
   }
 
   //Function to update the local key store with the new key
-  updateLocalPublicKey(facebookId, publicKey) {
+  updateLocalPublicKeyStore(facebookId, publicKey) {
     //Get the local key store
-    let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalKeyStore));
+    let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPublicKeyStore));
 
     //Set the key and save
     localKeyStore[facebookId] = publicKey;
-    localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify(localKeyStore));
+    localStorage.setItem(AppSettings.shushLocalPublicKeyStore, JSON.stringify(localKeyStore));
+  }
+
+  //Function to update the private key store with new key
+  updateLocalPrivateKeyStore(facebookId, publicKey, privateKey) {
+    //Get the local key store
+    let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPrivateKeyStore));
+
+    //Reset the keys and save
+    localKeyStore[facebookId] = {};
+    localKeyStore[facebookId].publicKey = publicKey;
+    localKeyStore[facebookId].privateKey = privateKey;
+    localStorage.setItem(AppSettings.shushLocalPrivateKeyStore, JSON.stringify(localKeyStore));
   }
 
   //Function to encrypt plaintext, to ciphertext
@@ -223,14 +226,16 @@ export class AppCrypto {
   }
 
   //Function to decrypt a message
-  decryptMessage(message, encryptedKeys) {
+  decryptMessage(facebookId, message, encryptedKeys) {
 
     //Create the observable
     return new Observable(function(observer) {
 
       //First decrypt the messageKey
       //Grab the user's public/private key from the device
-      let privateKey = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).keys.privateKey;
+      let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPrivateKeyStore));
+      if(!localKeyStore[facebookId]) return;
+      let privateKey = localKeyStore[facebookId].privateKey;
 
       //Create our key manager from the private key
       kbpgp.KeyManager.import_from_armored_pgp({

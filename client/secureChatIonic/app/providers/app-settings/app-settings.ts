@@ -33,7 +33,16 @@ export class AppSettings {
    * Key = User facebook id
    * Value = user public key
    */
-  static shushLocalKeyStore = 'shushUserKeys';
+  static shushLocalPublicKeyStore = 'shushPublicKeys';
+
+  /**
+   * The private key store for all users on the device
+   * schema
+   * Key = User facebook id
+   * privateKey = the private key for the facebook id
+   * publicKey = the public key for the facebook id
+   */
+  static shushLocalPrivateKeyStore = 'shushPrivateKeys';
 
   //Add our server URL (Local testing not actual)
   //Must end with a slash

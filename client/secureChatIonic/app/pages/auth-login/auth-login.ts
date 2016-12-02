@@ -29,7 +29,7 @@ export class AuthLoginPage {
   login() {
 
     //Start Loading
-    this.appNotify.startLoading('Logging in, this may take a while if this is a new user or a new device...');
+    this.appNotify.startLoading('Logging in, if you are a new user, or switching devices, this may take a while as we are updating your secure keys...');
 
     //Save a reference to this
     let self = this;
@@ -93,7 +93,6 @@ export class AuthLoginPage {
 
           //Save the keys to the user
           userJson.user.publicKey = success.publicKey;
-          userJson.keys = success;
 
           //Save the user info
           localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
