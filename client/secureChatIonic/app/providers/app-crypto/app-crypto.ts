@@ -33,11 +33,12 @@ export class AppCrypto {
 
   //Function to return keys for the user
   //Returns either a Json returning keys, false if now keys were found,
-  getUserKeys() {
+  getUserKeys(facebookId) {
     //Attempt to get the keys from the local user
     let localUser;
-    if(localStorage.getItem(AppSettings.shushItemName)) localUser = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-    if(localUser && localUser.keys) return localUser.keys;
+    if(localStorage.getItem(AppSettings.shushLocalPrivateKeyStore))
+      localUser = JSON.parse(localStorage.getItem(AppSettings.shushLocalPrivateKeyStore));
+    if(localUser && localUser[facebookId]) return localUser[facebookId];
     else return false;
   }
 
@@ -116,10 +117,10 @@ export class AppCrypto {
   //Function to validate a users id and an input public key
   //True if the key did not exists, or the keys match
   //False otherwise
-  validateLocalPublicKey(passedUser, publicKey) {
+  validateLocalPublicKey(passedUser, publicKeys) {
 
     //Ignore the request if it is the current user
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
 
     if(passedUser.facebook.id == user.facebook.id) {
       return true;
@@ -131,9 +132,9 @@ export class AppCrypto {
     //Check if the key exists in the map
     if(!localKeyStore[passedUser.facebook.id]) {
       //Doesn't exist, add it to key store
-      this.updateLocalPublicKeyStore(passedUser.facebook.id, publicKey);
+      this.updateLocalPublicKeyStore(passedUser.facebook.id, publicKeys);
       return true;
-    } else if(localKeyStore[passedUser.facebook.id] == publicKey) {
+    } else if(localKeyStore[passedUser.facebook.id].keys.pgp == publicKeys.keys.pgp) {
         //Does exist, and is valid, return true
         return true;
     }
@@ -142,18 +143,18 @@ export class AppCrypto {
       //Alert the user of possible malicious acitivity
       this.modalCtrl.create(MaliciousKey).present();
       //Update and don't show alert for this user again
-      this.updateLocalPublicKeyStore(passedUser.facebook.id, publicKey);
+      this.updateLocalPublicKeyStore(passedUser.facebook.id, publicKeys);
       return false;
     }
   }
 
   //Function to update the local key store with the new key
-  updateLocalPublicKeyStore(facebookId, publicKey) {
+  updateLocalPublicKeyStore(facebookId, publicKeys) {
     //Get the local key store
     let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPublicKeyStore));
 
     //Set the key and save
-    localKeyStore[facebookId] = publicKey;
+    localKeyStore[facebookId] = publicKeys;
     localStorage.setItem(AppSettings.shushLocalPublicKeyStore, JSON.stringify(localKeyStore));
   }
 

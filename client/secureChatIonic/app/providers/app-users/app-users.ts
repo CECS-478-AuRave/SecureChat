@@ -18,14 +18,17 @@ export class AppUsers {
   constructor(private http: Http) { }
 
   //Gets the user by their facebook id
-  getUserById(userId) {
+  getUserById(userId, token: any) {
 
-    //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
+    if(!token) {
+      //Grab our user from localstorage
+      let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
+      token = user.access_token;
+    }
 
     //Our headers
     let headers = new Headers({
-      access_token: user.access_token
+      access_token: token
     });
     let options = new RequestOptions({ headers: headers });
 

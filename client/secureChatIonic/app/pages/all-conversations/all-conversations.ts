@@ -126,10 +126,15 @@ export class AllConversationsPage {
 
   getConvoLatestText(convo: any) {
 
-    //Get the last message sender
-    let lastMessage = convo.message[convo.message.length - 1];
+    if(convo.messages.length < 1) return;
 
-    let lastSender = lastMessage.from.name.split(' ')[0];
+    //Grab our user from localstorage
+    let facebookId = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).facebook.id;
+
+    //Get the last message sender
+    let lastMessage = convo.messages[convo.messages.length - 1];
+
+    let lastSender = lastMessage[facebookId].from.name;
     let lastText = lastMessage.message;
 
     return this.shortenText(lastSender + ': ' + lastText, 35)

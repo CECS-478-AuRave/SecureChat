@@ -35,8 +35,6 @@ export class FriendsListPage {
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
-    if (!user || !user.user) return;
-
     //Start Loading
     this.appNotify.startLoading('Getting Friends...');
 

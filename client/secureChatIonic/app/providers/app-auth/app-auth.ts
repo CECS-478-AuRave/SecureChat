@@ -99,8 +99,7 @@ export class AppAuth {
     //Get our stored user
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
-    if (user && user.access_token) user.access_token = false;;
-    if (user && user.user) user.user = {};
+    user = {};
 
     //Set the user to false
     localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user));

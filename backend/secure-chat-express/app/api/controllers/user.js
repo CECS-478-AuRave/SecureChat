@@ -4,7 +4,6 @@ var mongoose = require('mongoose');
 
 var User = mongoose.model('User');
 const crypto = require('crypto');
-const hash = crypto.createHash('sha1');
 const words = require('../../wordJson/wordData');
 
 // Controller logic for searching a user based on a query string.
@@ -117,6 +116,8 @@ module.exports.putPublicKey = function(req, res) {
             return;
         }
         // update the hash with the given publicKey
+        // Can't recylcle hash objects, declaring here
+        var hash = crypto.createHash('sha1');
         hash.update(publicKey);
         // splits every 1-2 characters into a hex digest.
         var digests = hash.digest('hex').toUpperCase().match(/.{1,2}/g);
@@ -157,6 +158,8 @@ module.exports.getPublicKey = function(req, res) {
                 res.status(404).json({'error' : 'Public key not set for the queried user.'});
             } else {
                 // update the hash with their publickey
+                // Can't recylcle hash objects, declaring here
+                var hash = crypto.createHash('sha1');
                 hash.update(publicKey);
                 var digests = hash.digest('hex').toUpperCase().match(/.{1,2}/g);
                 for (var i = 0; i < digests.length; i++) {

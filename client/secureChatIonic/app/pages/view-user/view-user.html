@@ -87,12 +87,12 @@
     <ion-card-content>
       <h2 class="keyTitle centerText">Human Readable Public Key</h2>
       <p class="keyText">
-        Coming Soon!
+        {{user.publicKey.keys.readable}}
       </p>
 
       <h2 class="keyTitle centerText">Complete Public PGP key</h2>
       <p class="keyText">
-        {{user.publicKey}}
+        {{user.publicKey.keys.pgp}}
       </p>
     </ion-card-content>
 
