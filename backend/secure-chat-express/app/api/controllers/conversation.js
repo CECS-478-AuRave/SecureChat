@@ -18,7 +18,7 @@ var respondWithConversation = function(res, conversation, status) {
     });
 }
 
-var findAndCreateConversation = function(res, members, message, thisUser, messageKey) {
+var findAndCreateConversation = function(res, members, messages, thisUser) {
     // GroupID is the sorted facebookID that's joined altogether.
     var groupID = members.sort().join('_');
     // sets currentTime variable
@@ -37,11 +37,11 @@ var findAndCreateConversation = function(res, members, message, thisUser, messag
                 otherUserId = members[i];
                 // object containing information for a given message.
                 var messageInformation = {
-                    message: message,
+                    message: messages[otherUserId].message,
                     thisUser: thisUser,
                     currentTime: currentTime,
                     otherUserId: otherUserId,
-                    messageKey: messageKey
+                    messageKey: messages[otherUserId].messageKey
                 };
                 // Create new Conversation.
                 newMessages.push(createMessage(res, messageInformation));
@@ -61,11 +61,11 @@ var findAndCreateConversation = function(res, members, message, thisUser, messag
 
 var createMessage = function(res, messageInformation) {
     var newMessage = new Message({
-        'message' : messageInformation.message[String(messageInformation.otherUserId)],
+        'message' : messageInformation.message,
         from : messageInformation.thisUser._id,
         date : messageInformation.currentTime,
         issuedTo: messageInformation.otherUserId,
-        messageKey: messageInformation.messageKey[String(messageInformation.otherUserId)]
+        messageKey: messageInformation.messageKey
     });
     // save the new message that's been created.
     newMessage.save(function(err, message) {
@@ -133,9 +133,7 @@ module.exports.postConversation = function(req, res) {
         // get the list of members, the user._id, sent by the JSON object.
         var members = jsonObject.members;
         // get the message sent by the Json Object
-        var message = jsonObject.message;
-        // get the messageKey sent by the Json Object.
-        var messageKey = jsonObject.messageKey;
+        var messages = jsonObject.messages;
 
         // Check if members exists from the json object.
         if (!members || members.length == 0) {
@@ -143,19 +141,14 @@ module.exports.postConversation = function(req, res) {
             return;
         }
         // Check if the message exists from the json object.
-        if (!message || message.length == 0) {
-            res.status(400).json({'error': 'Message value required.'});
-            return;
-        }
-        // Check if the messageKey was sent by the user.
-        if (!messageKey) {
+        if (!messages || messages.length == 0) {
             res.status(400).json({'error': 'Message value required.'});
             return;
         }
         // Add the current user's facebook id to the members since
         // we will be using it as the groupID.
         members.push(thisUser._id);
-        findAndCreateConversation(res, members, message, thisUser, messageKey);
+        findAndCreateConversation(res, members, messages, thisUser);
     } else {
         // Respond with Unauthorized access.
         res.status(401).json({'error': 'Access Not Authorized.'});
@@ -169,8 +162,16 @@ var addNewMessage = function(res, jsonInformation, conversation) {
     var newMessages = [];
     // Creates a new message to put into the conversation.
     for (let i = 0; i < conversation.members.length; i++) {
-        jsonInformation['otherUserId'] = conversation.members[i];
-        newMessages.push(createMessage(res, jsonInformation));
+        // object containing information for a given message.
+        //otherUserId = conversation.members[i]
+        var messageInformation = {
+            message: messages[conversation.members[i]].message,
+            thisUser: thisUser,
+            currentTime: currentTime,
+            otherUserId: conversation.members[i],
+            messageKey: messages[conversation.members[i]].messageKey
+        };
+        newMessages.push(createMessage(res, messageInformation));
         if (i === conversation.members.length - 1) {
             // append the message to the conversation.
             conversation.messages.push({
@@ -215,14 +216,9 @@ module.exports.putConversation = function(req, res) {
         jsonObject['thisUser'] = req.user;
         // Set the currentTime to the jsonObject
         jsonObject['currentTime'] = Date.now();
-        // Check if the messageKey was passed into the body.
-        if (!jsonObject.messageKey) {
-            res.status(400).json({'error' : 'messageKey required in body'});
-            return;
-        }
         // Check if the message was passed into the body.
-        if (!jsonObject.message) {
-            res.status(400).json({'error' : 'message required in body'});
+        if (!jsonObject.messages) {
+            res.status(400).json({'error' : 'messages required in body'});
         }
         // Check if the conversationID was passed into the body.
         if (!jsonObject.conversationID && jsonObject.conversationID.length === 0) {
@@ -241,7 +237,7 @@ module.exports.putConversation = function(req, res) {
                     // an message stating the conversation was not found.
                     res.status(404).json({'error': 'Conversation Not Found'});
                 } else {
-                    // jsonObject has ['messageKey', 'message', 'conversationID', 'thisUser']
+                    // jsonObject has ['messages', 'conversationID', 'thisUser']
                     addNewMessage(res, jsonObject, conversation);
                 }
             }

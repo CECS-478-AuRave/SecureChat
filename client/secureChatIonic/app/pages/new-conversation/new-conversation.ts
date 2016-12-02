@@ -6,6 +6,7 @@ import { AllConversationsPage } from '../../pages/all-conversations/all-conversa
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
+import { AppCrypto } from '../../providers/app-crypto/app-crypto';
 import { NgForTextFilter } from '../../providers/app-pipes/app-pipes';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
@@ -27,7 +28,7 @@ export class NewConversationPage {
   convoFriends: any;
 
   constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private navParams: NavParams, private appNotify: AppNotify,
-    private appMessaging: AppMessaging, private appUsers: AppUsers) {
+    private appCrypto: AppCrypto, private appMessaging: AppMessaging, private appUsers: AppUsers) {
 
     //Initialize friends
     this.friends = [];
@@ -121,8 +122,13 @@ export class NewConversationPage {
     //Check that we included some friends
     if (this.convoFriends.length < 1) return false;
 
+    //Get a reference to this
+    let self = this;
+
     //Start Loading
     this.appNotify.startLoading('Sending Message...');
+
+    //Encrypt the messages
 
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
@@ -133,9 +139,6 @@ export class NewConversationPage {
       members: this.convoFriends,
       message: this.convoMessage,
     }
-
-    //Get a reference to this
-    let self = this;
 
     this.appMessaging.conversationCreate(payload).subscribe(function(success) {
       //Success
