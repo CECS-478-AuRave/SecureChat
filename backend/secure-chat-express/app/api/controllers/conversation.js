@@ -63,9 +63,9 @@ var createMessage = function(res, messageInformation) {
         from : messageInformation.thisUser._id,
         date : messageInformation.currentTime,
         issuedTo: messageInformation.otherUserId,
-        messageKey: messageInformation.messageKey[String(otherUserId)]
+        messageKey: messageInformation.messageKey[String(messageInformation.otherUserId)]
     });
-    if (messageInformation)
+    console.log(newMessage);
     newMessage.save(function(err, message) {
         if (err) {
             res.status(500).json(err);
@@ -159,69 +159,93 @@ module.exports.postConversation = function(req, res) {
     }
 };
 
-var addNewMessage = function(res, message, user, conversation) {
-    var currentTime = Date.now();
+// var createMessage = function(res, messageInformation) {
+//     var newMessage = new Message({
+//         'message' : messageInformation.message,
+//         from : messageInformation.thisUser._id,
+//         date : messageInformation.currentTime,
+//         issuedTo: messageInformation.otherUserId,
+//         messageKey: messageInformation.messageKey[String(otherUserId)]
+//     });
+//     if (messageInformation)
+//     newMessage.save(function(err, message) {
+//         if (err) {
+//             res.status(500).json(err);
+//         }
+//     });
+//     return newMessage;
+// }
+
+var addNewMessage = function(res, jsonInformation, conversation) {
     // Change the conversation date to be the current time
     // since it's the latest time that the message was sent.
-    conversation.date = currentTime;
+    conversation.date = jsonInformation.currentTime;
+    var newMessages = [];
     // Creates a new message to put into the conversation.
-    var newMessage = createMessage(message, user, currentTime);
-    // append the message to the conversation.
-    conversation.message.push(newMessage._id);
-    // Save the conversation schema
-    conversation.save(function(err, conversation) {
-        if (err) {
-            // Server error when saving the conversation,
-            // respond with status 500 and the error object.
-            res.status(500).json(err);
-        } else {
-            // Succfully saved the conversation. Respond with the populated
-            // members and message field having an _id of the updated
-            // conversation _id.
-            Conversation
-                .findById(conversation._id)
-                .populate('message')
-                .exec(function(err, conversation) {
-                    if (err) {
-                        // Server error when saving the conversation,
-                        // respond with status 500 and the error object.
-                        res.status(500).json(err);
-                    } else {
-                        // respond with the updated conversation document.
-                        respondWithConversation(res, conversation, 201);
-                    }
+    for (let i = 0; i < conversation.members.length; i++) {
+        jsonInformation['otherUserId'] = conversation.members[i];
+        newMessages.push(createMessage(res, jsonInformation));
+        if (i === conversation.members.length - 1) {
+            // append the message to the conversation.
+            conversation.messages.push({
+                message: newMessages
+            });
+            // Save the conversation schema
+            conversation.save(function(err, conversation) {
+                if (err) {
+                    // Server error when saving the conversation,
+                    // respond with status 500 and the error object.
+                    res.status(500).json(err);
+                } else {
+                    // Succfully saved the conversation. Respond with the populated
+                    // members and message field having an _id of the updated
+                    // conversation _id.
+                    Conversation
+                        .findById(conversation._id)
+                        .populate('messages.message')
+                        .exec(function(err, conversation) {
+                            if (err) {
+                                // Server error when saving the conversation,
+                                // respond with status 500 and the error object.
+                                res.status(500).json(err);
+                            } else {
+                                // respond with the updated conversation document.
+                                respondWithConversation(res, conversation, 201);
+                            }
+                        }
+                    );
                 }
-            );
+            });
         }
-    });
+    }
 }
 
 // Controller for putting a new Message in a Conversation.
 module.exports.putConversation = function(req, res) {
     // Check if the user was authenticated.
     if (req.user) {
-        // Get the _id for the conversationID since we are going to use
-        // it for finding the conversation.
-        var _id = req.body.conversationID;
-        // Get the message from the body so we can append it to the
-        // found conversation.
-        var message = req.body.message;
-        // Check if the _id was passed into the body
-        if (!_id) {
-            // Respond with bad request status and an error json message
-            // since the conversationID was not found in the body.
-            res.status(400).json({'error': '_id required in body'});
+        // Get the message json object from the body.
+        var jsonObject = req.body;
+        // Get the authenticated user.
+        jsonObject['thisUser'] = req.user;
+        // Set the currentTime to the jsonObject
+        jsonObject['currentTime'] = Date.now();
+        // Check if the messageKey was passed into the body.
+        if (!jsonObject.messageKey) {
+            res.status(400).json({'error' : 'messageKey required in body'});
             return;
         }
-        // Check if the message was passed into the body
-        if (!message) {
-            // Respond with bad request status and an error json message
-            // since the message was not found in the body.
-            res.status(400).json({'error': 'message required in body'});
+        // Check if the message was passed into the body.
+        if (!jsonObject.message && jsonObject.message.length === 0) {
+            res.status(400).json({'error' : 'message required in body'});
+        }
+        // Check if the conversationID was passed into the body.
+        if (!jsonObject.conversationID && jsonObject.conversationID.length === 0) {
+            res.status(400).json({'error' : 'conversationID required in body'});
         }
         // Find a conversation based on the conversation ID
         Conversation
-            .findOne({'conversationID': _id})
+            .findOne({'conversationID': jsonObject.conversationID})
             .exec(function(err, conversation) {
                 if (err) {
                     // Server error in finding a single conversation based on
@@ -232,7 +256,8 @@ module.exports.putConversation = function(req, res) {
                     // an message stating the conversation was not found.
                     res.status(404).json({'error': 'Conversation Not Found'});
                 } else {
-                    addNewMessage(res, message, req.user, conversation);
+                    // jsonObject has ['messageKey', 'message', 'conversationID', 'thisUser']
+                    addNewMessage(res, jsonObject, conversation);
                 }
             }
         );
