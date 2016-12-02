@@ -3,6 +3,9 @@
 var mongoose = require('mongoose');
 
 var User = mongoose.model('User');
+const crypto = require('crypto');
+const hash = crypto.createHash('sha1');
+const words = require('../../wordJson/wordData');
 
 // Controller logic for searching a user based on a query string.
 module.exports.findUserByQuery = function(req, res) {
@@ -71,3 +74,105 @@ module.exports.findUserById = function(req, res) {
         res.status(401).json({'error': 'Access Not Authorized.'});
     }
 };
+
+module.exports.getFriend = function(req, res) {
+    if (req.user) {
+        if (req.user.friends.length <= 0) {
+            res.status(404).json({'error' : 'No friends found for user'});
+        }
+        var friends = [];
+        var count = 0;
+        // for each friend for the given user add it to the friends array
+        // if the friend was found.
+        req.user.friends.forEach(function(friendId) {
+            User.findOne({'facebook.id' : friendId}, function(err, friend) {
+                if (err) {
+                    // error finding friend.
+                    res.status(500).json(err);
+                } else if (friend) {
+                    count++; // keep track of the number of friends found.
+                    friends.push(friend);
+                }
+            }).then(function() {
+                // respond with the friends array after the loop has finished running.
+                if (count === req.user.friends.length) {
+                    res.status(200).json(friends);
+                }
+            });
+        });
+    } else {
+        // Respond with Unauthorized access.
+        res.status(401).json({'error': 'Access Not Authorized.'});
+    }
+};
+
+module.exports.putPublicKey = function(req, res) {
+    // Check if the user was authenticated
+    if (req.user) {
+        var thisUser = req.user;
+        var publicKey = req.body.publicKey;
+        // check if the publicKey was sent through the body.
+        if (!publicKey) {
+            res.status(400).json({'error' : 'publicKey required in body.'});
+            return;
+        }
+        // update the hash with the given publicKey
+        hash.update(publicKey);
+        // splits every 1-2 characters into a hex digest.
+        var digests = hash.digest('hex').toUpperCase().match(/.{1,2}/g);
+        // creates the readable key.
+        for (var i = 0; i < digests.length; i++) {
+            digests[i] = words[digests[i]];
+        }
+        // sets the public and readable key.
+        thisUser.publicKey.keys.pgp = publicKey;
+        thisUser.publicKey.keys.readable = digests.join(" ");
+        thisUser.save(function(err, user) {
+            if (err) {
+                res.status(500).json(err);
+            } else {
+                res.status(201).json(user);
+            }
+        });
+    } else {
+        // Respond with Unauthorized access.
+        res.status(401).json({'error': 'Access Not Authorized.'});
+    }
+};
+
+module.exports.getPublicKey = function(req, res) {
+    //  Check if the user was authenticated
+    if (req.user) {
+        var otherUserId = req.params.id;
+        if (!otherUserId) {
+            res.status(400).json({'error': 'OtherUserID required in parameter.'});
+            return;
+        }
+        // Find a user based on the queried id.
+        User.findOne({'facebook.id': otherUserId}, function(err, user) {
+            var publicKey = user.publicKey.keys.pgp;
+            if (err) {
+                res.status(500).json(err);
+            } else if (!publicKey) {
+                res.status(404).json({'error' : 'Public key not set for the queried user.'});
+            } else {
+                // update the hash with their publickey
+                hash.update(publicKey);
+                var digests = hash.digest('hex').toUpperCase().match(/.{1,2}/g);
+                for (var i = 0; i < digests.length; i++) {
+                    digests[i] = words[digests[i]];
+                }
+                // respond with the readable and pgp key
+                res.status(200).json(
+                    {
+                        'publicKey' : publicKey,
+                        'readableKey' : digests.join(" ")
+                    }
+                );
+            }
+        });
+    } else {
+        // Respond with Unauthorized access.
+        res.status(401).json({'error': 'Access Not Authorized.'});
+    }
+}

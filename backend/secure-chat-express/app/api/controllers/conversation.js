@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-
 var User = mongoose.model('User');
 var Conversation = mongoose.model('Conversation');
 var Message = mongoose.model('Message');
@@ -7,7 +6,7 @@ var Message = mongoose.model('Message');
 var respondWithConversation = function(res, conversation, status) {
     // Respond with status 200 and the whole conversation as a json object.
     Conversation.populate(conversation, {
-        path : 'message.from',
+        path : 'messages.message.from messages.message.issuedTo',
         select : 'name profilePhotoURL',
         model : 'User'
     }, function(err, conversation) {
@@ -19,10 +18,13 @@ var respondWithConversation = function(res, conversation, status) {
     });
 }
 
-var findAndCreateConversation = function(res, members, message, thisUser) {
+var findAndCreateConversation = function(res, members, message, thisUser, messageKey) {
     // GroupID is the sorted facebookID that's joined altogether.
     var groupID = members.sort().join('_');
+    // sets currentTime variable
     var currentTime = Date.now();
+    // Array to hold messages.
+    var newMessages = [];
     // Find a group based on the groupID provided.
     Conversation.findOne({conversationID: groupID}, function(err, conversation) {
         if (err) {
@@ -31,9 +33,23 @@ var findAndCreateConversation = function(res, members, message, thisUser) {
             res.status(500).json(err);
         } else if (!conversation) {
             // Create the new Message.
-            var newMessage = createMessage(message, thisUser, currentTime);
-            // Create new Conversation.
-            createConversation(res, groupID, members, currentTime, newMessage);
+            for (let i = 0; i < members.length; i++) {
+                otherUserId = members[i];
+                // object containing information for a given message.
+                var messageInformation = {
+                    message: message,
+                    thisUser: thisUser,
+                    currentTime: currentTime,
+                    otherUserId: otherUserId,
+                    messageKey: messageKey
+                };
+                // Create new Conversation.
+                newMessages.push(createMessage(res, messageInformation));
+                if (i == members.length - 1) {
+                    createConversation(res, groupID, members, currentTime, newMessages);
+                    return;
+                }
+            }
         } else {
             // You cannot create another conversation with the same person.
             // So, respond with status 400 and an json object with an error
@@ -43,12 +59,15 @@ var findAndCreateConversation = function(res, members, message, thisUser) {
     });
 }
 
-var createMessage = function(message, thisUser, currentTime) {
+var createMessage = function(res, messageInformation) {
     var newMessage = new Message({
-        'message' : message,
-        from : thisUser._id,
-        date : currentTime
+        'message' : messageInformation.message[String(messageInformation.otherUserId)],
+        from : messageInformation.thisUser._id,
+        date : messageInformation.currentTime,
+        issuedTo: messageInformation.otherUserId,
+        messageKey: messageInformation.messageKey[String(messageInformation.otherUserId)]
     });
+    // save the new message that's been created.
     newMessage.save(function(err, message) {
         if (err) {
             res.status(500).json(err);
@@ -64,7 +83,11 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
         conversationID : groupID,
         'members' : members,
         date : currentTime,
-        message : [newMessage._id]
+        messages : []
+    });
+    // add the new message to the conversation.
+    newConversation.messages.push({
+        message : newMessage
     });
     // We need to save the conversation and return the conversation object.
     newConversation.save(function(err, conversation) {
@@ -77,7 +100,7 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
           // conversation.
           Conversation
             .findById(conversation._id)
-            .populate('message')
+            .populate('messages.message')
             .exec(function(err, conversation) {
               if (err) {
                 // Respond with internal server error and the err object since
@@ -86,6 +109,7 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
               } else {
                 // respond to the client with status 201 and the
                 // convesation object.
+                // res.status(201).json(conversation);
                 respondWithConversation(res, conversation, 201);
               }
             }
@@ -110,6 +134,8 @@ module.exports.postConversation = function(req, res) {
         var members = jsonObject.members;
         // get the message sent by the Json Object
         var message = jsonObject.message;
+        // get the messageKey sent by the Json Object.
+        var messageKey = jsonObject.messageKey;
 
         // Check if members exists from the json object.
         if (!members || members.length == 0) {
@@ -121,79 +147,90 @@ module.exports.postConversation = function(req, res) {
             res.status(400).json({'error': 'Message value required.'});
             return;
         }
+        // Check if the messageKey was sent by the user.
+        if (!messageKey) {
+            res.status(400).json({'error': 'Message value required.'});
+            return;
+        }
         // Add the current user's facebook id to the members since
         // we will be using it as the groupID.
         members.push(thisUser._id);
-        findAndCreateConversation(res, members, message, thisUser);
+        findAndCreateConversation(res, members, message, thisUser, messageKey);
     } else {
         // Respond with Unauthorized access.
         res.status(401).json({'error': 'Access Not Authorized.'});
     }
 };
 
-var addNewMessage = function(res, message, user, conversation) {
-    var currentTime = Date.now();
+var addNewMessage = function(res, jsonInformation, conversation) {
     // Change the conversation date to be the current time
     // since it's the latest time that the message was sent.
-    conversation.date = currentTime;
+    conversation.date = jsonInformation.currentTime;
+    var newMessages = [];
     // Creates a new message to put into the conversation.
-    var newMessage = createMessage(message, user, currentTime);
-    // append the message to the conversation.
-    conversation.message.push(newMessage._id);
-    // Save the conversation schema
-    conversation.save(function(err, conversation) {
-        if (err) {
-            // Server error when saving the conversation,
-            // respond with status 500 and the error object.
-            res.status(500).json(err);
-        } else {
-            // Succfully saved the conversation. Respond with the populated
-            // members and message field having an _id of the updated
-            // conversation _id.
-            Conversation
-                .findById(conversation._id)
-                .populate('message')
-                .exec(function(err, conversation) {
-                    if (err) {
-                        // Server error when saving the conversation,
-                        // respond with status 500 and the error object.
-                        res.status(500).json(err);
-                    } else {
-                        // respond with the updated conversation document.
-                        respondWithConversation(res, conversation, 201);
-                    }
+    for (let i = 0; i < conversation.members.length; i++) {
+        jsonInformation['otherUserId'] = conversation.members[i];
+        newMessages.push(createMessage(res, jsonInformation));
+        if (i === conversation.members.length - 1) {
+            // append the message to the conversation.
+            conversation.messages.push({
+                message: newMessages
+            });
+            // Save the conversation schema
+            conversation.save(function(err, conversation) {
+                if (err) {
+                    // Server error when saving the conversation,
+                    // respond with status 500 and the error object.
+                    res.status(500).json(err);
+                } else {
+                    // Succfully saved the conversation. Respond with the populated
+                    // members and message field having an _id of the updated
+                    // conversation _id.
+                    Conversation
+                        .findById(conversation._id)
+                        .populate('messages.message')
+                        .exec(function(err, conversation) {
+                            if (err) {
+                                // Server error when saving the conversation,
+                                // respond with status 500 and the error object.
+                                res.status(500).json(err);
+                            } else {
+                                // respond with the updated conversation document.
+                                respondWithConversation(res, conversation, 201);
+                            }
+                        }
+                    );
                 }
-            );
+            });
         }
-    });
+    }
 }
 
-// Controller for putting a new Message in a Conversation.
 module.exports.putConversation = function(req, res) {
     // Check if the user was authenticated.
     if (req.user) {
-        // Get the _id for the conversationID since we are going to use
-        // it for finding the conversation.
-        var _id = req.body.conversationID;
-        // Get the message from the body so we can append it to the
-        // found conversation.
-        var message = req.body.message;
-        // Check if the _id was passed into the body
-        if (!_id) {
-            // Respond with bad request status and an error json message
-            // since the conversationID was not found in the body.
-            res.status(400).json({'error': '_id required in body'});
+        // Get the message json object from the body.
+        var jsonObject = req.body;
+        // Get the authenticated user.
+        jsonObject['thisUser'] = req.user;
+        // Set the currentTime to the jsonObject
+        jsonObject['currentTime'] = Date.now();
+        // Check if the messageKey was passed into the body.
+        if (!jsonObject.messageKey) {
+            res.status(400).json({'error' : 'messageKey required in body'});
             return;
         }
-        // Check if the message was passed into the body
-        if (!message) {
-            // Respond with bad request status and an error json message
-            // since the message was not found in the body.
-            res.status(400).json({'error': 'message required in body'});
+        // Check if the message was passed into the body.
+        if (!jsonObject.message) {
+            res.status(400).json({'error' : 'message required in body'});
+        }
+        // Check if the conversationID was passed into the body.
+        if (!jsonObject.conversationID && jsonObject.conversationID.length === 0) {
+            res.status(400).json({'error' : 'conversationID required in body'});
         }
         // Find a conversation based on the conversation ID
         Conversation
-            .findOne({'conversationID': _id})
+            .findOne({'conversationID': jsonObject.conversationID})
             .exec(function(err, conversation) {
                 if (err) {
                     // Server error in finding a single conversation based on
@@ -204,7 +241,8 @@ module.exports.putConversation = function(req, res) {
                     // an message stating the conversation was not found.
                     res.status(404).json({'error': 'Conversation Not Found'});
                 } else {
-                    addNewMessage(res, message, req.user, conversation);
+                    // jsonObject has ['messageKey', 'message', 'conversationID', 'thisUser']
+                    addNewMessage(res, jsonObject, conversation);
                 }
             }
         );
@@ -220,10 +258,10 @@ module.exports.getConversation = function(req, res) {
     if (req.user) {
         // get the authenticated user's facebook id.
         var thisUserID = req.user._id;
-        // Find all conversations containing the current user's facebook id.
+        // Find all conversations containing the current user's id.
         Conversation
         .find({members: {$in: [thisUserID]}})
-        .populate('message members')
+        .populate('messages.message members')
         .exec(function(err, conversation) {
             if (!conversation || conversation.length == 0) {
                 // Respond with status 200 and an empty array.

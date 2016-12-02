@@ -21,7 +21,10 @@ var userSchema = new Schema({
         id: String
     },
     publicKey: {
-        type: String
+        keys: {
+            pgp: {type: String},
+            readable: {type: String}
+        }
     },
     friends: [String],
     pendingFriends: [String]
@@ -33,5 +36,5 @@ userSchema.plugin(searchable, {
   fields: ['email', 'name']
 });
 
-// Compile userSchema into a mongoose model.
+// create a model based on the schema provided.
 mongoose.model('User', userSchema);
