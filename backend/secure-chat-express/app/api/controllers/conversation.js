@@ -258,10 +258,10 @@ module.exports.getConversation = function(req, res) {
     if (req.user) {
         // get the authenticated user's facebook id.
         var thisUserID = req.user._id;
-        // Find all conversations containing the current user's facebook id.
+        // Find all conversations containing the current user's id.
         Conversation
         .find({members: {$in: [thisUserID]}})
-        .populate('message members')
+        .populate('messages.message members')
         .exec(function(err, conversation) {
             if (!conversation || conversation.length == 0) {
                 // Respond with status 200 and an empty array.
