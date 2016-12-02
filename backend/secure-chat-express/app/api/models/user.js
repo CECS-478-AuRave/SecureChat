@@ -21,7 +21,10 @@ var userSchema = new Schema({
         id: String
     },
     publicKey: {
-        type: String
+        keys: {
+            pgp: {type: String},
+            readable: {type: String}
+        }
     },
     friends: [String],
     pendingFriends: [String]

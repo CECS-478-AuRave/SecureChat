@@ -39,7 +39,7 @@ module.exports = function(app, passport) {
                 }
 
                 User.findOne({'facebook.id': otherUserId}, function(err, user) {
-                    var publicKey = user.publicKey;
+                    var publicKey = user.publicKey.keys.pgp;
                     if (err) {
                         res.status(500).json(err);
                     } else if (!publicKey) {
@@ -77,7 +77,13 @@ module.exports = function(app, passport) {
                     res.status(400).json({'error' : 'publicKey required in body.'});
                     return;
                 }
-                thisUser.publicKey = publicKey;
+                hash.update(publicKey);
+                var digests = hash.digest('hex').toUpperCase().match(/.{1,2}/g);
+                for (var i = 0; i < digests.length; i++) {
+                    digests[i] = words[digests[i]];
+                }
+                thisUser.publicKey.keys.pgp = publicKey;
+                thisUser.publicKey.keys.readable = digests.join(" ");
                 thisUser.save(function(err, user) {
                     if (err) {
                         res.status(500).json(err);
