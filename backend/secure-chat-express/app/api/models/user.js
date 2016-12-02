@@ -36,5 +36,5 @@ userSchema.plugin(searchable, {
   fields: ['email', 'name']
 });
 
-// Compile userSchema into a mongoose model.
+// create a model based on the schema provided.
 mongoose.model('User', userSchema);

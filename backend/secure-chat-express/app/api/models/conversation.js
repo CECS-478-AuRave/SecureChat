@@ -11,4 +11,5 @@ var conversationSchema = new Schema({
     date: {type: Date}
 });
 
+// create a model based on the schema provided.
 mongoose.model('Conversation', conversationSchema);

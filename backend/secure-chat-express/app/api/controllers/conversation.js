@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-
 var User = mongoose.model('User');
 var Conversation = mongoose.model('Conversation');
 var Message = mongoose.model('Message');
@@ -22,7 +21,9 @@ var respondWithConversation = function(res, conversation, status) {
 var findAndCreateConversation = function(res, members, message, thisUser, messageKey) {
     // GroupID is the sorted facebookID that's joined altogether.
     var groupID = members.sort().join('_');
+    // sets currentTime variable
     var currentTime = Date.now();
+    // Array to hold messages.
     var newMessages = [];
     // Find a group based on the groupID provided.
     Conversation.findOne({conversationID: groupID}, function(err, conversation) {
@@ -34,6 +35,7 @@ var findAndCreateConversation = function(res, members, message, thisUser, messag
             // Create the new Message.
             for (let i = 0; i < members.length; i++) {
                 otherUserId = members[i];
+                // object containing information for a given message.
                 var messageInformation = {
                     message: message,
                     thisUser: thisUser,
@@ -65,7 +67,7 @@ var createMessage = function(res, messageInformation) {
         issuedTo: messageInformation.otherUserId,
         messageKey: messageInformation.messageKey[String(messageInformation.otherUserId)]
     });
-    console.log(newMessage);
+    // save the new message that's been created.
     newMessage.save(function(err, message) {
         if (err) {
             res.status(500).json(err);
@@ -83,6 +85,7 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
         date : currentTime,
         messages : []
     });
+    // add the new message to the conversation.
     newConversation.messages.push({
         message : newMessage
     });
@@ -159,23 +162,6 @@ module.exports.postConversation = function(req, res) {
     }
 };
 
-// var createMessage = function(res, messageInformation) {
-//     var newMessage = new Message({
-//         'message' : messageInformation.message,
-//         from : messageInformation.thisUser._id,
-//         date : messageInformation.currentTime,
-//         issuedTo: messageInformation.otherUserId,
-//         messageKey: messageInformation.messageKey[String(otherUserId)]
-//     });
-//     if (messageInformation)
-//     newMessage.save(function(err, message) {
-//         if (err) {
-//             res.status(500).json(err);
-//         }
-//     });
-//     return newMessage;
-// }
-
 var addNewMessage = function(res, jsonInformation, conversation) {
     // Change the conversation date to be the current time
     // since it's the latest time that the message was sent.
@@ -220,7 +206,6 @@ var addNewMessage = function(res, jsonInformation, conversation) {
     }
 }
 
-// Controller for putting a new Message in a Conversation.
 module.exports.putConversation = function(req, res) {
     // Check if the user was authenticated.
     if (req.user) {

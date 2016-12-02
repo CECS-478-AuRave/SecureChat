@@ -11,4 +11,5 @@ var messageSchema = new Schema({
     messageKey: {type: String, required: true}
 });
 
+// create a model based on the schema provided.
 mongoose.model('Message', messageSchema);
