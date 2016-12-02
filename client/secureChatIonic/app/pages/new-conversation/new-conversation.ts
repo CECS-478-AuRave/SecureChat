@@ -1,5 +1,6 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
+import { Observable } from "rxjs/Observable";
 
 //Pages
 import { AllConversationsPage } from '../../pages/all-conversations/all-conversations';
@@ -44,7 +45,7 @@ export class NewConversationPage {
   ionViewWillEnter() {
 
     //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
 
     //Start Loading
     this.appNotify.startLoading('Getting Friends...');
@@ -123,47 +124,88 @@ export class NewConversationPage {
     //Get a reference to this
     let self = this;
 
-    //Start Loading
-    this.appNotify.startLoading('Sending Message...');
+    //Get the facebook ids from the _ids out of the friends
+    let convoFbFriends = this.friends;
+    convoFbFriends.filter(function(friend) {
+      return self.convoFriends.includes(friend._id);
+    });
 
-    //Encrypt the messages
-
-    //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-
-    //Create our payload
-    var payload = {
-      access_token: user.access_token,
-      members: this.convoFriends,
-      message: this.convoMessage,
+    //Validate all of the friends
+    //TODO: Set Kumin Public Key to a no passphrase pgp key, then test encrypting ocne more
+    for(var i = 0; i < convoFbFriends.length; i++) {
+      //If not valid, return
+      if(!this.appCrypto.validateLocalPublicKey(convoFbFriends[i], convoFbFriends[i].publicKey)) return false;
     }
 
-    this.appMessaging.conversationCreate(payload).subscribe(function(success) {
-      //Success
+    //Start Loading
+    this.appNotify.startLoading('Encrypting and Sending Message...');
 
-      //Stop Loading, and go to the all conversations view
-      self.appNotify.stopLoading().then(function() {
-        self.navCtrl.setRoot(AllConversationsPage);
-      });
-    }, function(error) {
-      //Error
-      self.appNotify.stopLoading().then(function() {
-        //Pass to Error Handler
-        self.appNotify.handleError(error, [{
-          status: 409,
-          callback: function() {
-            //Go back home
-            self.navCtrl.setRoot(AllConversationsPage);
+    //Encrypt the messages
+    //Create an observable to wrap around encrypting each message
+    let encryptObserve = new Observable(function(encryptReturn) {
+      //Our final messages array
+      //Key is the user id
+      //Values are the message, and the message key
+      let encryptedMessages = {};
 
-            //Timeout and show the toast
-            setTimeout(function() {
-              self.appNotify.showToast('Conversation already exists!');
-            }, 10);
+      //Our public local key store
+      let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPublicKeyStore));
+
+      //Loop through all of the ids in our members
+      for(let i = 0; i < convoFbFriends.length; i++) {
+        console.log(convoFbFriends);
+        console.log(localKeyStore[convoFbFriends[i].facebook.id]);
+        self.appCrypto.encryptMessage(self.convoMessage, localKeyStore[convoFbFriends[i].facebook.id].keys.pgp).subscribe(function(response) {
+          console.log('Encrypted!');
+          encryptedMessages[self.convoFriends.facebook.id] = response;
+          //Check if we have encrypted all messages
+          if(Object.keys(encryptedMessages).length >= self.convoFriends.length) {
+            //Return the encrypted messages to the observer
+            encryptReturn.next(encryptedMessages);
           }
-        }]);
+        });
+      }
+    });
+
+    //Subscribe to the message encrypting
+    encryptObserve.subscribe(function(encryptedResponse) {
+      //Grab our user from localstorage
+      let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
+
+      //Create our payload
+      var payload = {
+        access_token: user.access_token,
+        members: this.convoFriends,
+        messages: encryptedResponse,
+      }
+
+      self.appMessaging.conversationCreate(payload).subscribe(function(success) {
+        //Success
+
+        //Stop Loading, and go to the all conversations view
+        self.appNotify.stopLoading().then(function() {
+          self.navCtrl.setRoot(AllConversationsPage);
+        });
+      }, function(error) {
+        //Error
+        self.appNotify.stopLoading().then(function() {
+          //Pass to Error Handler
+          self.appNotify.handleError(error, [{
+            status: 409,
+            callback: function() {
+              //Go back home
+              self.navCtrl.setRoot(AllConversationsPage);
+
+              //Timeout and show the toast
+              setTimeout(function() {
+                self.appNotify.showToast('Conversation already exists!');
+              }, 10);
+            }
+          }]);
+        });
+      }, function() {
+        //Complete
       });
-    }, function() {
-      //Complete
     });
   }
 

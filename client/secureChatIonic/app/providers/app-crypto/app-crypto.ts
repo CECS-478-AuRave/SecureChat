@@ -219,8 +219,14 @@ export class AppCrypto {
                 message: jsonMessage,
                 messageKey: encryptedKeys
               });
+            } else {
+              console.log('Encryption error!');
+              console.log(err);
             }
           });
+        } else {
+          console.log('Encrypt Key Import error!');
+          console.log(err);
         }
       });
     });
