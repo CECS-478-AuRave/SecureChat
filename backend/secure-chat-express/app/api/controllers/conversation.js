@@ -61,7 +61,7 @@ var findAndCreateConversation = function(res, members, message, thisUser, messag
 
 var createMessage = function(res, messageInformation) {
     var newMessage = new Message({
-        'message' : messageInformation.message,
+        'message' : messageInformation.message[String(messageInformation.otherUserId)],
         from : messageInformation.thisUser._id,
         date : messageInformation.currentTime,
         issuedTo: messageInformation.otherUserId,
@@ -221,7 +221,7 @@ module.exports.putConversation = function(req, res) {
             return;
         }
         // Check if the message was passed into the body.
-        if (!jsonObject.message && jsonObject.message.length === 0) {
+        if (!jsonObject.message) {
             res.status(400).json({'error' : 'message required in body'});
         }
         // Check if the conversationID was passed into the body.
