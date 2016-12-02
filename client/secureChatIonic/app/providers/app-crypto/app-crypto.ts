@@ -47,7 +47,7 @@ export class AppCrypto {
     let options = {
       userid: passedUser.name + passedUser.facebook.id,
       primary: {
-        nbits: 4096,
+        nbits: 2048,
         flags: openpgp.certify_keys | openpgp.sign_data | openpgp.auth | openpgp.encrypt_comm | openpgp.encrypt_storage,
         expire_in: 0  // never expire
       },
@@ -73,11 +73,8 @@ export class AppCrypto {
           // sign keys's subkeys
           keys.sign({}, function(err) {
 
-            // export demo; dump the private with a passphrase
-            //Export the private kye
-            keys.export_pgp_private ({
-              passphrase: passedUser.access_token
-            }, function(err, pgp_private) {
+            //Export the private key
+            keys.export_pgp_private ({}, function(err, pgp_private) {
 
               //Next, export the public key
               keys.export_pgp_public({}, function(err, pgp_public) {
@@ -140,7 +137,6 @@ export class AppCrypto {
       return true;
     } else if(localKeyStore[passedUser.facebook.id] == publicKey) {
         //Does exist, and is valid, return true
-        console.log('Valid!');
         return true;
     }
     else {
@@ -161,5 +157,82 @@ export class AppCrypto {
     //Set the key and save
     localKeyStore[facebookId] = publicKey;
     localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify(localKeyStore));
+  }
+
+  //Function to encrypt plaintext, to ciphertext
+  encryptMessage(plainText, publicKey) {
+
+    //Create our observable
+    return new Observable(function(observer) {
+      //First Encrypt with HMAC Sha 256 (Message Integrity)
+      //Generate a key for our hmac
+      let messageKey = this.getCryptoString();
+      let hmacText = CryptoJs.HmacSHA256(plainText, messageKey).toString();
+
+      //Encrypt the Hmac key with PGP
+      kbpgp.KeyManager.import_from_armored_pgp({
+        armored: publicKey
+      }, function(err, keyManager) {
+        if (!err) {
+
+          //Encrypt the key
+          var params = {
+            msg: messageKey,
+            encrypt_for: keyManager
+          };
+          kbpgp.box(params, function(err, result_string, result_buffer) {
+            //Return the result
+            observer.next({
+              message: hmacText,
+              messageKey: result_string
+            })
+          });
+        }
+      });
+    });
+  }
+
+  //Function to decrypt a message
+  decryptMessage(message, messageKey) {
+    //Create the observable
+    return new Observable(function(observer) {
+
+      //First decrypt the messageKey
+      //Grab the user's priavte key from the device
+      let privateKey = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).keys.privateKey;
+
+      //Create our key manager from the private key
+      kbpgp.KeyManager.import_from_armored_pgp({
+        armored: privateKey
+      }, function(err, keyManager) {
+        if (!err) {
+          console.log("Loaded private key w/o passphrase");
+
+          //Key ring to decrypt message
+          let ring = new kbpgp.keyring.KeyRing;
+          ring.add_key_manager(keyManager);
+          kbpgp.unbox({
+            keyfetch: ring,
+            armored: messageKey
+          }, function(err, plainKey) {
+            if(!err) {
+              //Now we have the key!
+              //HMAC the hash: http://stackoverflow.com/questions/22183337/are-there-any-javascript-cryptographic-hmac-libraries-that-accepts-hex-input
+            }
+          });
+        }
+      });
+    });
+  }
+
+  //Private function to get psuedo random string
+  private getCryptoString() {
+    //loop to get a long string
+    let cryptoString = '';
+    for(let i = 0; i < 3; i++) {
+      cryptoString += Math.random().toString(36).substr(2, 24);
+    }
+
+    return CryptoJs.PBKDF2(cryptoString);
   }
 }
