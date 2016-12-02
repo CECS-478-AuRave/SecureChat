@@ -26,6 +26,10 @@ export class AppCrypto {
     if(!localStorage.getItem(AppSettings.shushLocalKeyStore)) {
       localStorage.setItem(AppSettings.shushLocalKeyStore, JSON.stringify({}));
     }
+
+    //Testing encrypt and decrypt
+    // let plainText = 'hi!';
+    // let publicKey = ''
   }
 
   //Function to return keys for the user
@@ -162,30 +166,53 @@ export class AppCrypto {
   //Function to encrypt plaintext, to ciphertext
   encryptMessage(plainText, publicKey) {
 
+    //Get a reference to this
+    let self = this;
+
     //Create our observable
     return new Observable(function(observer) {
-      //First Encrypt with HMAC Sha 256 (Message Integrity)
-      //Generate a key for our hmac
-      let messageKey = this.getCryptoString();
-      let hmacText = CryptoJs.HmacSHA256(plainText, messageKey).toString();
 
-      //Encrypt the Hmac key with PGP
+      //Generate two keys, one for AES, one for HMAC
+      let aesKey = self.getCryptoString();
+      let hmacKey = self.getCryptoString();
+
+      //Encrypt the message with AES
+      let cipherText = CryptoJs.AES.encrypt(plainText, aesKey).toString();
+      //Computer the HMAC of the ciphertext
+      let cipherTextHmac = CryptoJs.HmacSHA256(cipherText, hmacKey);
+
+      //Stringify our keys
+      let jsonKeys = JSON.stringify({
+        aesKey: aesKey,
+        hmacKey: hmacKey
+      });
+
+      //Stringify our final message
+      let jsonMessage = JSON.stringify({
+        messageText: cipherText,
+        messageHmac: cipherTextHmac
+      });
+
+      //Encrypt our AES and HMAC keys
       kbpgp.KeyManager.import_from_armored_pgp({
         armored: publicKey
       }, function(err, keyManager) {
         if (!err) {
 
-          //Encrypt the key
+          //Encrypt the AES key
           var params = {
-            msg: messageKey,
+            msg: jsonKeys,
             encrypt_for: keyManager
           };
-          kbpgp.box(params, function(err, result_string, result_buffer) {
-            //Return the result
-            observer.next({
-              message: hmacText,
-              messageKey: result_string
-            })
+          kbpgp.box(params, function(err, encryptedKeys, encryptedKeysBuffer) {
+            if(!err) {
+
+              //Return the result
+              observer.next({
+                message: jsonMessage,
+                messageKey: encryptedKeys
+              });
+            }
           });
         }
       });
@@ -194,6 +221,7 @@ export class AppCrypto {
 
   //Function to decrypt a message
   decryptMessage(message, messageKey) {
+
     //Create the observable
     return new Observable(function(observer) {
 
@@ -213,11 +241,29 @@ export class AppCrypto {
           ring.add_key_manager(keyManager);
           kbpgp.unbox({
             keyfetch: ring,
-            armored: messageKey
-          }, function(err, plainKey) {
+            armored: message.messageKey
+          }, function(err, messageKeyJson) {
             if(!err) {
-              //Now we have the key!
-              //HMAC the hash: http://stackoverflow.com/questions/22183337/are-there-any-javascript-cryptographic-hmac-libraries-that-accepts-hex-input
+              //Now we have the keys!
+
+              //Parse the keys Json
+              let decryptedKeys = JSON.parse(messageKeyJson);
+
+              //Parse the message json
+              let messageJson = JSON.parse(message.message);
+
+              //First, compute the hmac of the cipher text of the message we received
+              let computedHmac = CryptoJs.HmacSHA256(messageJson.messageText, decryptedKeys.hmacKey);
+
+              //Check if the HMAC is true
+              if(computedHmac == messageJson.messageHmac) {
+                //Our message was not tampered!!!
+                //Decrypt with the AES Key
+                let decryptedMessage = CryptoJs.AES.decrypt(messageJson.messageText, decryptedKeys.aesKey);
+
+                //Return the decrypted message
+                observer.next(decryptedMessage)
+              }
             }
           });
         }
@@ -225,14 +271,14 @@ export class AppCrypto {
     });
   }
 
-  //Private function to get psuedo random string
+  //Private function to get a 256 bit long string/key
   private getCryptoString() {
     //loop to get a long string
     let cryptoString = '';
-    for(let i = 0; i < 3; i++) {
+    for(let i = 0; i < 5; i++) {
       cryptoString += Math.random().toString(36).substr(2, 24);
     }
 
-    return CryptoJs.PBKDF2(cryptoString);
+    return CryptoJs.SHA256(cryptoString);
   }
 }
