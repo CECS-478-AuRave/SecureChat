@@ -131,21 +131,15 @@ export class AllConversationsPage {
     //Grab our user from localstorage
     let userId = JSON.parse(localStorage.getItem(AppSettings.shushItemName))._id;
 
-    //Get the last message sender
-    let lastMessage = convo.messages[convo.messages.length - 1].message;
+    //Filter our convo
+    convo = this.appMessaging.filterConvoMessages(convo);
 
-    //Find our message
-    let userMessage: any;
-    for(var i = 0; i < lastMessage.length; i++) {
-      if(lastMessage[i].issuedTo._id == userId) {
-        userMessage = lastMessage[i];
-        i = lastMessage.length;
-      }
-    }
+    //Get the last message sender, since it is filter we can assume the zero index
+    let lastMessage = convo.messages[convo.messages.length - 1].message[0];
 
     //Using 0 since any message copy will work
-    let lastSender = userMessage.from.name;
-    let lastText = JSON.parse(userMessage.message).messageText;
+    let lastSender = lastMessage.from.name;
+    let lastText = lastMessage.message.messageText;
 
     return this.shortenText(lastSender + ': ' + lastText, 35)
   }

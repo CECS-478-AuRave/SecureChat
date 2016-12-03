@@ -235,7 +235,7 @@ export class AppCrypto {
   }
 
   //Function to decrypt a message
-  decryptMessage(facebookId, message, encryptedKeys) {
+  decryptMessage(facebookId, messageText, messageHmac, encryptedKeys, userId) {
 
     //Create the observable
     return new Observable(function(observer) {
@@ -261,21 +261,18 @@ export class AppCrypto {
               //Parse the keys Json
               let decryptedKeys = JSON.parse(messageKeyJson);
 
-              //Parse the message json
-              let messageJson = JSON.parse(message);
-
               //First, compute the hmac of the cipher text of the message we received
-              let computedHmac = CryptoJs.HmacSHA256(messageJson.messageText, decryptedKeys.hmacKey).toString();
+              let computedHmac = CryptoJs.HmacSHA256(messageText, decryptedKeys.hmacKey).toString();
 
               //Check if the HMAC is true
-              if(computedHmac == messageJson.messageHmac) {
+              if(computedHmac == messageHmac) {
                 //Our message was not tampered!!!
 
                 //Decrypt with the AES Key
                 //Must pass the encoding on decrypt
                 //http://ramkulkarni.com/blog/encrypting-data-with-crypto-js-in-javascript/
                 let decryptedMessage =
-                  CryptoJs.AES.decrypt(messageJson.messageText, decryptedKeys.aesKey).toString(CryptoJs.enc.Utf8);
+                  CryptoJs.AES.decrypt(messageText, decryptedKeys.aesKey).toString(CryptoJs.enc.Utf8);
 
                 //Return the decrypted message
                 observer.next(decryptedMessage)

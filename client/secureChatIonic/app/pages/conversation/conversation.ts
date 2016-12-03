@@ -47,11 +47,15 @@ export class ConversationPage {
     this.scrollDuration = 350;
 
     //Get the conversation passed from the last page
-    this.convo = this.navParams.get('conversation');
+    let passedConvo = this.navParams.get('conversation');
+    this.convo = this.appMessaging.filterConvoMessages(passedConvo);
     this.convoId = this.convo.conversationID;
 
     //Get the conversation title
     this.convoTitle = this.getConvoTitle(this.convo);
+
+    //Start Decypting the messages
+
 
     //User messages can be tagged in HTML, by comparing user ids in the ngFor
   }
@@ -155,6 +159,12 @@ export class ConversationPage {
 
     //Return the conversation title
     return convoTitle;
+  }
+
+  //Functon to decrypt the current conversation
+  decryptConvo() {
+
+    //Show the loading spinner
   }
 
   //Function to send a message (Done from click)

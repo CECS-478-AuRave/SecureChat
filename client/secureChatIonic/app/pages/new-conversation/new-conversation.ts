@@ -127,7 +127,7 @@ export class NewConversationPage {
     //Get the facebook ids from the _ids out of the friends
     //Using .slice() to get a copy of this.friends
     let convoFbFriends = this.friends.slice(0);
-    convoFbFriends.filter(function(friend) {
+    convoFbFriends = convoFbFriends.filter(function(friend) {
       return self.convoFriends.includes(friend._id);
     });
 
