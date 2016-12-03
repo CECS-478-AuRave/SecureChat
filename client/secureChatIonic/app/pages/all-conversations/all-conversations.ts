@@ -129,13 +129,23 @@ export class AllConversationsPage {
     if(convo.messages.length < 1) return;
 
     //Grab our user from localstorage
-    let facebookId = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).facebook.id;
+    let userId = JSON.parse(localStorage.getItem(AppSettings.shushItemName))._id;
 
     //Get the last message sender
-    let lastMessage = convo.messages[convo.messages.length - 1];
+    let lastMessage = convo.messages[convo.messages.length - 1].message;
 
-    let lastSender = lastMessage[facebookId].from.name;
-    let lastText = lastMessage.message;
+    //Find our message
+    let userMessage: any;
+    for(var i = 0; i < lastMessage.length; i++) {
+      if(lastMessage[i].issuedTo._id == userId) {
+        userMessage = lastMessage[i];
+        i = lastMessage.length;
+      }
+    }
+
+    //Using 0 since any message copy will work
+    let lastSender = userMessage.from.name;
+    let lastText = JSON.parse(userMessage.message).messageText;
 
     return this.shortenText(lastSender + ': ' + lastText, 35)
   }
