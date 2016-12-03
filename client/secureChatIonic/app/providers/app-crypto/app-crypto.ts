@@ -171,7 +171,8 @@ export class AppCrypto {
   }
 
   //Function to encrypt plaintext, to ciphertext
-  encryptMessage(plainText, publicKey) {
+  //Also, userId that can be passed back fro promises and things
+  encryptMessage(plainText, publicKey, userId) {
 
     //Get a reference to this
     let self = this;
@@ -216,6 +217,7 @@ export class AppCrypto {
             if(!err) {
               //Return the result
               observer.next({
+                userId,
                 message: jsonMessage,
                 messageKey: encryptedKeys
               });

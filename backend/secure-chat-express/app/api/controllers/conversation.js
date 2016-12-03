@@ -35,6 +35,9 @@ var findAndCreateConversation = function(res, members, messages, thisUser) {
             // Create the new Message.
             for (let i = 0; i < members.length; i++) {
                 otherUserId = members[i];
+                console.log(otherUserId);
+                console.log(members);
+                console.log(messages);
                 // object containing information for a given message.
                 var messageInformation = {
                     message: messages[otherUserId].message,

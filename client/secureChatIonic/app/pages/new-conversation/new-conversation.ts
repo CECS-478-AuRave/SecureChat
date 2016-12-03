@@ -125,17 +125,24 @@ export class NewConversationPage {
     let self = this;
 
     //Get the facebook ids from the _ids out of the friends
-    let convoFbFriends = this.friends;
+    //Using .slice() to get a copy of this.friends
+    let convoFbFriends = this.friends.slice(0);
     convoFbFriends.filter(function(friend) {
       return self.convoFriends.includes(friend._id);
     });
 
     //Validate all of the friends
-    //TODO: Set Kumin Public Key to a no passphrase pgp key, then test encrypting ocne more
     for(var i = 0; i < convoFbFriends.length; i++) {
       //If not valid, return
-      if(!this.appCrypto.validateLocalPublicKey(convoFbFriends[i], convoFbFriends[i].publicKey)) return false;
+      if(!this.appCrypto.validateLocalPublicKey(convoFbFriends[i], convoFbFriends[i].publicKey)) {
+        i = convoFbFriends.length;
+        return false;
+      }
     }
+
+    //Add ourselves to the convofb friends to be encrypted for
+    let localUser = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
+    convoFbFriends.push(localUser);
 
     //Start Loading
     this.appNotify.startLoading('Encrypting and Sending Message...');
@@ -148,18 +155,35 @@ export class NewConversationPage {
       //Values are the message, and the message key
       let encryptedMessages = {};
 
-      //Our public local key store
+      //Our keyStores
       let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPublicKeyStore));
+      let localPrivateKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPrivateKeyStore));
 
       //Loop through all of the ids in our members
       for(let i = 0; i < convoFbFriends.length; i++) {
-        console.log(convoFbFriends);
-        console.log(localKeyStore[convoFbFriends[i].facebook.id]);
-        self.appCrypto.encryptMessage(self.convoMessage, localKeyStore[convoFbFriends[i].facebook.id].keys.pgp).subscribe(function(response) {
-          console.log('Encrypted!');
-          encryptedMessages[self.convoFriends.facebook.id] = response;
+
+        //Get the key
+        let encryptionKey = '';
+        if(convoFbFriends[i].facebook.id != localUser.facebook.id) encryptionKey = localKeyStore[convoFbFriends[i].facebook.id].keys.pgp;
+        else encryptionKey = localPrivateKeyStore[convoFbFriends[i].facebook.id].publicKey;
+
+        //Encrypt a copy of the message for each user in group
+        self.appCrypto.encryptMessage(self.convoMessage,
+          encryptionKey,
+          convoFbFriends[i]._id)
+          .subscribe(function(response: any) {
+
+          //Get the facebook id from the response
+          let responseId = response.userId;
+
+          //Delete the facebook id from the response
+          delete response.userId;
+
+          //Push onto the encrypted messages
+          encryptedMessages[responseId] = response;
+
           //Check if we have encrypted all messages
-          if(Object.keys(encryptedMessages).length >= self.convoFriends.length) {
+          if(Object.keys(encryptedMessages).length >= convoFbFriends.length) {
             //Return the encrypted messages to the observer
             encryptReturn.next(encryptedMessages);
           }
@@ -175,7 +199,7 @@ export class NewConversationPage {
       //Create our payload
       var payload = {
         access_token: user.access_token,
-        members: this.convoFriends,
+        members: self.convoFriends,
         messages: encryptedResponse,
       }
 
