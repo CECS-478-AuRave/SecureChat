@@ -1,5 +1,6 @@
 import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Content, NavController, NavParams } from 'ionic-angular';
+import { Observable } from "rxjs/Observable";
 
 //Import our providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
@@ -32,6 +33,9 @@ export class ConversationPage {
   //Our reply ng-model data
   replyMessage: string;
 
+  //Our decrypting observable
+  decryptingObservable: any;
+
   //Our scroll duration for auto-scrolling through the messages
   scrollDuration: number;
 
@@ -43,19 +47,24 @@ export class ConversationPage {
     //Initialize our reply message to an empty string
     this.replyMessage = '';
 
+    //Initialize our decrypting observabe to false
+    this.decryptingObservable = false;
+
     //Initialize our scroll duration
     this.scrollDuration = 350;
 
     //Get the conversation passed from the last page
     let passedConvo = this.navParams.get('conversation');
+    //Filter the conversations
     this.convo = this.appMessaging.filterConvoMessages(passedConvo);
+    //Start Decypting the messages
+    this.decryptConvo();
+
+    //Get our conversaiton id
     this.convoId = this.convo.conversationID;
 
     //Get the conversation title
     this.convoTitle = this.getConvoTitle(this.convo);
-
-    //Start Decypting the messages
-
 
     //User messages can be tagged in HTML, by comparing user ids in the ngFor
   }
@@ -89,6 +98,9 @@ export class ConversationPage {
 
       //Stop loading
       self.appNotify.stopLoading().then(function() {
+
+        //Dont do anything on no changes
+        if(success.status == 304) return;
 
         //Add our messages/Get our conversation
         self.appMessaging.conversations = success;
@@ -124,8 +136,10 @@ export class ConversationPage {
     for (let i = 0; i < this.appMessaging.conversations.length; ++i) {
       if (this.convoId == this.appMessaging.conversations[i]._id) {
 
-        //Update the conversation
-        this.convo = this.appMessaging.conversations[i];
+        //Update/Filter the conversations
+        this.convo = this.appMessaging.filterConvoMessages(this.appMessaging.conversations[i]);
+        //Start Decypting the messages
+        this.decryptConvo();
 
         //Break from the loop
         i = this.appMessaging.conversations.length;
@@ -164,7 +178,49 @@ export class ConversationPage {
   //Functon to decrypt the current conversation
   decryptConvo() {
 
-    //Show the loading spinner
+    //Get a reference to this
+    let self = this;
+
+    //Cancel the old observable if we have one
+    if(self.decryptingObservable) self.decryptingObservable.unsubscribe();
+
+    //Create an array of indexes that have been decrypted
+    let decryptCache = [];
+
+    //Create an observable
+    let decryptRequest = new Observable(function(decrytReturn) {
+      for(let i = 0; i < self.convo.messages.length; i++) {
+        //Decrypt the message
+        //The identifier will be the index of the convo messages message
+        self.appCrypto.decryptMessage(self.convo.messages[i].message[0].message.messageText,
+            self.convo.messages[i].message[0].message.messageHmac,
+            self.convo.messages[i].message[0].messageKey,
+            i).subscribe(function(success: any) {
+
+              //Assign to the appropriate message
+              self.convo.messages[success.identifier].message[0].decryptedMessage = success.decryptedMessage;
+
+              //Add to the decrypt cache
+              decryptCache.push(success.identifier);
+
+              //Check if we should unsubscribe
+              if(decryptCache.length == self.convo.messages.length) {
+                  //Reset everything
+                  self.decryptingObservable.unsubscribe();
+                  self.decryptingObservable = false;
+                  decryptCache = [];
+              }
+
+              //Update the UI
+              setTimeout(function() {
+                self.changeDetector.detectChanges();
+              }, 250);
+            });
+      }
+    });
+
+    //handle a newly decrypted message
+    self.decryptingObservable = decryptRequest.subscribe();
   }
 
   //Function to send a message (Done from click)
@@ -238,5 +294,8 @@ export class ConversationPage {
   ionViewWillLeave() {
     //Stop
     this.pollingRequest.unsubscribe();
+
+    //Cancel the old observable if we have one
+    if(self.decryptingObservable) self.decryptingObservable.unsubscribe();
   }
 }

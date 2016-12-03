@@ -58,7 +58,10 @@ export class AppNotify {
     //Get a reference to this
     let self = this;
     this.loader.onDidDismiss(() => {
-      self.loader.destroy();
+      setTimeout(function() {
+        self.loader.dismiss();
+        self.loader.destroy();
+      }, 250);
     });
 
     return this.loader.present();

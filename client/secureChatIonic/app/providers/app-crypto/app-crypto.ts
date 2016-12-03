@@ -171,8 +171,8 @@ export class AppCrypto {
   }
 
   //Function to encrypt plaintext, to ciphertext
-  //Also, userId that can be passed back fro promises and things
-  encryptMessage(plainText, publicKey, userId) {
+  //Also, identifier that can be passed back to callbacks and things
+  encryptMessage(plainText, publicKey, identifier) {
 
     //Get a reference to this
     let self = this;
@@ -217,7 +217,7 @@ export class AppCrypto {
             if(!err) {
               //Return the result
               observer.next({
-                userId,
+                identifier,
                 message: jsonMessage,
                 messageKey: encryptedKeys
               });
@@ -235,13 +235,15 @@ export class AppCrypto {
   }
 
   //Function to decrypt a message
-  decryptMessage(facebookId, messageText, messageHmac, encryptedKeys, userId) {
+  //Also, identifier that can be passed back to callbacks and things
+  decryptMessage(messageText, messageHmac, encryptedKeys, identifier) {
 
     //Create the observable
     return new Observable(function(observer) {
 
       //First decrypt the messageKey
       //Grab the user's public/private key from the device
+      let facebookId = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).facebook.id;
       let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPrivateKeyStore));
       if(!localKeyStore[facebookId]) return;
       let privateKey = localKeyStore[facebookId].privateKey;
@@ -275,7 +277,10 @@ export class AppCrypto {
                   CryptoJs.AES.decrypt(messageText, decryptedKeys.aesKey).toString(CryptoJs.enc.Utf8);
 
                 //Return the decrypted message
-                observer.next(decryptedMessage)
+                observer.next({
+                  identifier,
+                  decryptedMessage
+                })
               }
             } else {
               console.log('there was an error!');

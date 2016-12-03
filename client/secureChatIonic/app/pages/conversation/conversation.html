@@ -7,10 +7,13 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>{{convoTitle}}</ion-title>
+    <ion-title class="navTitle">
+      {{convoTitle}}
+    </ion-title>
+    <!-- Show a loading symbol when decrypting -->
+    <ion-spinner class="decryptingSpinner"
+    *ngIf="decryptingObservable"></ion-spinner>
   </ion-navbar>
-
-  <!-- Show a loading symbol when decrypting -->
 </ion-header>
 
 

@@ -174,10 +174,10 @@ export class NewConversationPage {
           .subscribe(function(response: any) {
 
           //Get the facebook id from the response
-          let responseId = response.userId;
+          let responseId = response.identifier;
 
           //Delete the facebook id from the response
-          delete response.userId;
+          delete response.identifier;
 
           //Push onto the encrypted messages
           encryptedMessages[responseId] = response;

@@ -65,6 +65,11 @@ export class AllConversationsPage {
     let poll = this.appMessaging.conversationRequestPoll(user.access_token);
 
     this.pollingRequest = poll.subscribe(function(success) {
+
+      //Dont do anything on no changes
+      if(success.status == 304) return;
+
+
       //Success!
       self.messageGetSuccess(success);
     }, function(error) {
