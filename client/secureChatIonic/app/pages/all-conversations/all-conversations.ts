@@ -9,7 +9,7 @@ import { ConversationPage } from '../../pages/conversation/conversation';
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
-import { AppUsers} from '../../providers/app-users/app-users';
+import { AppUsers } from '../../providers/app-users/app-users';
 
 @Component({
   templateUrl: 'build/pages/all-conversations/all-conversations.html'
@@ -147,7 +147,7 @@ export class AllConversationsPage {
     let lastSender = lastMessage.from.name;
     let lastText = lastMessage.message.messageText;
 
-    return this.shortenText(lastSender + ': ' + lastText, 35)
+    return AppUsers.shortenText(lastSender + ': ' + lastText, 35)
   }
 
   //Function to handle if a user would like to send another user a message
