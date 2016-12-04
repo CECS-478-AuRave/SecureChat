@@ -67,39 +67,60 @@ export class ViewUserPage {
     //Start Loading
     this.appNotify.startLoading('Getting User...');
 
-    //Grab the User
-    let request = this.appUsers.getUserById(passedUser.facebook.id, passedUser.access_token);
-
     //Get a reference to this
     let self = this;
 
-    //Subscribe to the request
-    request.subscribe(function(success) {
+    //First get our user
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
+    let localUserRequest  = this.appUsers.getUserById(user.facebook.id, user.access_token);
+
+    localUserRequest.subscribe(function(localUserSuccess) {
       //success
 
-      //Stop loading
-      self.appNotify.stopLoading().then(function() {
-        //Set our user
-        self.user = success;
+      //Update the local user
+      localUserSuccess.access_token = user.access_token;
+      localStorage.setItem(AppSettings.shushItemName, JSON.stringify(localUserSuccess));
 
-        //Validate the user key
-        self.appCrypto.validateLocalPublicKey(self.user, self.user.publicKey);
+      //Grab the passed User
+      let request = self.appUsers.getUserById(passedUser.facebook.id, user.access_token);
 
-        //Update the UI
-        self.changeDetector.detectChanges();
+      //Subscribe to the request
+      request.subscribe(function(success) {
+        //success
 
-        //Toast the success
-        if(toastText) self.appNotify.showToast(toastText);
+        //Stop loading
+        self.appNotify.stopLoading().then(function() {
+          //Set our user
+          self.user = success;
+
+          //Validate the user key
+          self.appCrypto.validateLocalPublicKey(self.user, self.user.publicKey);
+
+          //Update the UI
+          self.changeDetector.detectChanges();
+
+          //Toast the success
+          if(toastText) self.appNotify.showToast(toastText);
+        });
+
+      }, function(error) {
+        //error
+
+        //Stop loading
+        self.appNotify.stopLoading().then(function() {
+          self.appNotify.handleError(error);
+        });
+
+      }, function() {
+        //Complete
       });
-
     }, function(error) {
-      //error
+      //Error
 
       //Stop loading
       self.appNotify.stopLoading().then(function() {
         self.appNotify.handleError(error);
       });
-
     }, function() {
       //Complete
     });
