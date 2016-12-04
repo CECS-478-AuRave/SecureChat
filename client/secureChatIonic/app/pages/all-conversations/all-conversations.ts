@@ -9,6 +9,7 @@ import { ConversationPage } from '../../pages/conversation/conversation';
 import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppMessaging } from '../../providers/app-messaging/app-messaging';
+import { AppUsers} from '../../providers/app-users/app-users';
 
 @Component({
   templateUrl: 'build/pages/all-conversations/all-conversations.html'
@@ -65,6 +66,11 @@ export class AllConversationsPage {
     let poll = this.appMessaging.conversationRequestPoll(user.access_token);
 
     this.pollingRequest = poll.subscribe(function(success) {
+
+      //Dont do anything on no changes
+      if(success.status == 304) return;
+
+
       //Success!
       self.messageGetSuccess(success);
     }, function(error) {
@@ -120,33 +126,28 @@ export class AllConversationsPage {
       if (i < convo.members.length - 1) members += ', ';
     }
 
-    return this.shortenText(members, 20);
+    return AppUsers.shortenText(members, 20);
 
   }
 
   getConvoLatestText(convo: any) {
 
-    //Get the last message sender
-    let lastMessage = convo.message[convo.message.length - 1];
+    if(convo.messages.length < 1) return;
 
-    let lastSender = lastMessage.from.name.split(' ')[0];
-    let lastText = lastMessage.message;
+    //Grab our user from localstorage
+    let userId = JSON.parse(localStorage.getItem(AppSettings.shushItemName))._id;
+
+    //Filter our convo
+    convo = this.appMessaging.filterConvoMessages(convo);
+
+    //Get the last message sender, since it is filter we can assume the zero index
+    let lastMessage = convo.messages[convo.messages.length - 1].message[0];
+
+    //Using 0 since any message copy will work
+    let lastSender = lastMessage.from.name;
+    let lastText = lastMessage.message.messageText;
 
     return this.shortenText(lastSender + ': ' + lastText, 35)
-  }
-
-  //Function to return
-  //Get shortened text with elipses
-  shortenText(text: string, textMax) {
-
-    //First check if the text is already short
-    if (text.length < textMax) return text;
-    else {
-      //Get a substring of text
-      text = text.substring(0, (textMax - 3));
-      text = text + '...';
-      return text;
-    }
   }
 
   //Function to handle if a user would like to send another user a message

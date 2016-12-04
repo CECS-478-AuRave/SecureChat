@@ -45,7 +45,7 @@ export class ViewUserPage {
     }
 
     //Get our user
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
 
     //Set to ourselves for now
     this.user = user;
@@ -68,7 +68,7 @@ export class ViewUserPage {
     this.appNotify.startLoading('Getting User...');
 
     //Grab the User
-    let request = this.appUsers.getUserById(passedUser.facebook.id);
+    let request = this.appUsers.getUserById(passedUser.facebook.id, passedUser.access_token);
 
     //Get a reference to this
     let self = this;
@@ -172,13 +172,13 @@ export class ViewUserPage {
     if(!this.user || !this.user._id) return;
 
     //Get our current user
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName)).user;
+    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
 
     //If they are the user, return
-    if (this.user._id == user._id) return this.userTypeMap.currentUser;
+    if (this.user.facebook.id == user.facebook.id) return this.userTypeMap.currentUser;
 
     //Check if they are a friend, return 3
-    if (this.user.friends.indexOf(user.facebook.id) > 0) return this.userTypeMap.friend;
+    if (this.user.friends.indexOf(user.facebook.id) >= 0) return this.userTypeMap.friend;
     //Check if they are a pending friend
     else if (user.pendingFriends.indexOf(this.user.facebook.id) >= 0) return this.userTypeMap.pendingFriend;
     //Check if the user has us as a pending request

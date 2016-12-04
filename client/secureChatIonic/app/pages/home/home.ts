@@ -11,6 +11,6 @@ export class Home {
 
   //Function to test ng-click, aka (click)
   testFunc() {
-      console.log("Hello, test!");
+      //console.log("Hello, test!");
   }
 }

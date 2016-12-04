@@ -66,5 +66,25 @@ export class AppMessaging {
     return this.http.put(AppSettings.serverUrl + 'conversation', payload).map(res => res.json());
   }
 
+  //Helper Function to filter out all messages in a convo for the current users, and parse their json
+  filterConvoMessages(convo) {
 
+    //Grab our user from localstorage
+    let userId = JSON.parse(localStorage.getItem(AppSettings.shushItemName))._id;
+
+    //Loop through our messaegs
+    for(let i = 0; i < convo.messages.length; i++) {
+      convo.messages[i].message = convo.messages[i].message.filter(function(message) {
+        return userId == message.issuedTo._id;
+      });
+
+      //Parse the message json, the message key is a pgp string
+      if (typeof convo.messages[i].message[0].message === 'string' || convo.messages[i].message[0].message instanceof String) {
+          convo.messages[i].message[0].message = JSON.parse(convo.messages[i].message[0].message);
+      }
+    }
+
+    //Return the filtered convo
+    return convo;
+  }
 }

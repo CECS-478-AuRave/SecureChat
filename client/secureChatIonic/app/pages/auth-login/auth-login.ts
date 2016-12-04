@@ -10,7 +10,7 @@ import { AppSettings } from '../../providers/app-settings/app-settings';
 import { AppCrypto } from '../../providers/app-crypto/app-crypto';
 import { AppNotify } from '../../providers/app-notify/app-notify';
 import { AppAuth } from '../../providers/app-auth/app-auth';
-
+import { AppUsers } from '../../providers/app-users/app-users';
 /*
   Generated class for the AuthLoginPage page.
 
@@ -23,13 +23,13 @@ import { AppAuth } from '../../providers/app-auth/app-auth';
 
 export class AuthLoginPage {
 
-  constructor(private navCtrl: NavController, private appCrypto: AppCrypto, private appNotify: AppNotify, private appAuth: AppAuth) { }
+  constructor(private navCtrl: NavController, private appCrypto: AppCrypto, private appNotify: AppNotify, private appAuth: AppAuth, private appUsers: AppUsers) { }
 
   //Call our log in function from our auth service
   login() {
 
     //Start Loading
-    this.appNotify.startLoading('Logging in, this may take a while if this is a new user or a new device...');
+    this.appNotify.startLoading('Logging in, if you are a new user, or switching devices, this may take a while as we are updating your secure keys...');
 
     //Save a reference to this
     let self = this;
@@ -41,34 +41,22 @@ export class AuthLoginPage {
       //Success!
 
       //Now subscribe to our server login response
-      fbRes.request.subscribe(function(success: any) {
+      fbRes.request.subscribe(function(fbSuccess: any) {
         //Success
-
-        //Create our new user
-        let userJson: any;
-        //Schema for userjson
-        userJson = {
-          user: {},
-          access_token: '',
-          keys: {}
-        };
-        //Get the neccesary info from the user object
-        userJson.user = success.user;
-        userJson.access_token = fbRes.access_token;
 
         //Create an observable for key checking
         let keyCheck = new Observable(function(observer) {
-          let localUserKeys = self.appCrypto.getUserKeys();
+          let localUserKeys = self.appCrypto.getUserKeys(fbSuccess.user.facebook.id);
           if(localUserKeys) {
             observer.next(localUserKeys);
           } else {
-            self.appCrypto.generateUserKeys(userJson.user).subscribe(function(generateSuccess: any) {
+            self.appCrypto.generateUserKeys(fbSuccess.user).subscribe(function(generateSuccess: any) {
 
               //Update the user account's public key
               //Create our payload
 
               let payload = {
-                access_token: userJson.access_token,
+                access_token: fbRes.access_token,
                 publicKey: generateSuccess.publicKey
               };
 
@@ -85,32 +73,46 @@ export class AuthLoginPage {
               });
             });
           }
-        })
+        });
 
 
         //Finish the rest of the login
-        keyCheck.subscribe(function(success) {
+        keyCheck.subscribe(function(success: any) {
 
-          //Save the keys to the user
-          userJson.keys = success;
+          //Grab our live user from the server
+          //Grab the User
+          let userRequest = self.appUsers.getUserById(fbSuccess.user.facebook.id, fbRes.access_token);
 
-          //Save the user info
-          localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userJson));
+          //Subscribe to the request
+          userRequest.subscribe(function(userSuccess) {
+            //success
 
-          //Update the auth status
-          self.appAuth.updateAuthStatus(true);
+            //Add the access_token to the user success object
+            userSuccess.access_token = fbRes.access_token;
 
-          //Stop Loading
-          self.appNotify.stopLoading().then(function() {
-            //Toast What Happened
-            //In a timeout to avoid colliding with loading
-            setTimeout(function() {
-              //Show Toast
-              self.appNotify.showToast('Login Successful!');
+            //Save the user info
+            localStorage.setItem(AppSettings.shushItemName, JSON.stringify(userSuccess));
 
-              //Redirect to messages page
-              self.navCtrl.setRoot(AllConversationsPage);
-            }, 250)
+            //Update the auth status
+            self.appAuth.updateAuthStatus(true);
+
+            //Stop Loading
+            self.appNotify.stopLoading().then(function() {
+              //Toast What Happened
+              //In a timeout to avoid colliding with loading
+              setTimeout(function() {
+                //Show Toast
+                self.appNotify.showToast('Login Successful!');
+
+                //Redirect to messages page
+                self.navCtrl.setRoot(AllConversationsPage);
+              }, 250)
+            });
+
+          }, function(error) {
+            //error
+          }, function() {
+            //Complete
           });
         });
       }, function(error) {

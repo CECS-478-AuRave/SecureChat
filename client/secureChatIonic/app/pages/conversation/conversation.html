@@ -7,16 +7,21 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>{{convoTitle}}</ion-title>
+    <ion-title class="navTitle">
+      {{convoTitle}}
+    </ion-title>
+    <!-- Show a loading symbol when decrypting -->
+    <ion-spinner class="decryptingSpinner"
+    *ngIf="decryptingObservable"></ion-spinner>
   </ion-navbar>
-
 </ion-header>
 
 
 <ion-content class="messageList" padding>
 
   <!-- Ngfor our messages -->
-  <ion-card *ngFor="let convoMessage of convo.message; let i = index;" [ngClass]="{'sender': !convoMessage.isUser, 'user': convoMessage.isUser}">
+  <!-- We are assuming a filtered convo -->
+  <ion-card *ngFor="let convoMessage of convo.messages; let i = index;" [ngClass]="{'sender': !convoMessage.message[0].isUser, 'user': convoMessage.message[0].isUser}">
     <!--
         For media messages if supported
         <img src="img/nin-live.png" />
@@ -25,20 +30,20 @@
     <!-- User who sent the item -->
     <ion-item>
       <ion-avatar item-left>
-        <img src="https://{{convoMessage.from.profilePhotoURL}}">
+        <img src="https://{{convoMessage.message[0].from.profilePhotoURL}}">
       </ion-avatar>
       <h2>
-        {{convoMessage.from.name}}
+        {{convoMessage.message[0].from.name}}
       </h2>
       <p class="messageTime">
-        {{convoMessage.date | date:'short'}}
+        {{convoMessage.message[0].date | date:'short'}}
       </p>
     </ion-item>
 
     <ion-card-content>
       <!-- The actual message contents -->
       <p class="convoMessage">
-        {{convoMessage.message}}
+        {{convoMessage.message[0].decryptedMessage || convoMessage.message[0].message.messageText}}
       </p>
     </ion-card-content>
   </ion-card>

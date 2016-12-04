@@ -17,6 +17,13 @@ export class AppAuth {
 
   //Class constructor
   constructor(private http: Http) {
+
+    //Ensure we have a user object in localstore
+    //Ensure that we has a public key store, create one if not
+    if(!localStorage.getItem(AppSettings.shushItemName)) {
+      localStorage.setItem(AppSettings.shushItemName, JSON.stringify({}));
+    }
+
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
     if (user && user.access_token) {
@@ -92,8 +99,7 @@ export class AppAuth {
     //Get our stored user
     //Grab our user from localstorage
     let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName))
-    if (user && user.access_token) user.access_token = false;;
-    if (user && user.user) user.user = {};
+    user = {};
 
     //Set the user to false
     localStorage.setItem(AppSettings.shushItemName, JSON.stringify(user));

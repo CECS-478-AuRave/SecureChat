@@ -2,6 +2,14 @@
 $footerHeight: 75px;
 $footerPadding: 10px;
 
+.navTitle {
+  display: inline-block;
+}
+
+.decryptingSpinner {
+  display: inline-block;
+}
+
 //The Actual messages view
 .messageList {
     //The height - the height of the footer - the margin

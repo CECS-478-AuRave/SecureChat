@@ -1,5 +1,5 @@
 import { Injectable, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { App, Nav, LoadingController, ToastController, AlertController  } from 'ionic-angular';
+import { App, Nav, LoadingController, ToastController, AlertController } from 'ionic-angular';
 
 //Our Providers
 import { AppSettings } from '../../providers/app-settings/app-settings';
@@ -52,6 +52,18 @@ export class AppNotify {
     this.loader = this.loadingCtrl.create({
       content: loadingString
     });
+
+    //Work around for freezing modals in ionic beta 11
+    //https://github.com/driftyco/ionic/issues/6325
+    //Get a reference to this
+    let self = this;
+    this.loader.onDidDismiss(() => {
+      setTimeout(function() {
+        //self.loader.dismiss();
+        //self.loader.destroy();
+      }, 0);
+    });
+
     return this.loader.present();
   }
 

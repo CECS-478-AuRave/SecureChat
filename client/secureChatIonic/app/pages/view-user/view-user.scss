@@ -10,4 +10,10 @@
 .keyText {
   margin-top: 5px;
   margin-bottom: 5px;
+
+  //Make Selectable for copy paste
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
