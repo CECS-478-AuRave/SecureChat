@@ -82,7 +82,7 @@ gulp.task('scripts', function() {
 	return copyScripts({
 		src: [
 			'externalJSLibs/facebookSdk.js',
-			'externalJSLibs/kbpgp-2.0.8.js',
+			'externalJSLibs/kbpgp-2.0.8-min.js',
 			'node_modules/es6-shim/es6-shim.min.js',
 			'node_modules/es6-shim/es6-shim.map',
 			'node_modules/zone.js/dist/zone.js',

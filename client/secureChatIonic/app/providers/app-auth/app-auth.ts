@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
+import { Facebook } from 'ionic-native';
 import 'rxjs/add/operator/map';
 
 //pages
@@ -40,12 +41,7 @@ export class AppAuth {
 
   //Initialize facebook
   initFacebook() {
-    //Init the facebook sdk, Imported from externalJsLibs
-    FB.init({
-      appId: AppSettings.facebookAppId,
-      cookie: true,
-      version: 'v2.6'
-    });
+    Facebook.browserInit(parseInt(AppSettings.facebookAppId), 'v2.8');
   }
 
   //Login
@@ -56,12 +52,18 @@ export class AppAuth {
     //Get a reference to self
     let self = this;
 
+    //Create our facebook requested permissions
+    let fbPermissions = [
+      'public_profile',
+      'email',
+    ];
+
     //Create a new observable
     //https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87#.g2xfbgf3h
     //observer.next => success, observer.error => error, observer.complete => complete
     return new Observable(function(observer) {
-
-      FB.login(function(response) {
+      console.log('Starting login!');
+      Facebook.login(fbPermissions).then(response => {
 
         //Response from facebook on function call
         let jsonResponse = response.authResponse;
@@ -79,17 +81,16 @@ export class AppAuth {
 
         let serverRequest = self.http.post(AppSettings.serverUrl + 'login', payload).map(res => res.json());
 
-
         observer.next({
           request: serverRequest,
           access_token: jsonResponse.accessToken
         });
 
-      }, {
-          scope: 'email'
-        });
-
-    })
+      }, function(error) {
+        //Error
+        observer.error(error);
+      });
+    });
   }
 
   //Logout
