@@ -92,9 +92,11 @@ export class AppMessaging {
 
           //Don't do anything if we have already decrypted
           if(oldConvo && oldConvo.messages[i] && oldConvo.messages[i].message[0].decryptedMessage) {
+            console.log('already decrypted');
             convo.messages[i] = oldConvo.messages[i];
           }
           else {
+            console.log('not decrypted! or old convo false!');
             convo.messages[i].message[0].message = JSON.parse(convo.messages[i].message[0].message);
           }
       }
