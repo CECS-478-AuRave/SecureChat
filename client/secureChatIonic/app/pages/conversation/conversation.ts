@@ -56,7 +56,7 @@ export class ConversationPage {
     //Get the conversation passed from the last page
     let passedConvo = this.navParams.get('conversation');
     //Filter the conversations
-    this.convo = this.appMessaging.filterConvoMessages(passedConvo);
+    this.convo = this.appMessaging.filterConvoMessages(passedConvo, false);
     //Start Decypting the messages
     this.decryptConvo();
 
@@ -96,34 +96,22 @@ export class ConversationPage {
     this.pollingRequest = poll.subscribe(function(success) {
       //Success!
 
-      //Stop loading
-      self.appNotify.stopLoading().then(function() {
+      //Add our messages/Get our conversation
+      self.appMessaging.conversations = success;
 
-        //Dont do anything on no changes
-        if(success.status == 304) return;
-
-        //Add our messages/Get our conversation
-        self.appMessaging.conversations = success;
-
-        //Update our conversations
-        self.updateConversation();
-      });
+      //Update our conversations
+      self.updateConversation();
     }, function(error) {
       //Error!
+      //Pass to Error Handler
+      self.appNotify.handleError(error, [{
+        status: 404,
+        callback: function() {
+          //Pop back to the All conversations view
 
-      //Stop Loading
-      self.appNotify.stopLoading().then(function() {
-        //Pass to Error Handler
-        self.appNotify.handleError(error, [{
-          status: 404,
-          callback: function() {
-            //Pop back to the All conversations view
-
-            self.navCtrl.pop();
-          }
-        }]);
-      });
-
+          self.navCtrl.pop();
+        }
+      }]);
     }, function() {
       //Completed
     })
@@ -134,10 +122,10 @@ export class ConversationPage {
 
     //Find and update our current conversation
     for (let i = 0; i < this.appMessaging.conversations.length; ++i) {
-      if (this.convoId == this.appMessaging.conversations[i]._id) {
+      if (this.convoId == this.appMessaging.conversations[i].conversationID) {
 
         //Update/Filter the conversations
-        this.convo = this.appMessaging.filterConvoMessages(this.appMessaging.conversations[i]);
+        this.convo = this.appMessaging.filterConvoMessages(this.appMessaging.conversations[i], this.convo);
         //Start Decypting the messages
         this.decryptConvo();
 
@@ -191,6 +179,25 @@ export class ConversationPage {
     let decryptRequest = new Observable(function(decrytReturn) {
       for(let i = 0; i < self.convo.messages.length; i++) {
         //Decrypt the message
+        //Check if we have already decrypted
+        if(self.convo.messages[i].message[0].decryptedMessage) {
+          //Add to the decrypt cache
+          decryptCache.push(i);
+
+          //Check if we should unsubscribe
+          if(decryptCache.length == self.convo.messages.length) {
+              //Reset everything
+              self.decryptingObservable.unsubscribe();
+              self.decryptingObservable = false;
+              decryptCache = [];
+          }
+
+          //Update the UI
+          setTimeout(function() {
+            self.changeDetector.detectChanges();
+          }, 250);
+        }
+
         //The identifier will be the index of the convo messages message
         self.appCrypto.decryptMessage(self.convo.messages[i].message[0].message.messageText,
             self.convo.messages[i].message[0].message.messageHmac,
@@ -309,7 +316,7 @@ export class ConversationPage {
 
           //Set our convo to the the filtered success result
           //Update/Filter the conversations
-          self.convo = self.appMessaging.filterConvoMessages(success);
+          self.convo = self.appMessaging.filterConvoMessages(success, self.convo);
           //Start Decypting the messages
           self.decryptConvo();
 

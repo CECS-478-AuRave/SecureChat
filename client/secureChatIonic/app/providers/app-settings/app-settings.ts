@@ -7,7 +7,7 @@ export class AppSettings {
   static facebookAppId = '1867451080142485';
 
   //Poll interval for things like settings
-  static pollInterval = 30000;
+  static pollInterval = 20000;
 
   //The name of the json object stored on the device
   /*
