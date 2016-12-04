@@ -62,7 +62,6 @@ export class AppAuth {
     //https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87#.g2xfbgf3h
     //observer.next => success, observer.error => error, observer.complete => complete
     return new Observable(function(observer) {
-      console.log('Starting login!');
       Facebook.login(fbPermissions).then(response => {
 
         //Response from facebook on function call
