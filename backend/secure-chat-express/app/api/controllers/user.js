@@ -81,7 +81,7 @@ module.exports.getFriend = function(req, res) {
         }
 
         //Get the user, and populat friends and pending friends
-        User.findOne({'facebook.id' : req.user.facebook.id})
+        User.findOne({'_id' : req.user._id})
             .populate('friends pendingFriends').exec(function(err, user) {
                 if (err) {
                     // error finding friend.
