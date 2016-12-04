@@ -44,8 +44,8 @@ export class AppSettings {
    */
   static shushLocalPrivateKeyStore = 'shushPrivateKeys';
 
-  //Add our server URL (Local testing not actual)
+  //Add our server URL (Not Final)
   //Must end with a slash
-  static serverUrl = 'http://localhost:4780/api/v1/';
+  static serverUrl = 'https://shushapi.aaronthedev.com/api/v1/';
 
 }
