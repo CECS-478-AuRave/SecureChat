@@ -52,6 +52,7 @@ export class FriendsListPage {
 
         //Save our friends
         self.friends = success;
+        console.log(JSON.stringify(self.friends));
 
         //Update the UI
         self.changeDetector.detectChanges();

@@ -79,26 +79,24 @@ module.exports.getFriend = function(req, res) {
         if (req.user.friends.length <= 0) {
             res.status(404).json({'error' : 'No friends found for user'});
         }
-        var friends = [];
-        var count = 0;
-        // for each friend for the given user add it to the friends array
-        // if the friend was found.
-        req.user.friends.forEach(function(friendId) {
-            User.findOne({'facebook.id' : friendId}, function(err, friend) {
+
+        //Get the user, and populat friends and pending friends
+        User.findOne({'facebook.id' : req.user.facebook.id})
+            .populate('friends pendingFriends').exec(function(err, user) {
                 if (err) {
                     // error finding friend.
                     res.status(500).json(err);
-                } else if (friend) {
-                    count++; // keep track of the number of friends found.
-                    friends.push(friend);
                 }
-            }).then(function() {
-                // respond with the friends array after the loop has finished running.
-                if (count === req.user.friends.length) {
-                    res.status(200).json(friends);
+
+                //Create a response json
+                let responseJson = {
+                    'friends': user.friends,
+                    'pendingFriends': user.pendingFriends
                 }
+
+                //Return the json
+                res.status(200).json(responseJson);
             });
-        });
     } else {
         // Respond with Unauthorized access.
         res.status(401).json({'error': 'Access Not Authorized.'});

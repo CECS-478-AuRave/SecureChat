@@ -27,6 +27,23 @@
 
   <!-- Ngfor our friends -->
   <div *ngIf="friends && friends.length > 0">
+    <h2 class="centerText">Friends</h2>
+    <ion-card *ngFor="let friend of friends; let i = index;" (click)="goToUser(friend)">
+
+        <!-- User name and picture -->
+        <ion-item>
+          <ion-avatar item-left>
+            <img src="https://{{friend.profilePhotoURL}}">
+          </ion-avatar>
+          <h2>{{friend.name}}</h2>
+        </ion-item>
+
+    </ion-card>
+  </div>
+
+  <!-- Ngfor our pending friends -->
+  <div *ngIf="friends && friends.length > 0">
+    <h2 class="centerText">Pending Friends</h2>
     <ion-card *ngFor="let friend of friends; let i = index;" (click)="goToUser(friend)">
 
         <!-- User name and picture -->
