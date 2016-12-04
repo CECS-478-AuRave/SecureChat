@@ -25,10 +25,11 @@ import { ViewUserPage } from './pages/view-user/view-user';
 import { MaliciousKey } from './pages/malicious-key/malicious-key';
 
 //Change detection needed for updating "this" AKA $scope
+//https://angular.io/docs/ts/latest/api/core/index/ChangeDetectionStrategy-enum.html
 @Component({
   templateUrl: 'build/app.html',
   providers: [AppSettings, AppCrypto, AppNotify, AppAuth, AppUsers, AppMessaging],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.Default
 })
 class MyApp {
   @ViewChild(Nav) nav: Nav;

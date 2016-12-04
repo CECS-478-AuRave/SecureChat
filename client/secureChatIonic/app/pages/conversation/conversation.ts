@@ -233,60 +233,116 @@ export class ConversationPage {
     if (this.replyMessage.length < 1) return false;
 
     //Start Loading
-    this.appNotify.startLoading('Sending Message...');
+    this.appNotify.startLoading('Encrypting and sending the message...');
 
-    //Grab our user from localstorage
-    let user = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
-
-    //Create our payload
-    var payload = {
-      access_token: user.access_token,
-      message: this.replyMessage,
-      conversationID: this.convoId
-    }
+    //Update the UI
+    this.changeDetector.detectChanges();
 
     //Get a reference to this
     let self = this;
 
-    //Make our request
-    this.appMessaging.conversationReply(payload).subscribe(function(success) {
-      //Success
+    //Grab our user from localstorage
+    let localUser = JSON.parse(localStorage.getItem(AppSettings.shushItemName));
 
-      //Stop Loading
-      self.appNotify.stopLoading().then(function() {
+    //Create our encrypting observable
+    let encryptObserve = new Observable(function(encryptRequest) {
 
-        //Set our convo to the the success result
-        self.convo = success;
+      //Our final messages array
+      //Key is the user id
+      //Values are the message, and the message key
+      let encryptedMessages = {};
 
-        //Empty the reply message
-        self.replyMessage = '';
+      //Our keyStores
+      let localKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPublicKeyStore));
+      let localPrivateKeyStore = JSON.parse(localStorage.getItem(AppSettings.shushLocalPrivateKeyStore));
 
-        //Update the UI
-        self.changeDetector.detectChanges();
+      //Loop through all of the ids in our members
+      for(let i = 0; i < self.convo.members.length; i++) {
 
-        //Scroll to the bottom of the messages
-        self.content.scrollToBottom(self.scrollDuration);
+        //Get the key
+        let encryptionKey = '';
+        if(self.convo.members[i]._id != localUser._id) encryptionKey = localKeyStore[self.convo.members[i].facebook.id].keys.pgp;
+        else encryptionKey = localPrivateKeyStore[self.convo.members[i].facebook.id].publicKey;
 
-        //Toast the user
-        self.appNotify.showToast('Message Sent!');
-      });
+        //Encrypt a copy of the message for each user in group
+        self.appCrypto.encryptMessage(self.replyMessage,
+          encryptionKey,
+          self.convo.members[i]._id)
+          .subscribe(function(response: any) {
 
-    }, function(error) {
-      //Error
-      //Stop Loading
-      self.appNotify.stopLoading().then(function() {
-        //Pass to Error Handler
-        self.appNotify.handleError(error, [{
-          status: 404,
-          callback: function() {
-            //Pop back to the All conversations view
+          //Get the facebook id from the response
+          let responseId = response.identifier;
 
-            self.navCtrl.pop();
+          //Delete the facebook id from the response
+          delete response.identifier;
+
+          //Push onto the encrypted messages
+          encryptedMessages[responseId] = response;
+
+          //Check if we have encrypted all messages
+          if(Object.keys(encryptedMessages).length >= self.convo.members.length) {
+            //Return the encrypted messages to the observer
+            encryptRequest.next(encryptedMessages);
           }
-        }]);
+        });
+      }
+    });
+
+    //Subscribe to the encryptObserve
+    encryptObserve.subscribe(function(encryptResponse) {
+
+      //Got the encrypting response!
+
+      //Create our payload
+      var payload = {
+        access_token: localUser.access_token,
+        messages: encryptResponse,
+        conversationID: self.convoId
+      }
+
+      //Make our request
+      self.appMessaging.conversationReply(payload).subscribe(function(success) {
+        //Success
+
+        //Stop Loading
+        self.appNotify.stopLoading().then(function() {
+
+          //Set our convo to the the filtered success result
+          //Update/Filter the conversations
+          self.convo = self.appMessaging.filterConvoMessages(success);
+          //Start Decypting the messages
+          self.decryptConvo();
+
+          //Empty the reply message
+          self.replyMessage = '';
+
+          //Update the UI
+          self.changeDetector.detectChanges();
+
+          //Scroll to the bottom of the messages
+          self.content.scrollToBottom(self.scrollDuration);
+
+          //Toast the user
+          self.appNotify.showToast('Message Sent!');
+        });
+
+      }, function(error) {
+        //Error
+        //Stop Loading
+        self.appNotify.stopLoading().then(function() {
+          //Pass to Error Handler
+          self.appNotify.handleError(error, [{
+            status: 404,
+            callback: function() {
+              //Pop back to the All conversations view
+
+              self.navCtrl.pop();
+            }
+          }]);
+        });
+      }, function() {
+        //Completed
       });
-    }, function() {
-      //Completed
     });
   }
 
@@ -296,6 +352,9 @@ export class ConversationPage {
     this.pollingRequest.unsubscribe();
 
     //Cancel the old observable if we have one
-    if(self.decryptingObservable) self.decryptingObservable.unsubscribe();
+    if(this.decryptingObservable) {
+      this.decryptingObservable.unsubscribe();
+      this.decryptingObservable = false;
+    }
   }
 }

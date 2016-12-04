@@ -35,9 +35,6 @@ var findAndCreateConversation = function(res, members, messages, thisUser) {
             // Create the new Message.
             for (let i = 0; i < members.length; i++) {
                 otherUserId = members[i];
-                console.log(otherUserId);
-                console.log(members);
-                console.log(messages);
                 // object containing information for a given message.
                 var messageInformation = {
                     message: messages[otherUserId].message,
@@ -103,7 +100,7 @@ var createConversation = function(res, groupID, members, currentTime, newMessage
           // conversation.
           Conversation
             .findById(conversation._id)
-            .populate('messages.message')
+            .populate('members messages.message')
             .exec(function(err, conversation) {
               if (err) {
                 // Respond with internal server error and the err object since
@@ -168,11 +165,11 @@ var addNewMessage = function(res, jsonInformation, conversation) {
         // object containing information for a given message.
         //otherUserId = conversation.members[i]
         var messageInformation = {
-            message: messages[conversation.members[i]].message,
-            thisUser: thisUser,
-            currentTime: currentTime,
+            message: jsonInformation.messages[conversation.members[i]].message,
+            thisUser: jsonInformation.thisUser,
+            currentTime: jsonInformation.currentTime,
             otherUserId: conversation.members[i],
-            messageKey: messages[conversation.members[i]].messageKey
+            messageKey: jsonInformation.messages[conversation.members[i]].messageKey
         };
         newMessages.push(createMessage(res, messageInformation));
         if (i === conversation.members.length - 1) {
@@ -192,7 +189,7 @@ var addNewMessage = function(res, jsonInformation, conversation) {
                     // conversation _id.
                     Conversation
                         .findById(conversation._id)
-                        .populate('messages.message')
+                        .populate('members messages.message')
                         .exec(function(err, conversation) {
                             if (err) {
                                 // Server error when saving the conversation,

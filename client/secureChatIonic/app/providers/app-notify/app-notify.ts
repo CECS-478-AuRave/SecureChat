@@ -59,9 +59,9 @@ export class AppNotify {
     let self = this;
     this.loader.onDidDismiss(() => {
       setTimeout(function() {
-        self.loader.dismiss();
-        self.loader.destroy();
-      }, 250);
+        //self.loader.dismiss();
+        //self.loader.destroy();
+      }, 0);
     });
 
     return this.loader.present();

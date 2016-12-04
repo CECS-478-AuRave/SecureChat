@@ -119,4 +119,18 @@ export class AppUsers {
     return this.http.put(AppSettings.serverUrl + urlPath, payload, options).map(res => res.json());
   }
 
+  //Helper function to shorten text, often used with user names
+  //Get shortened text with elipses
+  static shortenText(text: string, textMax) {
+
+    //First check if the text is already short
+    if (text.length < textMax) return text;
+    else {
+      //Get a substring of text
+      text = text.substring(0, (textMax - 3));
+      text = text + '...';
+      return text;
+    }
+  }
+
 }
