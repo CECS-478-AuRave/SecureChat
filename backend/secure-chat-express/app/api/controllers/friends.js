@@ -164,8 +164,11 @@ module.exports.acceptFriend = function(req, res) {
 // Controller for deleting a friend.
 module.exports.deleteFriend = function(req, res) {
     if (req.user) {
+        // Get the Current user.
         var thisUser = req.user;
+        // get the other user's facebook from the body.
         var otherUserID = req.body.otherUserID;
+        // find the friend from the current users list of friends.
         var otherIdIndex = thisUser.friends.indexOf(otherUserID);
         var thisFacebookId = thisUser.facebook.id;
         if (!otherUserID) {
@@ -176,24 +179,30 @@ module.exports.deleteFriend = function(req, res) {
             res.status(400).json({'error': 'That user is not your friend.'});
             return;
         }
+        // Remove the friend from the current user's friend list.
         thisUser.friends.splice(otherIdIndex, 1);
+        // save the current user to the database.
         thisUser.save(function(err, thisUser) {
             if (err) {
                 res.status(500).json(err);
             }
         });
+        // Find the other user based on the facebook id provided.
         User.findOne({'facebook.id':otherUserID}, function(err, otherUser) {
             if (!otherUser) {
                 res.status(404).json({'error':'Other User was not found.'});
             } else if (err) {
                 res.status(500).json(err);
             } else {
+                // check if the other user is a friend of the current user.
                 var thisIdIndex = otherUser.friends.indexOf(thisFacebookId);
                 if (thisIdIndex == -1) {
                     res.status(400).json({'error': 'That user is not your friend.'});
                     return;
                 }
+                // Remove the current user from the other user's friends list.
                 otherUser.friends.splice(thisIdIndex, 1);
+                // Save the other user to the database.
                 otherUser.save(function(err, otherUser) {
                     if (err) {
                         res.status(500).json(err);

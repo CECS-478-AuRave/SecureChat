@@ -3,6 +3,7 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
+// Schema for messages.
 var messageSchema = new Schema({
     message: {type: String, required: true},
     from: {type: Schema.ObjectId, ref: 'User', required: true},

@@ -2,6 +2,7 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
+// Schema for conversation.
 var conversationSchema = new Schema({
     conversationID: {type: String, required: true},
     members: [{type: Schema.ObjectId, ref: 'User'}],
