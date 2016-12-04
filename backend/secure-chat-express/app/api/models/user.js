@@ -5,6 +5,7 @@ var mongoose = require('mongoose'),
     ObjectId = Schema.ObjectId,
     searchable = require('mongoose-searchable');
 
+// Schema for a user.
 var userSchema = new Schema({
     name: {
         type: String,
