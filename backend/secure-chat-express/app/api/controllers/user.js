@@ -134,7 +134,7 @@ module.exports.getFriend = function(req, res) {
         Promise.all([findFriend, findPending]).then((data) => {
             res.status(200).json({
                 'friends' : data[0],
-                'pending friends' : data[1]
+                'pendingFriends' : data[1]
             });
         });
 
