@@ -76,29 +76,68 @@ module.exports.findUserById = function(req, res) {
 
 module.exports.getFriend = function(req, res) {
     if (req.user) {
-        if (req.user.friends.length <= 0) {
-            res.status(404).json({'error' : 'No friends found for user'});
-        }
-        var friends = [];
-        var count = 0;
-        // for each friend for the given user add it to the friends array
-        // if the friend was found.
-        req.user.friends.forEach(function(friendId) {
-            User.findOne({'facebook.id' : friendId}, function(err, friend) {
-                if (err) {
-                    // error finding friend.
-                    res.status(500).json(err);
-                } else if (friend) {
-                    count++; // keep track of the number of friends found.
-                    friends.push(friend);
-                }
-            }).then(function() {
-                // respond with the friends array after the loop has finished running.
-                if (count === req.user.friends.length) {
-                    res.status(200).json(friends);
-                }
+        // Create a new promise to find all friends.
+        var findFriend = new Promise((resolve, reject) => {
+            var friends = [];
+            if (req.user.friends.length === 0) {
+                // return empty list since no friends :(|
+                resolve(friends);
+            }
+            req.user.friends.forEach((friendId) => {
+                // Find friends and add them to the list.
+                User.findOne({'facebook.id' : friendId})
+                .select('name profilePhotoURL _id facebook.id')
+                .exec(function(err, friend) {
+                    if (err) {
+                        // error finding friend.
+                        res.status(500).json(err);
+                        reject("Error");
+                    } else if (friend) {
+                        // add friend to list.
+                        friends.push(friend);
+                        if (friends.length === req.user.friends.length) {
+                            // return the list of friends.
+                            resolve(friends);
+                        }
+                    }
+                });
             });
         });
+        // Create a new promise to find pending friends.
+        var findPending = new Promise((resolve, reject) => {
+            var friends = [];
+            if (req.user.pendingFriends.length === 0) {
+                // return empty list since no pending friends :(|
+                resolve(friends);
+            }
+            req.user.pendingFriends.forEach((friendId) => {
+                // Find pending friends add them to the list.
+                User.findOne({'facebook.id' : friendId})
+                .select('name profilePhotoURL id facebook.id')
+                .exec(function(err, friend) {
+                    if (err) {
+                        // error finding friend.
+                        res.status(500).json(err);
+                        reject("Error");
+                    } else if (friend) {
+                        // add pending friend to list.
+                        friends.push(friend);
+                        if (friends.length === req.user.pendingFriends.length) {
+                            // return the list of pending friends.
+                            resolve(friends);
+                        }
+                    }
+                });
+            });
+        });
+        // Run all promises first then respond with the data.
+        Promise.all([findFriend, findPending]).then((data) => {
+            res.status(200).json({
+                'friends' : data[0],
+                'pendingFriends' : data[1]
+            });
+        });
+
     } else {
         // Respond with Unauthorized access.
         res.status(401).json({'error': 'Access Not Authorized.'});
