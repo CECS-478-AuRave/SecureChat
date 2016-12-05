@@ -10,7 +10,7 @@
     <button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Friends</ion-title>
+    <ion-title class="animated fadeIn">Friends</ion-title>
   </ion-navbar>
 </ion-header>
 
@@ -25,7 +25,21 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- TODO: Ngfor our pending friends -->
+  <!-- Ngfor our pending friends -->
+  <div *ngIf="pendingFriends && pendingFriends.length > 0">
+    <h2 class="friendTitle centerText">Pending Friends</h2>
+    <ion-card *ngFor="let pendingFriend of pendingFriends; let i = index;" (click)="goToUser(pendingFriend)">
+
+        <!-- User name and picture -->
+        <ion-item class="animated fadeIn">
+          <ion-avatar item-left>
+            <img src="https://{{pendingFriend.profilePhotoURL}}">
+          </ion-avatar>
+          <h2>{{pendingFriend.name}}</h2>
+        </ion-item>
+
+    </ion-card>
+  </div>
 
   <!-- Ngfor our friends -->
   <div *ngIf="friends && friends.length > 0">
@@ -33,7 +47,7 @@
     <ion-card *ngFor="let friend of friends; let i = index;" (click)="goToUser(friend)">
 
         <!-- User name and picture -->
-        <ion-item>
+        <ion-item class="animated fadeIn">
           <ion-avatar item-left>
             <img src="https://{{friend.profilePhotoURL}}">
           </ion-avatar>

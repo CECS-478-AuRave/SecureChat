@@ -63,7 +63,7 @@ export class NewConversationPage {
       self.appNotify.stopLoading().then(function() {
 
         //Save our friends
-        self.friends = success;
+        self.friends = success.friends;
 
         if(self.navParams.get('user')) {
 

@@ -10,7 +10,7 @@
     <button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>{{user.name}}</ion-title>
+    <ion-title class="animated fadeIn">{{user.name}}</ion-title>
   </ion-navbar>
 </ion-header>
 
@@ -21,9 +21,9 @@
     <!-- User name and picture -->
     <ion-item>
       <ion-avatar item-left>
-        <img src="https://{{user.profilePhotoURL}}">
+        <img src="https://{{user.profilePhotoURL}}" class="aniamted fadeIn">
       </ion-avatar>
-      <h2>{{user.name}}</h2>
+      <h2 class="animated fadeInRight">{{user.name}}</h2>
     </ion-item>
 
     <!-- Action Buttons, add friend, delete friend, etc... -->
@@ -84,7 +84,7 @@
     </ion-row>
 
     <!-- Place information abou the user like keys and things here -->
-    <ion-card-content>
+    <ion-card-content class="animated fadeIn">
       <h2 class="keyTitle centerText">Human Readable Public Key</h2>
       <h6 class="keyCopyable centerText">The text below is copy-able!</h6>
       <p class="keyText">
