@@ -86,7 +86,7 @@ module.exports.getFriend = function(req, res) {
             req.user.friends.forEach((friendId) => {
                 // Find friends and add them to the list.
                 User.findOne({'facebook.id' : friendId})
-                .select('name profilePhotoURL _id facebook.id')
+                .select('name profilePhotoURL _id facebook.id publicKey')
                 .exec(function(err, friend) {
                     if (err) {
                         // error finding friend.
@@ -113,7 +113,7 @@ module.exports.getFriend = function(req, res) {
             req.user.pendingFriends.forEach((friendId) => {
                 // Find pending friends add them to the list.
                 User.findOne({'facebook.id' : friendId})
-                .select('name profilePhotoURL id facebook.id')
+                .select('name profilePhotoURL id facebook.id publicKey')
                 .exec(function(err, friend) {
                     if (err) {
                         // error finding friend.
