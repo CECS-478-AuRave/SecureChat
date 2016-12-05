@@ -283,6 +283,7 @@ export class AppCrypto {
                 })
               }
             } else {
+              observer.error(err);
               console.log('there was an error!');
               console.log(err);
             }

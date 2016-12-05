@@ -3,12 +3,17 @@
 .keyTitle {
   font-weight: bold;
   margin-top: 5px;
+  margin-bottom: 0px;
+}
+
+.keyCopyable {
+  font-style: italic;
   margin-bottom: 5px;
 }
 
 //Text for the keys
 .keyText {
-  margin-top: 5px;
+  margin-top: 10px;
   margin-bottom: 5px;
 
   //Make Selectable for copy paste

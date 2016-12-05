@@ -23,10 +23,13 @@ export class FriendsListPage {
 
   friends: any;
 
+  pendingFriends: any;
+
   constructor(private changeDetector: ChangeDetectorRef, private navCtrl: NavController, private appNotify: AppNotify, private appUsers: AppUsers) {
 
     //Initialize friends
     this.friends = [];
+    this.pendingFriends = [];
   }
 
   //Call function every time the view loads
@@ -51,7 +54,10 @@ export class FriendsListPage {
       self.appNotify.stopLoading().then(function() {
 
         //Save our friends
-        self.friends = success;
+        self.friends = success.friends;
+
+        //Save our pending friends
+        self.pendingFriends = success.pendingFriends;
 
         //Update the UI
         self.changeDetector.detectChanges();

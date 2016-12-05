@@ -67,10 +67,19 @@ export class AppMessaging {
   }
 
   //Helper Function to filter out all messages in a convo for the current users, and parse their json
-  filterConvoMessages(convo) {
+  filterConvoMessages(convo, oldConvo) {
 
     //Grab our user from localstorage
     let userId = JSON.parse(localStorage.getItem(AppSettings.shushItemName))._id;
+
+    //If we have an old convo, filter the same has the new convo
+    if(oldConvo) {
+      for(let i = 0; i < oldConvo.messages.length; i++) {
+        oldConvo.messages[i].message = oldConvo.messages[i].message.filter(function(message) {
+          return userId == message.issuedTo._id;
+        });
+      }
+    }
 
     //Loop through our messaegs
     for(let i = 0; i < convo.messages.length; i++) {
@@ -80,7 +89,14 @@ export class AppMessaging {
 
       //Parse the message json, the message key is a pgp string
       if (typeof convo.messages[i].message[0].message === 'string' || convo.messages[i].message[0].message instanceof String) {
-          convo.messages[i].message[0].message = JSON.parse(convo.messages[i].message[0].message);
+
+          //Don't do anything if we have already decrypted
+          if(oldConvo && oldConvo.messages[i] && oldConvo.messages[i].message[0].decryptedMessage) {
+            convo.messages[i] = oldConvo.messages[i];
+          }
+          else {
+            convo.messages[i].message[0].message = JSON.parse(convo.messages[i].message[0].message);
+          }
       }
     }
 

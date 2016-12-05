@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title class="navTitle">
+    <ion-title class="navTitle animated fadeIn">
       {{convoTitle}}
     </ion-title>
     <!-- Show a loading symbol when decrypting -->
@@ -21,14 +21,15 @@
 
   <!-- Ngfor our messages -->
   <!-- We are assuming a filtered convo -->
-  <ion-card *ngFor="let convoMessage of convo.messages; let i = index;" [ngClass]="{'sender': !convoMessage.message[0].isUser, 'user': convoMessage.message[0].isUser}">
+  <ion-card *ngFor="let convoMessage of convo.messages; let i = index;"
+      [ngClass]="{}">
     <!--
         For media messages if supported
         <img src="img/nin-live.png" />
     -->
 
     <!-- User who sent the item -->
-    <ion-item>
+    <ion-item class="animated fadeIn">
       <ion-avatar item-left>
         <img src="https://{{convoMessage.message[0].from.profilePhotoURL}}">
       </ion-avatar>

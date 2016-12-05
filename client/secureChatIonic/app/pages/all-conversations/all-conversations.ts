@@ -67,10 +67,6 @@ export class AllConversationsPage {
 
     this.pollingRequest = poll.subscribe(function(success) {
 
-      //Dont do anything on no changes
-      if(success.status == 304) return;
-
-
       //Success!
       self.messageGetSuccess(success);
     }, function(error) {
@@ -138,7 +134,7 @@ export class AllConversationsPage {
     let userId = JSON.parse(localStorage.getItem(AppSettings.shushItemName))._id;
 
     //Filter our convo
-    convo = this.appMessaging.filterConvoMessages(convo);
+    convo = this.appMessaging.filterConvoMessages(convo, false);
 
     //Get the last message sender, since it is filter we can assume the zero index
     let lastMessage = convo.messages[convo.messages.length - 1].message[0];

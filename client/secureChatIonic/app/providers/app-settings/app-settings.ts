@@ -7,7 +7,7 @@ export class AppSettings {
   static facebookAppId = '1867451080142485';
 
   //Poll interval for things like settings
-  static pollInterval = 30000;
+  static pollInterval = 20000;
 
   //The name of the json object stored on the device
   /*
@@ -44,8 +44,8 @@ export class AppSettings {
    */
   static shushLocalPrivateKeyStore = 'shushPrivateKeys';
 
-  //Add our server URL (Local testing not actual)
+  //Add our server URL (Not Final)
   //Must end with a slash
-  static serverUrl = 'http://localhost:4780/api/v1/';
+  static serverUrl = 'https://shushapi.aaronthedev.com/api/v1/';
 
 }

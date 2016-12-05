@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Search Friends</ion-title>
+    <ion-title class="animated fadeIn">Search Friends</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -27,7 +27,7 @@
     <!-- Show if we have input-->
     <div *ngIf="searchQuery.length > 0">
       <!-- Our list of currently found friends -->
-      <ion-item *ngFor="let friend of searchItems" (click)="goToUser(friend)">
+      <ion-item *ngFor="let friend of searchItems" (click)="goToUser(friend)" class="animated fadeInUp">
         <ion-avatar item-left>
           <img src="https://{{friend.profilePhotoURL}}">
         </ion-avatar>

@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>New Conversation</ion-title>
+    <ion-title class="aniamted fadeIn">New Conversation</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -22,10 +22,10 @@
       <ion-item *ngFor="let friend of friends | NgForTextFilter:searchQuery">
           <!-- Check Box for the item -->
           <ion-checkbox color="dark" (click)="editConvoFriends(friend)" checked="{{convoFriends.includes(friend._id)}}"></ion-checkbox>
-          <ion-avatar item-left>
+          <ion-avatar item-left class="animated fadeIn">
             <img src="https://{{friend.profilePhotoURL}}">
           </ion-avatar>
-          <ion-label>{{friend.name}}</ion-label>
+          <ion-label class="animated fadeIn">{{friend.name}}</ion-label>
       </ion-item>
     </ion-list>
 
