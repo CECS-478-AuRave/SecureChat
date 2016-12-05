@@ -10,7 +10,7 @@
     <button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Messages</ion-title>
+    <ion-title class="animated fadeIn">Messages</ion-title>
   </ion-navbar>
 </ion-header>
 
@@ -22,13 +22,13 @@
 
     <!-- If no Messages found -->
     <div *ngIf="!hasConversations()">
-      <h2 class="centerText">No Conversations Found!</h2>
-      <h6 class="centerText">Add some friends using the side menu</h6>
+      <h2 class="centerText animated fadeIn">No Conversations Found!</h2>
+      <h6 class="centerText animated fadeInLeft">Add some friends using the side menu</h6>
     </div>
 
     <!-- If we have messages -->
     <div *ngIf="hasConversations()">
-      <button ion-item class="messageItem" *ngFor="let conversation of convoList" (click)="convoClick(conversation)">
+      <button ion-item class="messageItem animated fadeInUp" *ngFor="let conversation of convoList" (click)="convoClick(conversation)">
           <!-- Our user name -->
           <h3 class="messageUser">{{getConvoMembers(conversation)}}</h3>
           <!-- Our message text -->
@@ -40,6 +40,6 @@
 </ion-content>
 
 <!-- Add friend fab -->
-<ion-fab class="plusFab" (click)="goToNewConversation()">
+<ion-fab class="plusFab animated fadeInRight" (click)="goToNewConversation()">
   <button ion-fab color="primary"><ion-icon name="add"></ion-icon></button>
 </ion-fab>

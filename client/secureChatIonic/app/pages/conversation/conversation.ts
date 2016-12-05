@@ -222,6 +222,15 @@ export class ConversationPage {
               setTimeout(function() {
                 self.changeDetector.detectChanges();
               }, 250);
+            }, function(error) {
+              if(self.decryptingObservable) self.decryptingObservable.unsubscribe();
+              self.decryptingObservable = false;
+              decryptCache = [];
+
+              self.appNotify.showToast('Could not decrypt messages. You should ask other group members to store the conversation, or delete it.');
+
+              //Go back to the all conversations page
+              self.navCtrl.pop();
             });
       }
     });

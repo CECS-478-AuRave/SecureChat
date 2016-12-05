@@ -21,7 +21,12 @@
 
   <!-- Ngfor our messages -->
   <!-- We are assuming a filtered convo -->
-  <ion-card *ngFor="let convoMessage of convo.messages; let i = index;" [ngClass]="{'sender': !convoMessage.message[0].isUser, 'user': convoMessage.message[0].isUser}">
+  <ion-card *ngFor="let convoMessage of convo.messages; let i = index;"
+      class ="animated"
+      [ngClass]="{'sender': !convoMessage.message[i].isUser,
+          'user': convoMessage.message[i].isUser,
+          'fadeInleft': !convoMessage.message[i].isUser,
+          'fadeInRight': convoMessage.message[i].isUser}">
     <!--
         For media messages if supported
         <img src="img/nin-live.png" />
